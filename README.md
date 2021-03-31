@@ -34,14 +34,14 @@ configuration file:
   - [NGINX full example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
 
 **MINDMAPS**:
-- [Main modules]()
+- [Main modules](https://app.mindmup.com/map/new/1617193151929)
 - of more precise modules (TBD)
 
 **TEAM NAMING FORMATS CONVENTION**:
-    - function_name()
-    - variableName()
-    - _privateVariable
-    - ClassName
+- function_name()
+- variableName()
+- _privateVariable
+- ClassName
 
 
 **ALLOWED TOOLS**:
