@@ -10,8 +10,14 @@ When in doubt, compare prgram behaviour with nginx.
 
 **RESOURCES**:
 - [HTTP wiki](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol)
+- [HTTP BASIC TUTORIAL](https://code.tutsplus.com/tutorials/a-beginners-guide-to-http-and-rest--net-16340)
+- [HTTP CS COURSE](https://www.tutorialspoint.com/http/index.htm)
 - [RFC7230](https://tools.ietf.org/html/rfc7230)
 - [RFC7235](https://tools.ietf.org/html/rfc7235)
+
+- [PYTHON HTTP SERVER TUTORIAL](https://www.afternerd.com/blog/python-http-server/)
+- [STACK EXCHANGE ON SETTING UP HTTP SERVER](https://softwareengineering.stackexchange.com/questions/200821/how-to-write-a-http-server)
+- [HTTP SERVER WALKTHROUGH](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
 
 **BEFORE STARTING, DO TESTS WITH**:
 - telnet
@@ -34,15 +40,15 @@ configuration file:
   - [NGINX full example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
 
 **MINDMAPS**:
-- [Main modules](https://app.mindmup.com/map/new/1617193151929)
+- [Main modules of our program](https://app.mindmup.com/map/new/1617193151929)
 - of more precise modules (TBD)
 
-**TEAM NAMING FORMATS CONVENTION**:
+**TEAM NAMING FORMATS CONVENTION (TBC)**:
 - function_name()
 - variableName()
 - _privateVariable
 - ClassName
-
+- s_struct t_struct
 
 **ALLOWED TOOLS**:
 - **Functions**: 
@@ -54,7 +60,7 @@ configuration file:
     - *time stuff*: gettimeofday, strptime, strftime, usleep, 
     - *fd/socket handling*: select, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
 
-**BEFORE HANDING IT IN, DO TESTS WITH**:
+**BEFORE HANDING IT IN, DO TESTS!!**:
 - The included tester in project page
 - Do a stress test
-- Test with several programs
+- Test with several programs (different languages are allowed)
