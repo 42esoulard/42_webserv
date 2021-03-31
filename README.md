@@ -2,7 +2,7 @@
 42's webserv, team rturcey-esoulard! [04/2021] [Ubuntu18]
 
 **GOAL**: write a HTTP server in C++ 98, compliant with rfc 7230 to 7235 (http 1.1)
-When in doubt, compare prgram behaviour with nginx.
+When in doubt, compare program behaviour with nginx.
 
 **LINKS**:
 - [Git](https://github.com/42esoulard/42_webserv)
