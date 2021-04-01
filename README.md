@@ -14,7 +14,7 @@ When in doubt, compare program behaviour with nginx.
   - [HTTP BASIC TUTORIAL {1}](https://code.tutsplus.com/tutorials/a-beginners-guide-to-http-and-rest--net-16340): great intro to HTTP for us n00bs. Details requests, headers, methods (GET, PUT/POST, DELETE), response codes, and best practice. Also gives an example of a short server in PHP.
   - **TUTORIALS: SETTING UP A HTTP SERVER**
     - [PYTHON HTTP SERVER TUTORIAL {1}](https://www.afternerd.com/blog/python-http-server/) : simply explains what is a webserver (+ basic python implementation).
-    - [HTTP SERVER WALKTHROUGH {1}](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa) : step-by-step tutorial on how to build a http server from scratch in C!!!
+    - [HTTP SERVER WALKTHROUGH {1}](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa) : step-by-step tutorial on how to build a http server from scratch in C!!! (see tuto_medium.cpp)
     - [STACK EXCHANGE ON SETTING UP HTTP SERVER](https://softwareengineering.stackexchange.com/questions/200821/how-to-write-a-http-server)
 - **HTTP: MORE ADVANCED RESOURCES**
   - [HTTP CS COURSE {2}](https://www.tutorialspoint.com/http/index.htm): much more in depth and condensed guide, seems to contain most info we should need. Will be great for reference.
@@ -44,6 +44,7 @@ making a request for a specific resource using HTTP and the server responds with
 content of that resource or an error message if unable to do so. The resource is typically a real file on the server’s secondary storage, but this is not necessarily the case and depends on how the web server is implemented.
 - *cURL*: very popular HTTP client library. Includes both a standalone command line program, and a library that can be used by various programming languages.
 - [*CGI: Common Gateway Interface*](https://en.wikipedia.org/wiki/Common_Gateway_Interface): interface specification that enables web servers to execute an external program, typically to process user requests. A typical use case occurs when a Web user submits a Web form on a web page that uses CGI. The form's data is sent to the Web server within an HTTP request with a URL denoting a CGI script. The Web server then launches the CGI script in a new computer process, passing the form data to it. The output of the CGI script, usually in the form of HTML, is returned by the script to the Web server, and the server relays it back to the browser as its response to the browser's request.
+- *Socket* : mechanism that most popular operating systems provide to give programs access to the network. It allows messages to be sent and received between applications (unrelated processes) on different networked machines.
 
 
 **PROGRAM ARGUMENTS**
