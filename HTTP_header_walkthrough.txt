@@ -6,7 +6,7 @@
 #    By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/04/02 16:15:19 by esoulard          #+#    #+#              #
-#    Updated: 2021/04/02 17:12:05 by esoulard         ###   ########.fr        #
+#    Updated: 2021/04/02 18:17:18 by esoulard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,3 +75,26 @@ the file or from the return value of the read() function or strlen(variable).
 Set the Content-Length.
 Construct the response header, then append the data we have read to it (if file 
 was found and permissions were ok)
+
+------------------------------------------------------------------------------------
+
+FOR OUT WEBSERVER, WE MUST HANDLE THE FOLLOWING HEADERS:
+
+◦ Accept-Charsets
+◦ Accept-Language
+◦ Allow
+◦ Authorization
+◦ Content-Language
+◦ Content-Length
+◦ Content-Location
+◦ Content-Type
+◦ Date
+◦ Host
+◦ Last-Modified
+◦ Location
+◦ Referer
+◦ Retry-After
+◦ Server
+◦ Transfer-Encoding
+◦ User-Agent
+◦ WWW-Authenticate
