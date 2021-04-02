@@ -1,0 +1,77 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    HTTP_header_walkthrough.txt                        :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2021/04/02 16:15:19 by esoulard          #+#    #+#              #
+#    Updated: 2021/04/02 17:12:05 by esoulard         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+From Medium tutorial part 2 : https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
+
+THE HTTP EXCHANGE:
+
+[Server:]   - listens for requests
+[Client:]   - enters a URL into their browser (e.g. http://www.blabla.com )
+            - their browser reconstructs the address by adding the default 
+            port to it (e.g. http://www.blabla.com:80 ). This is the address
+            the browser will write to.
+            - the browser sends the HTTP request to the server's address.
+[Server:]   - parses the HTTP request. Check if its proper:
+                    - right format?
+                    - right protocol? (here, HTTP/1.1)
+            - checks if the action is doable (is the file there? does the client
+            have proper rights to do the action?)
+            - Calls the functions to take the actions corresponding to the method 
+            called (GET/HEAD/PUT/POST/DELETE) on the file pointed to.
+            - sends back a HTTP Response. Will have to contain the status code,
+            date and time, server name, resource type, the content's length, a 
+            blank line and the content. For status code, see RFC7231 or https://en.wikipedia.org/wiki/List_of_HTTP_status_codes.
+
+Tadaaa!
+
+HTTP REQUESTS AND RESPONSES FORMATTING:
+        Client enters localhost:8080 in their browser
+        ---------------------------------
+            HTTP CLIENT REQUEST:
+
+            GET /favicon.ico HTTP/1.1 //i think favicon is the default thing
+            Host: localhost:8080
+            Connection: keep-alive
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
+            Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+            Accept-Encoding: gzip, deflate, br
+            Accept-Language: en-US,en;q=0.9
+            //there is a blank line, and below can be a BODY (for POST and PUT methods)
+
+        ---------------------------------
+    GET is the default method used by the HTTP. GET and POST are common.
+                
+    Some of those methods are:
+    GET — Fetch a URL
+    HEAD — Fetch information about a URL
+    PUT — Store to an URL
+    POST — Send form data to a URL and get a response back
+    DELETE — Delete a URL 
+
+        ---------------------------------
+            MINIMAL HTTP SERVER RESPONSE EXAMPLE:
+
+            HTTP/1.1 200 OK
+            Content-Type: text/plain
+            Content-Length: 12
+            //blank line, then content BODY        
+            Hello world!
+
+        ---------------------------------
+
+IF THE FETCHED CONTENT IS A FILE:
+open the file, read the data into a variable. Count the number of bytes read 
+from the file. When you read a simple text file, we can count while reading 
+the file or from the return value of the read() function or strlen(variable). 
+Set the Content-Length.
+Construct the response header, then append the data we have read to it (if file 
+was found and permissions were ok)

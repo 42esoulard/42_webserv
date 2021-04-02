@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:05:44 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/02 14:35:28 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/02 15:55:36 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,11 @@ int main() {
         strerror(errno);
         return 0; 
     }
-   
+
+    // to allow for fast restart, otherwise binding fails because port is still in use from previous attempt
+    int reuse = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+        perror("setsockopt(SO_REUSEADDR) failed");
     /*
     ** 2) NAME A SOCKET
     ** = assigning a transport address (= port) to the socket, the address with which we will access it.
@@ -139,7 +143,8 @@ int main() {
         std::cout << "[CLIENT MSG] " << buffer << std::endl;
         if(valread < 0) 
             std::cout << "[No bytes are there to read]" << std::endl;
-        char hello[] = "Hello from the server";//IMPORTANT! WE WILL GET TO IT
+        // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
+        char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";//IMPORTANT! WE WILL GET TO IT
         write(new_socket , hello , strlen(hello));
         std::cout << "[--- HELLO MSG SENT ---]" << std::endl;
         
