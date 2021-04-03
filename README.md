@@ -12,11 +12,12 @@ When in doubt, compare program behaviour with nginx.
 - **HTTP: BASICS**
   - [HTTP wiki {1}](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol): details HTTP's evolution, and main technical characteristics.
   - [HTTP BASIC TUTORIAL {1}](https://code.tutsplus.com/tutorials/a-beginners-guide-to-http-and-rest--net-16340): great intro to HTTP for us n00bs. Details requests, headers, methods (GET, PUT/POST, DELETE), response codes, and best practice. Also gives an example of a short server in PHP.
+  - [HTTP AND CGI BASIC TUTORIAL {1}](https://www.garshol.priv.no/download/text/http-tut.html): a pretty thorough beginner guide. Also contains all of the above plus details on CGI, caching and cookies, and a FAQ.
   - **TUTORIALS: SETTING UP A HTTP SERVER**
-    - [PYTHON HTTP SERVER TUTORIAL {1}](https://www.afternerd.com/blog/python-http-server/) : simply explains what is a webserver (+ basic python implementation).
     - [HTTP SERVER WALKTHROUGH {1}](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa) : step-by-step tutorial on how to build a http server from scratch in C!!! (see /TUTO_MEDIUM)
     - [STACK EXCHANGE ON SETTING UP HTTP SERVER](https://softwareengineering.stackexchange.com/questions/200821/how-to-write-a-http-server) : just to boost our ego, someone says they did this as a 3rd
     year engineering student. Also, they do a pretty good summing up of what the exercise implies.
+    - [PYTHON HTTP SERVER TUTORIAL {1}](https://www.afternerd.com/blog/python-http-server/) : simply explains what is a webserver (+ basic python implementation).
 - **HTTP: MORE ADVANCED RESOURCES**
   - [HTTP CS COURSE {2}](https://www.tutorialspoint.com/http/index.htm): much more in depth and condensed guide, seems to contain most info we should need. Will be great for reference.
   - **RFC7230 through 7235: HTTP/1.1 GUIDELINES**
@@ -29,7 +30,7 @@ When in doubt, compare program behaviour with nginx.
 - **OTHER USEFUL RESOURCES**
   - ["Computer Networking: A Top-Down Approach 7th Edition" - 856p](https://www.ucg.ac.me/skladiste/blog_44233/objava_64433/fajlovi/Computer%20Networking%20_%20A%20Top%20Down%20Approach,%207th,%20converted.pdf): a huge book on networks.
 
-**BEFORE STARTING, DO TESTS WITH TO SEE WHAT OUR SERVER SHOULD DO**:
+**BEFORE STARTING, DO TESTS WITH THESE TO SEE WHAT OUR SERVER SHOULD DO**:
 - [telnet](https://www.howtoforge.com/how-to-install-and-use-telnet-on-ubuntu-1804/): /!\ telnet is an unencrypted and therefore insecure protocol.
 - [nginx](http://nginx.org/en/docs/beginners_guide.html#proxy): nginx is said to be pretty secure but
 steps can be taken in its configuration to secure it further.
@@ -48,16 +49,16 @@ content of that resource or an error message if unable to do so. The resource is
 - *cURL*: very popular HTTP client library. Includes both a standalone command line program, and a library that can be used by various programming languages.
 - [*CGI: Common Gateway Interface*](https://en.wikipedia.org/wiki/Common_Gateway_Interface): interface specification that enables web servers to execute an external program, typically to process user requests. A typical use case occurs when a Web user submits a Web form on a web page that uses CGI. The form's data is sent to the Web server within an HTTP request with a URL denoting a CGI script. The Web server then launches the CGI script in a new computer process, passing the form data to it. The output of the CGI script, usually in the form of HTML, is returned by the script to the Web server, and the server relays it back to the browser as its response to the browser's request.
 - *Socket* : mechanism that most popular operating systems provide to give programs access to the network. It allows messages to be sent and received between applications (unrelated processes) on different networked machines.
+- [*What's the deal with select()*](https://www.gnu.org/software/libc/manual/html_node/Server-Example.html)
 
 
 **PROGRAM ARGUMENTS**
-- A config file in argument (or use a default path). Inspired from the "server" part of nginx
-configuration file:
+- A config file in argument (or use a default path). From this we will initialize all our cool variables (port, server name, etc). Inspired from the "server" part of nginx configuration file:
   - [NGINX basic config](https://docs.nginx.com/nginx/admin-guide/basic-functionality/managing-configuration-files/)
   - [NGINX full example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
 
 **MINDMAPS**:
-- [Main modules of our program](https://app.mindmup.com/map/new/1617193151929)
+- [Main modules of our program](https://app.mindmup.com/map/_free/2021/04/9f774060947111ebb18c8352263a221c)(careful, each time we save it triggers a new link that we need to update here!)
 - of more precise modules (TBD)
 
 **TEAM NAMING FORMATS CONVENTION (TBC)**:
@@ -79,5 +80,6 @@ configuration file:
 
 **BEFORE HANDING IT IN, DO TESTS!!**:
 - The included tester in project page
+- Compare returns with nginx
 - Do a stress test
 - Test with several programs (different languages are allowed)

@@ -6,7 +6,7 @@
 #    By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/04/02 16:15:19 by esoulard          #+#    #+#              #
-#    Updated: 2021/04/02 18:17:18 by esoulard         ###   ########.fr        #
+#    Updated: 2021/04/03 13:30:55 by esoulard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,7 @@ THE HTTP EXCHANGE:
 
 Tadaaa!
 
-HTTP REQUESTS AND RESPONSES FORMATTING:
+HTTP REQUESTS AND RESPONSE EXAMPLE:
         Client enters localhost:8080 in their browser
         ---------------------------------
             HTTP CLIENT REQUEST:
@@ -48,14 +48,6 @@ HTTP REQUESTS AND RESPONSES FORMATTING:
             //there is a blank line, and below can be a BODY (for POST and PUT methods)
 
         ---------------------------------
-    GET is the default method used by the HTTP. GET and POST are common.
-                
-    Some of those methods are:
-    GET — Fetch a URL
-    HEAD — Fetch information about a URL
-    PUT — Store to an URL
-    POST — Send form data to a URL and get a response back
-    DELETE — Delete a URL 
 
         ---------------------------------
             MINIMAL HTTP SERVER RESPONSE EXAMPLE:
@@ -68,6 +60,17 @@ HTTP REQUESTS AND RESPONSES FORMATTING:
 
         ---------------------------------
 
+METHODS:
+GET is the default method used by the HTTP. GET and POST are common.
+                
+Some of those methods are:
+GET — Fetch a URL
+HEAD — Fetch information about a URL
+PUT — Store to an URL
+POST — Send form data to a URL and get a response back
+DELETE — Delete a URL 
+
+
 IF THE FETCHED CONTENT IS A FILE:
 open the file, read the data into a variable. Count the number of bytes read 
 from the file. When you read a simple text file, we can count while reading 
@@ -78,23 +81,55 @@ was found and permissions were ok)
 
 ------------------------------------------------------------------------------------
 
-FOR OUT WEBSERVER, WE MUST HANDLE THE FOLLOWING HEADERS:
+FOR OUR WEBSERVER, WE MUST HANDLE THE FOLLOWING HEADER FIELDS:
 
-◦ Accept-Charsets
-◦ Accept-Language
-◦ Allow
-◦ Authorization
-◦ Content-Language
-◦ Content-Length
-◦ Content-Location
-◦ Content-Type
-◦ Date
-◦ Host
-◦ Last-Modified
-◦ Location
-◦ Referer
-◦ Retry-After
-◦ Server
-◦ Transfer-Encoding
-◦ User-Agent
-◦ WWW-Authenticate
+◦ Category: description
+            [example]
+For more details, see https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields
+and report to the mentioned RFCs 
+Note: the smallest Request we could have would contain the first line and the host field
+    e.g.    GET / HTTP/1.1
+            Host: www.example.com
+
+REQUEST FIELDS
+◦ Accept-Charsets: character sets that are acceptable.
+            [Accept-Charset: utf-8]
+◦ Accept-Language: list of acceptable human languages for response. 
+            [Accept-Language: en-US]
+◦ Authorization: authentication credentials for HTTP authentication.
+            [Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==]
+◦ Host: domain name of the server + the TCP port number on which the server is listening (or no port if default)
+            [Host: en.wikipedia.org:8080]
+            [Host: en.wikipedia.org]
+◦ Referer: the address of the previous web page from which a link to the currently requested page was followed.
+            [Referer: http://en.wikipedia.org/wiki/Main_Page]
+◦ User-Agent: The user agent string of the user agent. 	
+            [User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0]
+
+RESPONSE FIELDS
+◦ Allow: valid methods for a specified resource. To be used for a 405 Method not allowed
+            [Allow: GET, HEAD]
+◦ Content-Language: the natural language or languages of the intended audience for the enclosed content
+            [Content-Language: da]
+◦ Content-Length: the length of the response body in octets (8-bit bytes)
+            [Content-Length: 348]
+◦ Content-Location: an alternate location for the returned data
+            [Content-Location: /index.htm]
+◦ Content-Type: the MIME type of this content - its media type two part identifier 	
+            [Content-Type: text/html; charset=utf-8]
+◦ Date: the date and time that the message was sent (in "HTTP-date" format as defined by RFC 7231)
+	        [Date: Tue, 15 Nov 1994 08:12:31 GMT]
+◦ Last-Modified: last modified date for the requested object (in "HTTP-date" format as defined by RFC 7231)
+            [Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT]
+◦ Location: Used in redirection, or when a new resource has been created. 	
+            [Location: http://www.w3.org/pub/WWW/People.html]
+            [Location: /pub/WWW/People.html]
+◦ Retry-After: If an entity is temporarily unavailable, this instructs the client to try again later. Value could be a specified period of time (in seconds) or a HTTP-date
+            [Retry-After: 120]
+            [Retry-After: Fri, 07 Nov 2014 23:59:59 GMT]
+◦ Server: A name for the server
+            [Server: Apache/2.4.1 (Unix)]
+◦ Transfer-Encoding: The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity. 
+            [Transfer-Encoding: chunked]
+◦ WWW-Authenticate: Indicates the authentication scheme that should be used to access the requested entity. 	
+            [WWW-Authenticate: Basic]
