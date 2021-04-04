@@ -63,7 +63,7 @@ content of that resource or an error message if unable to do so. The resource is
 
 **TEAM NAMING FORMATS CONVENTION (TBC)**:
 - function_name()
-- variableName()
+- variable_name()
 - _privateVariable
 - ClassName
 - s_struct t_struct
@@ -77,6 +77,9 @@ content of that resource or an error message if unable to do so. The resource is
     - *error handling*: strerror, errno
     - *time stuff*: gettimeofday, strptime, strftime, usleep, 
     - *fd/socket handling*: select, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
+
+**RESOURCES ON SPECIFIC ISSUES**
+- [Why we cannot use getline() to read requests](https://stackoverflow.com/questions/1589168/getline-over-a-socket)
 
 **BEFORE HANDING IT IN, DO TESTS!!**:
 - The included tester in project page

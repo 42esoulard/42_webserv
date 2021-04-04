@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:05:44 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/02 15:55:36 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/04 16:06:06 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,6 @@ int main() {
 
     if (bind(server_fd, (struct sockaddr *)&address, addrlen) < 0) {
         strerror(errno);
-         std::cout << "okok" << std::endl;
         exit(EXIT_FAILURE);
     }
 
