@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 11:28:30 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/04 16:06:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/04 18:26:10 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <iostream>
 
+#define _MAXLINE 655360
 #define PORT 8080 // default port
 
 /*
@@ -128,6 +129,12 @@ void parse_request(t_server *ws) {
     // std::cout << "[CLIENT MSG] " << buffer << std::endl;
     // if(valread < 0) 
     //     std::cout << "[No bytes are there to read]" << std::endl; 
+
+    char client_req[_MAXLINE] = {0};
+    // size_t ret = 
+    read(ws->cur_socket, client_req, _MAXLINE);
+    std::cout << "[CLIENT MSG] " << client_req << std::endl; 
+
    
 
 }

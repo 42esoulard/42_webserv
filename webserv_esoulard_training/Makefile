@@ -6,7 +6,7 @@ INCLUDES 	:= $(addprefix ${INC_DIR}, ${INCLUDES})
 
 
 ######################### SRC FILES #########################
-SRCS		= server.cpp
+SRCS		= server.cpp 
 SRC_DIR		= ./
 SRCS 		:= $(addprefix ${SRC_DIR}, ${SRCS})
 
