@@ -1,0 +1,111 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServerResponse.hpp                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
+/*   Updated: 2021/04/08 18:06:49 by esoulard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef SERVERRESPONSE_HPP
+#define SERVERRESPONSE_HPP
+
+#include "webserv.h"
+
+/*
+    ◦ Allow: valid methods for a specified resource. To be used for a 405 Method not allowed
+                [Allow: GET, HEAD]
+    ◦ Content-Language: the natural language or languages of the intended audience for the enclosed content
+                [Content-Language: da]
+    ◦ Content-Length: the length of the response body in octets (8-bit bytes)
+                [Content-Length: 348]
+    ◦ Content-Location: an alternate location for the returned data
+                [Content-Location: /index.htm]
+    ◦ Content-Type: the MIME type of this content - its media type two part identifier 	
+                [Content-Type: text/html; charset=utf-8]
+    ◦ Date: the date and time that the message was sent (in "HTTP-date" format as defined by RFC 7231)
+                [Date: Tue, 15 Nov 1994 08:12:31 GMT]
+    ◦ Last-Modified: last modified date for the requested object (in "HTTP-date" format as defined by RFC 7231)
+                [Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT]
+    ◦ Location: Used in redirection, or when a new resource has been created. 	
+                [Location: http://www.w3.org/pub/WWW/People.html]
+                [Location: /pub/WWW/People.html]
+    ◦ Retry-After: If an entity is temporarily unavailable, this instructs the client to try again later. Value could be a specified period of time (in seconds) or a HTTP-date
+                [Retry-After: 120]
+                [Retry-After: Fri, 07 Nov 2014 23:59:59 GMT]
+    ◦ Server: A name for the server
+                [Server: Apache/2.4.1 (Unix)]
+    ◦ Transfer-Encoding: The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity. 
+                [Transfer-Encoding: chunked]
+    ◦ WWW-Authenticate: Indicates the authentication scheme that should be used to access the requested entity. 	
+                [WWW-Authenticate: Basic]
+*/
+
+class ServerResponse {
+
+    public:
+        ServerResponse() {};
+        ~ServerResponse() {};
+
+
+        void set_protocol(std::string &str)         { _protocol = str; };
+        void set_status_code(std::string &str)      { _status_code = str; };
+        void set_status_msg(std::string &str)       { _status_msg = str; };
+
+        void set_server(std::string &str)           { _server = str; };
+        void set_date(std::string &str)             { _date = str; };
+
+        void set_content_lang(std::string &str)     { _content_lang = str; };
+        void set_content_len(std::string &str)      { _content_len = str; };
+        void set_content_loc(std::string &str)      { _content_loc = str; };
+        void set_content_type(std::string &str)     { _content_type = str; };
+        void set_last_modified(std::string &str)    { _last_modified = str; };
+        void set_location(std::string &str)         { _location = str; };
+
+        void set_allow(std::string &str)            { _allow = str; };
+        void set_retry_after(std::string &str)      { _retry_after = str; };
+
+        void set_encoding(std::string &str)         { _encoding = str; };
+        void set_www_auth(std::string &str)         { _www_auth = str; };
+
+    private:
+    //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
+    
+        // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
+        //first line
+        std::string _protocol;// HTTP/1.1
+        std::string _status_code; 
+        std::string _status_msg;
+
+        //general info stuff
+        std::string _server;// as declared in the config file
+        std::string _date;// need a nice time/date formatting function
+        
+        //content related stuff
+        std::string _content_lang;
+        std::string _content_len;
+        std::string _content_loc; // does this appear when there's no alternate location?
+        std::string _content_type;//need to calculate size of data returned
+        std::string _last_modified;
+        std::string _location;// in case of redir or newly created content
+
+        //if theres an error stuff
+        std::string _allow;// if status code 405, indicate which methods were valid
+        std::string _retry_after;
+        
+        //security stuff
+        std::string _encoding;
+        std::string _www_auth;
+
+        // function pointer on methods, all in a nice map (yes i love maps)
+        void method_get(){}; 
+        typedef void (*method_func)();
+        std::map< std::string, method_func >  methods;
+        //methods["bla"] = "bla"; //APPARENTLY THIS DOESN'T WORK, I NEED TO LOOK INTO HOW TO IMPLEMENT THIS
+        
+};
+
+#endif

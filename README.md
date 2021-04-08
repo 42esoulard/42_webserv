@@ -58,13 +58,13 @@ content of that resource or an error message if unable to do so. The resource is
   - [NGINX full example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
 
 **MINDMAPS**:
-- [Main modules of our program](https://app.mindmup.com/map/_free/2021/04/9f774060947111ebb18c8352263a221c)(careful, each time we save it triggers a new link that we need to update here!)
+- [Main modules of our program](https://app.mindmup.com/map/_free/2021/04/8cefb3c0987f11eb9c427911d58b5ce6)(careful, each time we save it triggers a new link that we need to update here, otherwise the update will be lost!)
 - of more precise modules (TBD)
 
 **TEAM NAMING FORMATS CONVENTION (TBC)**:
 - function_name()
 - variable_name()
-- _privateVariable
+- _private_variable
 - ClassName
 - s_struct t_struct
 
@@ -77,6 +77,19 @@ content of that resource or an error message if unable to do so. The resource is
     - *error handling*: strerror, errno
     - *time stuff*: gettimeofday, strptime, strftime, usleep, 
     - *fd/socket handling*: select, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
+- **C++ Magic! Everything in:**
+    - *iostream* 
+    - *string*
+    - *vector*
+    - *list*
+    - *queue*
+    - *stack*
+    - *map*
+    - *algorithm*
+    - *exception*
+    - *ctime*
+    - *cstring*
+
 
 **RESOURCES ON SPECIFIC ISSUES**
 - [Why we cannot use getline() to read requests](https://stackoverflow.com/questions/1589168/getline-over-a-socket)

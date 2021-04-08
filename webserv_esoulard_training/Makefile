@@ -1,12 +1,12 @@
 ##################### INCLUDES FILES ########################
-INCLUDES	= webserv.h Exception.hpp
+INCLUDES	= webserv.h Exception.hpp Server.hpp ClientRequest.hpp ServerResponse.hpp
 INC_DIR		= ./
 INCLUDES 	:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
 
 
 ######################### SRC FILES #########################
-SRCS		= server.cpp 
+SRCS		= main.cpp Server.cpp ClientRequest.cpp
 SRC_DIR		= ./
 SRCS 		:= $(addprefix ${SRC_DIR}, ${SRCS})
 
