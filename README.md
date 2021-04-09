@@ -53,9 +53,12 @@ content of that resource or an error message if unable to do so. The resource is
 
 
 **PROGRAM ARGUMENTS**
-- A config file in argument (or use a default path). From this we will initialize all our cool variables (port, server name, etc). Inspired from the "server" part of nginx configuration file:
+- A config file in argument (or use a default path). From this we will initialize all our cool variables (port, server name, etc). Inspired from the "server" part of nginx configuration file (TEST ALL OF THIS IN THE VM, needs sudo rights):
   - [NGINX basic config](https://docs.nginx.com/nginx/admin-guide/basic-functionality/managing-configuration-files/)
   - [NGINX full example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
+  - [NGINX basic tutorial](https://phoenixnap.com/kb/nginx-start-stop-restart)
+  - [NGINX beginner's guide](https://nginx.org/en/docs/beginners_guide.html)
+  - [NGINX configuration Bible](https://docs.nginx.com/nginx/admin-guide/web-server/)
 
 **MINDMAPS**:
 - [Main modules of our program](https://app.mindmup.com/map/_free/2021/04/8cefb3c0987f11eb9c427911d58b5ce6)(careful, each time we save it triggers a new link that we need to update here, otherwise the update will be lost!)

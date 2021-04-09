@@ -1,0 +1,51 @@
+Simple directive example:
+    simple_directive       setting;
+
+Container directive example (or "blocks"):
+    block {
+        simple_directive    setting;
+        simple_directive    setting;
+        simple_directive    setting;
+    };
+
+----------------------------------------
+
+Divide the config files! :
+split it into a set of feature‑specific files stored in the /etc/nginx/conf.d directory and use the include directive in the main nginx.conf file to reference the contents of the feature‑specific files.
+ex:
+    include conf.d/http;
+    include conf.d/stream;
+    include conf.d/exchange-enhanced;
+
+-----------------------------------------
+Contexts = types of traffic(ex events/http/mail/stream)
+ex:
+    user nobody; # a directive in the 'main' context
+
+    events {
+        # configuration of connection processing
+    }
+    http {
+        # Configuration specific to HTTP and affecting all virtual servers  
+
+        server {
+            # configuration of HTTP virtual server 1       
+            location /one {
+                # configuration for processing URIs starting with '/one'
+            }
+            location /two {
+                # configuration for processing URIs starting with '/two'
+            }
+        } 
+        server {
+            # configuration of HTTP virtual server 2
+        }
+    }
+    stream {
+        # Configuration specific to TCP/UDP and affecting all virtual servers
+        server {
+            # configuration of TCP virtual server 1 
+        }
+    }
+
+>>> each child of a context inherits the parent's parameters, but they can be overridden within the child.

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/08 17:39:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/09 16:06:24 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Server::~Server() {};
 
 void Server::parse_config() {
     /*
-        fopen(CONFIG_FILE);
+        if (open(CONFIG_FILE) < 0)
         read stuff from config file
         set the relevant Server function members
         (see subject AND COMPARE WITH NGINX BEHAVIOUR FOR PARSING GUIDELINES)
