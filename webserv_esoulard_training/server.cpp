@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/09 16:06:24 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/09 17:58:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void Server::handle_connection(){
 
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
     this->_read_fd_set = this->_active_fd_set;
+
     if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
         throw Exception("select error");
 

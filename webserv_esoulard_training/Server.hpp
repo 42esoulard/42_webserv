@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/08 17:49:57 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/09 17:56:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,8 @@ class Server {
         int         _cur_socket;
 
         //configuration info
-        //MAYBE DO A COOL MAP<std::string, std::string> instead? not sure, but it could be cleaner
-        //or maybe a map<std::string, list<std::string>> to have 2 dimensions?
+        std::map<std::string, std::string> _conf;
+        // ^^^ this will contain this vvv
         
         // std::string _server_host;
         // std::string _server_port;
@@ -73,9 +73,6 @@ class Server {
         // std::string _search_dir;
         // std::string _dir_listing;
         // std::string _cgi_ext;
-
-
-
 };
 
 #endif

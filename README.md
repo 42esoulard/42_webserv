@@ -13,6 +13,7 @@ When in doubt, compare program behaviour with nginx.
   - [HTTP wiki {1}](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol): details HTTP's evolution, and main technical characteristics.
   - [HTTP BASIC TUTORIAL {1}](https://code.tutsplus.com/tutorials/a-beginners-guide-to-http-and-rest--net-16340): great intro to HTTP for us n00bs. Details requests, headers, methods (GET, PUT/POST, DELETE), response codes, and best practice. Also gives an example of a short server in PHP.
   - [HTTP AND CGI BASIC TUTORIAL {1}](https://www.garshol.priv.no/download/text/http-tut.html): a pretty thorough beginner guide. Also contains all of the above plus details on CGI, caching and cookies, and a FAQ.
+  - [HTTP methods and thei corresponding headers {1}](https://www.tutorialspoint.com/http/http_methods.htm)
   - **TUTORIALS: SETTING UP A HTTP SERVER**
     - [HTTP SERVER WALKTHROUGH {1}](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa) : step-by-step tutorial on how to build a http server from scratch in C!!! (see [/TUTO_MEDIUM](https://github.com/42esoulard/42_webserv/tree/main/TUTO_MEDIUM))
     - [STACK EXCHANGE ON SETTING UP HTTP SERVER](https://softwareengineering.stackexchange.com/questions/200821/how-to-write-a-http-server) : just to boost our ego, someone says they did this as a 3rd
