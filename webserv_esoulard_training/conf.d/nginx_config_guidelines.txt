@@ -49,3 +49,72 @@ ex:
     }
 
 >>> each child of a context inherits the parent's parameters, but they can be overridden within the child.
+
+-----------------------------------------
+
+For nginx, to make a site accessible, the steps are 
+1) in /var/www/ , create a directory for the site containing a html folder, which itself
+contains the site index
+    ie. /var/www/my_site.com/html/index.html
+    /!\ make sure to set 755 permissions for us
+
+2) in /etc/nginx/sites-available/ , touch a server configuration file for our site
+    ie. /etc/nginx/sites-available/my_site.com
+    containing: 
+        server {
+        listen 80;
+
+        root /var/www/my_site.com/html; // folder in which our pages are
+        index index.html index.htm index.nginx.debian.html;
+
+        server_name my_site.com www.my_site.com;
+        location /  {
+        try files $uri $uri/ =404;
+            }
+        }
+
+3) create a symbolic link between the startup directory (in /etc/nginx/sites-enabled) and
+our server block
+    sudo ln -s /etc/nginx/sites-available/my_site.com /etc/nginx/sites-enabled
+
+4) restart nginx and test your config
+    sudo systemctl restart nginx
+    sudo nginx -t
+
+5) Since our domain isn't registered, modify the Hosts file in /etc/hosts:
+add our host IP (127.0.1.1) on the last line of the file, with our site
+    ie. 127.0.1.1 my_site.com www.my_site.com
+
+-----------------------------------------
+
+>>>>>> nginx.conf parsing:
+
+spaces/tabs everywhere = OK, don't matter
+    -> pass all kinds of spaces
+    -> pass commented lines (starting with #)
+if a field isn't known = DON'T LAUNCH
+    -> match each configuration field with a specific function, if not found, DON'T LAUNCH
+if a field doesnt have the right nb of arguments, = DON'T LAUNCH
+    -> error cases: 
+        - include: 
+            if it doesn't have exactly one argument (no spaces)
+            if the included file doesn't exist
+            if the included file is a directory
+            if the included file doesn't respect all the same rules as the config file's (ie. open {, unknown field, bad param..)
+            /!\included files are inserted exactly where they are included. This means a
+                file relevant to a specific scope should be included in that scope, not outside!!
+            
+        - server:
+            if it isn't within http {}
+
+            - listen : if port is invalid (range 0-65535 is ok, reject anything else)
+                can have an IP, or not 
+                if unbindable IP >> ERROR
+                >>> i think the error will be later once we send it to the program
+            - server_names : can be present or not
+
+if line doesn't end with ; = DON'T LAUNCH
+if a { is dangling = DON'T LAUNCH
+http {} can be empty, no problem
+server {} can be empty, no problem
+File can be empty, no problem (nginx requires at least the "events" section but i think we don't need it?)
