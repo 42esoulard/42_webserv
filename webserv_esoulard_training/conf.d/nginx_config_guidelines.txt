@@ -105,13 +105,15 @@ if a field doesnt have the right nb of arguments, = DON'T LAUNCH
                 file relevant to a specific scope should be included in that scope, not outside!!
             
         - server:
-            if it isn't within http {}
+            if it isn't within http {} = ERROR
 
             - listen : if port is invalid (range 0-65535 is ok, reject anything else)
                 can have an IP, or not 
                 if unbindable IP >> ERROR
                 >>> i think the error will be later once we send it to the program
-            - server_names : can be present or not
+                >>> parse IP and PORT maybe (if we need them separate later)
+
+            - server_name : can be present or not. Can contain 1 or several names
 
 if line doesn't end with ; = DON'T LAUNCH
 if a { is dangling = DON'T LAUNCH
