@@ -6,15 +6,22 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/08 17:52:35 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/10 18:03:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 #define WEBSERV_H
 
+// socket/IP stuff
 #include <sys/socket.h>
 #include <arpa/inet.h>
+
+// read/write/fd stuff
+#include <sys/stat.h>
+#include <fcntl.h>
+
+// utils
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,10 +30,13 @@
 #include <map>
 
 #include "Exception.hpp"
+#include "get_next_line.hpp"
+
+// server
 #include "Server.hpp"
 #include "ServerResponse.hpp"
 #include "ClientRequest.hpp"
 
-//#define CONFIG_FILE /path/to/config
+#define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"
 
 #endif

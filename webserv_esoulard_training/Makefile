@@ -1,31 +1,37 @@
-##################### INCLUDES FILES ########################
-INCLUDES	= webserv.h Exception.hpp Server.hpp ClientRequest.hpp ServerResponse.hpp
-INC_DIR		= ./
-INCLUDES 	:= $(addprefix ${INC_DIR}, ${INCLUDES})
+##################### SERVER INCLUDES #######################
+SERV_INC		= webserv.h Server.hpp ClientRequest.hpp ServerResponse.hpp
+SERV_INC_DIR 	= ./
+SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
 
+##################### UTILS INCLUDES ########################
+UTIL_INC		= Exception.hpp get_next_line.hpp
+UTIL_INC_DIR 	= ./utils/
+UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
+#############################################################
 
 ######################### SRC FILES #########################
-SRCS		= main.cpp Server.cpp ClientRequest.cpp
-SRC_DIR		= ./
-SRCS 		:= $(addprefix ${SRC_DIR}, ${SRCS})
+SRCS			= main.cpp Server.cpp ClientRequest.cpp
+SRCS_DIR		= ./
+SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
+#############################################################
 
-# INC_TEST 	= tests.hpp
-# INC_TDIR	= tests/
-# INC_TEST	:= $(addprefix ${INC_TDIR}, ${INC_TEST})
+######################### SRC UTILS #########################
+SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp
+SRCS_UTILS_DIR	= ./utils/
+SRCS_UTILS 		:= $(addprefix ${SRCS_UTILS_DIR}, ${SRCS_UTILS})
 #############################################################
 
 ################# GROUPING ALL SRCS/INCLUDES ################
-# SRCS 			+= ${SRC_TEST}
+SRCS 			+= ${SRCS_UTILS}
 OBJS			= ${SRCS:.cpp=.o}
-# INCLUDES		= ${INC_CONT} ${INC_UTILS} ${INC_TEST}
-# INC_DIRS 		= $(addprefix -I,${INC_UDIR} ${INC_TDIR} ${INC_CDIR})
+INCLUDES		= ${SERV_INC} ${UTIL_INC}
+INC_DIRS 		= $(addprefix -I,${SERV_INC_DIR} ${UTIL_INC_DIR})
 #############################################################
 
 CPP			= clang++
 CFLAGS		= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fno-omit-frame-pointer 
 NAME		= webserv
-
 
 .cpp.o:		${SRCS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -c $^ -o ${<:.cpp=.o}

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/09 17:56:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/10 17:17:12 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,17 +40,19 @@
 class Server {
 
     public:
-        Server();
+        Server(std::string &config);
         ~Server();
 
-        void init_server();
-        void parse_config();
+        void init_server(std::string &config);
+        void parse_config(std::string &config);
 
         void parse_request();
         void format_response();
         void handle_connection();
 
     private:
+        std::string _config_file;
+
         int         _server_fd;
         int         _reuse;
         sockaddr_in _address;

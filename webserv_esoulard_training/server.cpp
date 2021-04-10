@@ -6,25 +6,47 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/09 17:58:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/10 18:25:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server() { init_server(); };
+Server::Server(std::string &config) { init_server(config); };
 Server::~Server() {};
 
-void Server::parse_config() {
+void Server::parse_config(std::string &config) {
     /*
-        if (open(CONFIG_FILE) < 0)
+        if (open(CONFIG_FILE) > 0)
         read stuff from config file
         set the relevant Server function members
         (see subject AND COMPARE WITH NGINX BEHAVIOUR FOR PARSING GUIDELINES)
     */
+    int config_fd;
+    FD_ZERO (&config_fd);
+    if ((config_fd = open(config.c_str(), O_RDONLY)) < 0)
+        throw Exception("Couldn't open configuration file " + config);
+    
+    FD_SET (config_fd, &this->_active_fd_set);
+    if (select(FD_SETSIZE, &this->_active_fd_set, NULL, NULL, NULL) < 0)
+        throw Exception("select error");
+
+    char *line;
+    int index;
+    while (get_next_line(config_fd, &line) > 0) {
+        // std::cout << line << std::endl;
+        //TREAT EACH LINE HERE
+        index = -1;
+        while (line && line[++index]) {
+            pass_spaces(line, index);
+        }
+        
+        free (line);
+    }
+    close (config_fd);
 };
 
-void Server::init_server() {
+void Server::init_server(std::string &config) {
 
     /*
     ** 1) CREATE A SOCKET
@@ -35,7 +57,7 @@ void Server::init_server() {
     ** protocol = in case the type chosen offers several protocols to chose from. But virtual circuit service offers only one form
     */
 
-   this->parse_config();
+   this->parse_config(config);
    
     if ((this->_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         throw Exception("socket error");
