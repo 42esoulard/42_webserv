@@ -115,6 +115,38 @@ if a field doesnt have the right nb of arguments, = DON'T LAUNCH
 
             - server_name : can be present or not. Can contain 1 or several names
 
+            - error_page 404 /404.html (error code then error page file). 
+                if there isnt exactly 2 arguments >> ERROR
+                if error code isnt between 300 and 599 >> ERROR
+
+            - client_max_body_size can be in bytes, or with k for kilobytes or M for 
+            megabytes or with G for gigabytes.
+                ->>> need conversion function
+                ->>> don't set it too large or you might have a security issue (ddos possible)
+            
+            - location /images/ {
+                root /data/www;
+            }
+                - limit_except GET {
+                    deny  all;
+                }
+                to limit which methods are allowed on this route. Here, only GET is allowed.
+               
+                - autoindex off
+                to disable directory listing
+
+                - proxy_pass alternative_file.html
+                    If location is requested, send file instead
+
+                - root /etc/blabla;
+                location path will be an alias for root path.
+                    location /i/ {
+                        root /data/w3;
+                    }
+                    The /data/w3/i/top.gif file will be sent in response to the “/i/top.gif” request.
+}
+
+
 if line doesn't end with ; = DON'T LAUNCH
 if a { is dangling = DON'T LAUNCH
 http {} can be empty, no problem
