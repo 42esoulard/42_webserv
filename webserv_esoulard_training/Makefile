@@ -5,7 +5,7 @@ SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
 
 ##################### UTILS INCLUDES ########################
-UTIL_INC		= Exception.hpp get_next_line.hpp
+UTIL_INC		= Exception.hpp utils.hpp
 UTIL_INC_DIR 	= ./utils/
 UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
 #############################################################
@@ -17,7 +17,7 @@ SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
 #############################################################
 
 ######################### SRC UTILS #########################
-SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp
+SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp
 SRCS_UTILS_DIR	= ./utils/
 SRCS_UTILS 		:= $(addprefix ${SRCS_UTILS_DIR}, ${SRCS_UTILS})
 #############################################################

@@ -6,11 +6,11 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:44:34 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 12:06:20 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 16:01:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.hpp"
+#include "utils.hpp"
 
 char	*ft_strjoin(char *s1, char *s2) {
 	

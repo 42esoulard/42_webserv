@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 12:23:06 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 17:02:37 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Server {
 
         void init_server(std::string &config);
         void parse_config(std::string &config);
+        void print_config(); //DEV UTIL
 
         void parse_request();
         void format_response();
@@ -64,17 +65,28 @@ class Server {
         int         _cur_socket;
 
         //configuration info
-        std::map<std::string, std::list<std::string> > _conf;
-        // ^^^ this will contain this vvv
         
-        // std::string _server_host;
-        // std::string _server_port;
-        // std::string _default_error_file;
-        // std::string _max_client_body;
-        // std::string _accept_methods;
-        // std::string _search_dir;
-        // std::string _dir_listing;
-        // std::string _cgi_ext;
+        typedef struct      t_conf {
+
+            std::map <std::string, std::list <std::string > >               serv_info;
+            // std::string                 server_host;
+            // std::string                 server_port;
+            // std::list<std::string>      server_name;
+            //------------------------------------------------------------------------
+
+            std::list <std::map <std::string, std::list <std::string > > >  locations;
+            //     std::list<std::string>      path;
+            //     std::list<std::string>      extensions;
+            //     std::list<std::string>      accept_methods;
+            //     std::list<std::string>      root;
+            //     std::list<std::string>      autoindex;
+            //     std::list<std::string>      default_error;
+            //------------------------------------------------------------------------
+            long int client_max_body_size;
+ 
+        }                   s_conf;
+
+        std::list <Server::s_conf > _conf;
 };
 
 #endif

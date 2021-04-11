@@ -6,11 +6,11 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:26:24 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 18:02:06 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 15:50:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.hpp"
+#include "utils.hpp"
 
 char	*give_it_back(char *str, char **line) {
 	
