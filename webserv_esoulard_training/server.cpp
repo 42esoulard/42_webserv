@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 17:05:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 17:10:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ void Server::print_config() {
         }
         ++server_it;
     }
+    std::cout << "-----------------------" << std::endl;
 }
 
 void Server::parse_config(std::string &config) {
