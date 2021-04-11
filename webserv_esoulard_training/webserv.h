@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 18:03:42 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 12:01:23 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <map>
+#include <list>
 
 #include "Exception.hpp"
 #include "get_next_line.hpp"

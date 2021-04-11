@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 18:25:38 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 12:23:12 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,11 @@
 
 Server::Server(std::string &config) { init_server(config); };
 Server::~Server() {};
+
+std::string get_conf_token(char *line, int &index) {
+    pass_spaces(line, index);
+
+}
 
 void Server::parse_config(std::string &config) {
     /*
@@ -37,9 +42,13 @@ void Server::parse_config(std::string &config) {
         // std::cout << line << std::endl;
         //TREAT EACH LINE HERE
         index = -1;
+        std::string field = get_conf_token(line, index);
         while (line && line[++index]) {
-            pass_spaces(line, index);
+            this->_conf[field].push_back(get_conf_token(line, index));
+            //pass_spaces(line, index);
         }
+
+
         
         free (line);
     }

@@ -144,6 +144,8 @@ if a field doesnt have the right nb of arguments, = DON'T LAUNCH
                         root /data/w3;
                     }
                     The /data/w3/i/top.gif file will be sent in response to the “/i/top.gif” request.
+
+                - types : list of mime types
 }
 
 

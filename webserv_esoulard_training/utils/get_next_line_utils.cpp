@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:44:34 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 18:25:55 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 12:06:20 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ bool is_space(char a) {
 	return false;
 }
 
-int pass_spaces(char *line, int index) {
+int pass_spaces(char *line, int &index) {
 	
 	if (!line)
 		return index;

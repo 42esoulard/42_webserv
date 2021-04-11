@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 17:17:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/11 12:23:06 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ class Server {
         int         _cur_socket;
 
         //configuration info
-        std::map<std::string, std::string> _conf;
+        std::map<std::string, std::list<std::string> > _conf;
         // ^^^ this will contain this vvv
         
         // std::string _server_host;
