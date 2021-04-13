@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 15:51:04 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 14:34:41 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@
 #include "utils.hpp"
 
 // server
+#include "Config.hpp"
 #include "Server.hpp"
 #include "ServerResponse.hpp"
 #include "ClientRequest.hpp"
+
 
 #define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"
 

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 10:31:38 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 14:24:39 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void Server::init_server(std::string &config) {
     ** protocol = in case the type chosen offers several protocols to chose from. But virtual circuit service offers only one form
     */
 
-   this->parse_config(config);
+   this->_conf.parse_config(config);
    
     if ((this->_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         throw Exception("socket error");

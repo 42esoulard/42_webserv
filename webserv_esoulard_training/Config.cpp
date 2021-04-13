@@ -6,21 +6,131 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/13 10:22:02 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 10:32:07 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 15:33:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
+//prints general info on a specific server block
+void Config::print_server_info(std::list<Config::t_conf>::iterator &server_it) {
 
+    std::cout << "----SERVER GENERAL INFO----"<< std::endl;
+
+    t_content_map::iterator serv_info_it;
+    std::list<std::string>::iterator content_it;
+
+    //printing server content
+    serv_info_it = (*server_it).serv_info.begin();
+    while (serv_info_it != (*server_it).serv_info.end()) {
+        content_it = serv_info_it->second.begin();
+        std::cout << "KEY [" << serv_info_it->first << "]" << std::endl;
+        while (content_it != serv_info_it->second.end()) {
+            std::cout << "VALUE [" << *content_it << "]" << std::endl;
+            ++content_it;
+        }
+        ++serv_info_it;
+    }
+}
+
+//prints all the contents of _conf
+void Config::print_server_locations(std::list<Config::t_conf>::iterator &server_it) {
+
+    std::cout << "----SERVER LOCATIONS INFO----"<< std::endl;
+
+    std::list <t_content_map>::iterator loc_it;
+    t_content_map::iterator             loc_info_it;
+    std::list<std::string>::iterator    content_it;
+
+    int index = 0;
+    //printing locations content
+    loc_it = (*server_it).locations.begin();
+    while (loc_it != (*server_it).locations.end()) {
+        loc_info_it = (*loc_it).begin();
+
+        std::cout << "----LOCATION " << index++ << "----" << std::endl;
+
+        while (loc_info_it != (*loc_it).end()) {
+            content_it = loc_info_it->second.begin();
+            std::cout << "KEY [" << loc_info_it->first << "]" << std::endl;
+            
+            while (content_it != loc_info_it->second.end()) {
+                std::cout << "VALUE [" << *content_it << "]" << std::endl;
+                ++content_it;
+            }
+            ++loc_info_it;
+        }
+        ++loc_it;
+    }
+}
+
+//prints all the contents of _conf
+void Config::print_config() {
+
+    std::cout << "----CONFIG----"<< std::endl;
+    
+    std::list<Config::t_conf>::iterator server_it = _server_list.begin();
+    int index = 0;
+    while (server_it != _server_list.end()) {
+        std::cout << "------------------------SERVER " << index++ << "------------------------" << std::endl;
+        //printing server content
+        print_server_info(server_it);
+
+        //printing locations content
+        print_server_locations(server_it);
+        ++server_it;
+    }
+    std::cout << "-----------------------" << std::endl;
+}
+
+void Config::parse_field(std::string &field, std::string &config) {
+    if (field == "server") {
+            
+            if (get_conf_token(_line, _index) != "{" || get_conf_token(_line, _index) != "")
+                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+            if (_in_server)
+                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": already in a server context!");
+            s_conf new_conf;
+            _server_list.push_back(new_conf);
+            _in_server = true;
+    }
+    else if (field == "location") {
+            
+        if (_in_location)
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": already in a location context!");
+        
+        std::map <std::string, std::list <std::string > > new_loc;
+        _server_list.back().locations.push_back(new_loc);
+        _in_location = true;
+            
+        std::string tmp;
+        if ((tmp = get_conf_token(_line, _index)) == "" || tmp == "{")
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + "location needs a path");
+        _server_list.back().locations.back()["path"].push_back(tmp);
+        while ((tmp = get_conf_token(_line, _index)) != "{" && tmp != "")
+            _server_list.back().locations.back()["extensions"].push_back(tmp);
+        if (tmp != "{" || get_conf_token(_line, _index) != "")
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+    }
+    else if (field == "}") {
+        
+        if (_in_location)
+            _in_location = false;
+        else if (_in_server)
+            _in_server = false;
+        if (get_conf_token(_line, _index) != "")
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+    }
+}
+
+// simply parses spaces and returns the next non space character sequence
 std::string Config::get_conf_token(char *line, int &index) {
 
     pass_spaces(line, index);
-    
     if (line && !line[index])
         return "";
+
     int start = index;
-    //std::cout << line << "|" << index << std::endl;
     while (line && line[index] && !is_space(line[index]))
         ++index;
     if (index > 0 && line[index - 1] == ';')
@@ -29,122 +139,92 @@ std::string Config::get_conf_token(char *line, int &index) {
 
 }
 
-//prints all the contents of _conf
-void Config::print_config() {
-
-    std::cout << "----CHECKS----"<< std::endl;
-
-    std::list<Server::s_conf>::iterator server_it = _conf.begin();
-    std::list<std::string>::iterator list_it;
-    std::map <std::string, std::list <std::string > >::iterator serv_info_it;
-    std::list <std::map <std::string, std::list <std::string > > >::iterator loc_it;
-    std::map <std::string, std::list <std::string > >::iterator loc_info_it;
-
-    while (server_it != _conf.end()) {
-        //printing server content
-        serv_info_it = (*server_it).serv_info.begin();
-        while (serv_info_it != (*server_it).serv_info.end()) {
-            list_it = serv_info_it->second.begin();
-            std::cout << "KEY [" << serv_info_it->first << "]" << std::endl;
-            while (list_it != serv_info_it->second.end()) {
-                std::cout << "VALUE [" << *list_it << "]" << std::endl;
-                ++list_it;
-            }
-            ++serv_info_it;
-        }
-        //printing locations content
-        loc_it = (*server_it).locations.begin();
-        while (loc_it != (*server_it).locations.end()) {
-            loc_info_it = (*loc_it).begin();
-            while (loc_info_it != (*loc_it).end()) {
-                list_it = loc_info_it->second.begin();
-                std::cout << "KEY [" << loc_info_it->first << "]" << std::endl;
-                while (list_it != loc_info_it->second.end()) {
-                    std::cout << "VALUE [" << *list_it << "]" << std::endl;
-                    ++list_it;
-                }
-                ++loc_info_it;
-            }
-            ++loc_it;
-        }
-        ++server_it;
+void Config::parse_values(std::string &field, std::string &config) {
+    
+    while (_line && _line[_index] && _line[_index] != ';') {
+    
+        if (_in_server && _in_location)
+            _server_list.back().locations.back()[field].push_back(get_conf_token(_line, _index));
+        else if (_in_server)
+            _server_list.back().serv_info[field].push_back(get_conf_token(_line, _index));
+        else 
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": fields must be in a context");
+        if (_line[_index] == ';' && get_conf_token(_line, _index) != "")
+            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
     }
-    std::cout << "-----------------------" << std::endl;
 }
 
 void Config::parse_config(std::string &config) {
 
-    int config_fd;
-    FD_ZERO (&config_fd);
-    if ((config_fd = open(config.c_str(), O_RDONLY)) < 0)
+    FD_ZERO (&_config_fd);
+    if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
     
-    FD_SET (config_fd, &this->_active_fd_set);
-    if (select(FD_SETSIZE, &this->_active_fd_set, NULL, NULL, NULL) < 0)
+    fd_set active_fd_set;
+    FD_SET (_config_fd, &active_fd_set);
+    if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
         throw Exception("select error");
 
-    char *line;
-    int index;
-    bool in_location = false;
-    bool in_server = false;
-    int line_nb = 0;
+    _in_location = false;
+    _in_server = false;
+    _line_nb = 0;
     std::string field;
-    while (get_next_line(config_fd, &line) > 0) {
+    while (get_next_line(_config_fd, &_line) > 0) {
 
-        ++line_nb;
-        index = 0;
-        
-        field = get_conf_token(line, index);
+        ++_line_nb;
+        _index = 0;
 
-        if (field == "server") {
-            
-            if (get_conf_token(line, index) != "{" || get_conf_token(line, index) != "")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb));
-            if (in_server)
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb) + ": already in a server context!");
-            s_conf new_conf;
-            _conf.push_back(new_conf);
-            in_server = true;
-        }
-        else if (field == "location") {
-            
-            if (in_location)
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb) + ": already in a location context!");
-            
-            std::map <std::string, std::list <std::string > > new_loc;
-            _conf.back().locations.push_back(new_loc);
-            in_location = true;
-            
-            std::string tmp;
-            if ((tmp = get_conf_token(line, index)) == "" || tmp == "{")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb) + "location needs a path");
-            _conf.back().locations.back()["path"].push_back(tmp);
-            while ((tmp = get_conf_token(line, index)) != "{" && tmp != "")
-                _conf.back().locations.back()["extensions"].push_back(tmp);
-            if (tmp != "{" || get_conf_token(line, index) != "")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb));
-        }
-        else if (field == "}") {
-            if (in_location)
-                in_location = false;
-            else if (in_server)
-                in_server = false;
-            if (get_conf_token(line, index) != "")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb));
-        }
-        while (line && line[index] && line[index] != ';') {
-            
-            if (in_server && in_location)
-                _conf.back().locations.back()[field].push_back(get_conf_token(line, index));
-            else if (in_server)
-                _conf.back().serv_info[field].push_back(get_conf_token(line, index));
-            else 
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb) + ": fields must be in a context");
-            if (line[index] == ';' && get_conf_token(line, index) != "")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(line_nb));
-        }
-        free (line);
+        parse_field((field = get_conf_token(_line, _index)), config);
+        parse_values(field, config);
+
+        free (_line);
     }
-    close (config_fd);
-    //print_config(); //prints all the contents of _conf
+    close (_config_fd);
+    print_config(); //prints all the contents of _conf
+};
+
+// find a server with one of its names, NOT TESTED YET
+Config::t_conf *Config::get_server_conf_by_name(std::string &searched_name) {
+
+    std::list<Config::t_conf>::iterator         server_it = _server_list.begin(); 
+    std::list<std::string>::iterator    content_it;
+
+    while (server_it != _server_list.end()) {
+
+        content_it = (*server_it).serv_info["server_name"].begin();
+        while (content_it != (*server_it).serv_info["server_name"].end()) {
+                    
+            if (*content_it == searched_name)
+                return &(*server_it);
+            ++content_it;
+        }
+        ++server_it;
+    } 
+    return NULL;
+};
+
+Config::t_conf  *Config::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
+
+    std::list<t_conf>::iterator         server_it = _server_list.begin(); 
+    std::list<std::string>::iterator    host_it;
+    std::list<std::string>::iterator    port_it;
+
+    while (server_it != _server_list.end()) {
+
+        host_it = (*server_it).serv_info["server_host"].begin();
+        while (host_it != (*server_it).serv_info["server_host"].end()) {
+                    
+            if (*host_it == searched_host) {   
+                port_it = (*server_it).serv_info["server_port"].begin();
+                while (port_it != (*server_it).serv_info["server_port"].end()) {
+                            
+                    if (*port_it == searched_port)
+                        return &(*server_it);
+                }
+            }
+            ++host_it;
+        }
+        ++server_it;
+    } 
+    return NULL;
 };

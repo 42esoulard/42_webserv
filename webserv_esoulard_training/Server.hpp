@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 11:49:16 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 15:36:28 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ class Server {
         int         _cur_socket;
 
         //configuration info
-        
-        std::list<Config> _conf;
+
+        Config _conf;
 
         //     std::map <std::string, std::list <std::string > >               serv_info;
         //     // std::string                 server_host;
@@ -83,10 +83,7 @@ class Server {
         //     long int client_max_body_size;
  
         
-        // ESTELLE FROM THE FUTURE: please make s_conf a Class, not only a structure. 
-        // This way you can put config parsing relevant functions in there (ie parse_config() 
-        // && print_config()) and have a cleaner setup. Marie Kondo it up.
-        // - divide parse_config() into small specific functions. 
+        // ESTELLE FROM THE FUTURE: 
         // - add another function that'll run at the end of parse_config to check if parameter number is correct for each field,
         // and when possible if value formatting seems ok
         // - save mime.types in a map somewhere
