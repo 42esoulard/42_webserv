@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 17:19:35 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 11:49:16 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,6 @@ class Server {
         ~Server();
 
         void init_server(std::string &config);
-        void parse_config(std::string &config);
-        void print_config(); //DEV UTIL
 
         void parse_request();
         void format_response();
@@ -66,27 +64,24 @@ class Server {
 
         //configuration info
         
-        typedef struct      t_conf {
+        std::list<Config> _conf;
 
-            std::map <std::string, std::list <std::string > >               serv_info;
-            // std::string                 server_host;
-            // std::string                 server_port;
-            // std::list<std::string>      server_name;
-            //------------------------------------------------------------------------
+        //     std::map <std::string, std::list <std::string > >               serv_info;
+        //     // std::string                 server_host;
+        //     // std::string                 server_port;
+        //     // std::list<std::string>      server_name;
+        //     //------------------------------------------------------------------------
 
-            std::list <std::map <std::string, std::list <std::string > > >  locations;
-            //     std::list<std::string>      path;
-            //     std::list<std::string>      extensions;
-            //     std::list<std::string>      accept_methods;
-            //     std::list<std::string>      root;
-            //     std::list<std::string>      autoindex;
-            //     std::list<std::string>      default_error;
-            //------------------------------------------------------------------------
-            long int client_max_body_size;
+        //     std::list <std::map <std::string, std::list <std::string > > >  locations;
+        //     //     std::list<std::string>      path;
+        //     //     std::list<std::string>      extensions;
+        //     //     std::list<std::string>      accept_methods;
+        //     //     std::list<std::string>      root;
+        //     //     std::list<std::string>      autoindex;
+        //     //     std::list<std::string>      default_error;
+        //     //------------------------------------------------------------------------
+        //     long int client_max_body_size;
  
-        }                   s_conf;
-
-        std::list <Server::s_conf > _conf;
         
         // ESTELLE FROM THE FUTURE: please make s_conf a Class, not only a structure. 
         // This way you can put config parsing relevant functions in there (ie parse_config() 
