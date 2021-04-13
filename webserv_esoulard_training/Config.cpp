@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/13 10:22:02 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 15:33:30 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 17:19:12 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,10 +131,9 @@ std::string Config::get_conf_token(char *line, int &index) {
         return "";
 
     int start = index;
-    while (line && line[index] && !is_space(line[index]))
+    while (line && line[index] && !is_space(line[index]) && line[index] != ';')
         ++index;
-    if (index > 0 && line[index - 1] == ';')
-        --index;
+    
     return std::string(&line[start], index - start);
 
 }
@@ -153,6 +152,40 @@ void Config::parse_values(std::string &field, std::string &config) {
             throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
     }
 }
+
+void    Config::check_conf(std::string &config) {
+
+    std::list<t_conf>::iterator         server_it = _server_list.begin(); 
+    std::list<t_content_map>::iterator  locations_it;  
+
+    t_content_map::iterator             serv_info_it;
+    t_content_map::iterator             loc_info_it;
+
+    while (server_it != _server_list.end()) { //iterate on each server block
+
+        serv_info_it = (*server_it).serv_info.begin();
+        while (serv_info_it != (*server_it).serv_info.end()) {
+            // check that except in the case of server_name, we don't accept more than 1 param
+            // MAYBE SEVERAL PORTS ARE OK, NOT SURE. IN THIS CASE, ADD ANOTHER EXCEPTION FOR server_port
+            if (serv_info_it->second.size() != 1 && serv_info_it->first != "server_name")
+                throw Exception("Config file " + config + ": " + serv_info_it->first + "wrong number of parameters");
+            ++serv_info_it;
+        }
+
+        locations_it = (*server_it).locations.begin();
+        while (locations_it != (*server_it).locations.end()) {
+            loc_info_it = (*locations_it).begin();
+            while (loc_info_it != (*locations_it).end()) {
+                if (loc_info_it->second.size() != 1 && loc_info_it->first != "accept_methods")
+                    throw Exception("Config file " + config + ": " + loc_info_it->first + ": wrong number of parameters");
+                ++loc_info_it;
+            }
+            ++locations_it;
+        }
+        ++server_it;
+    } 
+    // WE WILL STILL NEED TO CHECK EACH PARAMETER'S VALIDITY UPON USING IT.
+};
 
 void Config::parse_config(std::string &config) {
 
@@ -181,6 +214,7 @@ void Config::parse_config(std::string &config) {
     }
     close (_config_fd);
     print_config(); //prints all the contents of _conf
+    check_conf(config);
 };
 
 // find a server with one of its names, NOT TESTED YET

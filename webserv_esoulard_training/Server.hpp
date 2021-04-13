@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 15:36:28 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 17:09:51 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,6 @@ class Server {
  
         
         // ESTELLE FROM THE FUTURE: 
-        // - add another function that'll run at the end of parse_config to check if parameter number is correct for each field,
-        // and when possible if value formatting seems ok
         // - save mime.types in a map somewhere
         // - replace default values in init_server with the proper _conf ones
 };

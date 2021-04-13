@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/13 10:22:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 15:35:21 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/13 16:54:45 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ class Config {
         std::string get_conf_token(char *line, int &index);
         void        parse_field(std::string &field, std::string &config);
         void        parse_values(std::string &field, std::string &config);
+        void        check_conf(std::string &config);
+
         void        print_config(); //DEV UTIL
         void        print_server_info(std::list<Config::t_conf>::iterator &server_it); //DEV UTIL
         void        print_server_locations(std::list<Config::t_conf>::iterator &server_it); // DEV UTIL
@@ -77,6 +79,8 @@ class Config {
         Config::t_conf  *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
 
 };
+
+#endif
 
 //TO ACCESS ELEMENTS:
 //  
@@ -130,5 +134,3 @@ class Config {
 //                                                                          key - val - val - val
 //                                                                          key - val
 // etc etc
-
-#endif
