@@ -1,5 +1,5 @@
 ##################### SERVER INCLUDES #######################
-SERV_INC		= webserv.h Server.hpp ClientRequest.hpp ServerResponse.hpp
+SERV_INC		= webserv.h Server.hpp ClientRequest.hpp ServerResponse.hpp Config.hpp
 SERV_INC_DIR 	= ./
 SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
@@ -11,7 +11,7 @@ UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
 #############################################################
 
 ######################### SRC FILES #########################
-SRCS			= main.cpp Server.cpp ClientRequest.cpp
+SRCS			= main.cpp Server.cpp ClientRequest.cpp Config.cpp
 SRCS_DIR		= ./
 SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
 #############################################################
