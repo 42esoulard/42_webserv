@@ -1,6 +1,15 @@
 # 42_webserv
 42's webserv, team rturcey-esoulard! [04/2021] [Ubuntu18]
 
+**[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
+  - git branch my_branch
+  - git checkout my_branch
+  - do your commits
+  - git checkout master
+  - git pull               # to update the state to the latest remote master state
+  - git merge my_branch      # to bring changes to local master from your develop branch
+  - git push origin main
+
 **GOAL**: write a HTTP server in C++ 98, compliant with rfc 7230 to 7235 (http 1.1)
 When in doubt, compare program behaviour with nginx.
 
