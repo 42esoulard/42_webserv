@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 12:07:29 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/13 12:07:34 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
     int sock = 0; 
     long valread;
     struct sockaddr_in serv_addr;
-    char hello[] = "Hello from client";
+    char hello[] = "GET / HTTP/1.1\nHost: blabla\nAccept-Language: en";
     char buffer[1024] = {0};
 
     // client opens his socket
