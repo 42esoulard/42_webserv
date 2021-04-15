@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/13 10:22:02 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 17:19:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/15 16:39:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,10 @@ void    Config::check_conf(std::string &config) {
             }
             ++locations_it;
         }
+        if ((*server_it).serv_info.find("server_host") == (*server_it).serv_info.end())
+            (*server_it).serv_info["server_host"] = "127.0.0.1";
+        if ((*server_it).serv_info.find("server_port") == (*server_it).serv_info.end())
+            (*server_it).serv_info["server_port"] = "80";
         ++server_it;
     } 
     // WE WILL STILL NEED TO CHECK EACH PARAMETER'S VALIDITY UPON USING IT.
@@ -192,11 +196,6 @@ void Config::parse_config(std::string &config) {
     FD_ZERO (&_config_fd);
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
-    
-    fd_set active_fd_set;
-    FD_SET (_config_fd, &active_fd_set);
-    if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
-        throw Exception("select error");
 
     _in_location = false;
     _in_server = false;
@@ -218,7 +217,37 @@ void Config::parse_config(std::string &config) {
 };
 
 // find a server with one of its names, NOT TESTED YET
-Config::t_conf *Config::get_server_conf_by_name(std::string &searched_name) {
+
+// (1) by address
+Config::t_conf  *Config::get_server_conf(std::string &searched_host, std::string &searched_port) {
+
+    std::list<Config::t_conf>::iterator         server_it = _server_list.begin(); 
+    std::list<std::string>::iterator    host_it;
+    std::list<std::string>::iterator    port_it;
+
+    while (server_it != _server_list.end()) {
+
+        host_it = (*server_it).serv_info["server_host"].begin();
+        while (host_it != (*server_it).serv_info["server_host"].end()) {
+                    
+            if (*host_it == searched_host) {   
+                port_it = (*server_it).serv_info["server_port"].begin();
+                while (port_it != (*server_it).serv_info["server_port"].end()) {
+                            
+                    if (*port_it == searched_port)
+                        return &(*server_it);
+                    ++port_it;
+                }
+            }
+            ++host_it;
+        }
+        ++server_it;
+    } 
+    return NULL;
+};
+
+// (2) by name
+Config::t_conf *Config::get_server_conf(std::string &searched_name) {
 
     std::list<Config::t_conf>::iterator         server_it = _server_list.begin(); 
     std::list<std::string>::iterator    content_it;
@@ -237,28 +266,101 @@ Config::t_conf *Config::get_server_conf_by_name(std::string &searched_name) {
     return NULL;
 };
 
-Config::t_conf  *Config::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
+// (1) by address
+Config::t_content_map *Config::get_serv_location(std::string &server_host, std::string &server_port, std::string &location) {
 
-    std::list<t_conf>::iterator         server_it = _server_list.begin(); 
-    std::list<std::string>::iterator    host_it;
-    std::list<std::string>::iterator    port_it;
+    Config::t_conf *server_conf = get_server_conf(server_host, server_port);
+    if (!server_conf)
+        return NULL;
+    std::list <t_content_map>::iterator loc_it;
+    std::list<std::string>::iterator    content_it;
+    
+    loc_it = server_conf->locations.begin();
+    while (loc_it != server_conf->locations.end()) {
+        content_it = (*loc_it)["path"].begin();
 
-    while (server_it != _server_list.end()) {
-
-        host_it = (*server_it).serv_info["server_host"].begin();
-        while (host_it != (*server_it).serv_info["server_host"].end()) {
-                    
-            if (*host_it == searched_host) {   
-                port_it = (*server_it).serv_info["server_port"].begin();
-                while (port_it != (*server_it).serv_info["server_port"].end()) {
-                            
-                    if (*port_it == searched_port)
-                        return &(*server_it);
-                }
-            }
-            ++host_it;
+        while (content_it != (*loc_it)["path"].end()) {
+            if (*content_it == location)
+                return &(*loc_it);
+            ++content_it;
         }
-        ++server_it;
-    } 
+        ++loc_it;
+    }
     return NULL;
+};
+
+// (2) by name
+Config::t_content_map *Config::get_serv_location(std::string &server_name, std::string &location) {
+
+    Config::t_conf *server_conf = get_server_conf(server_name);
+    if (!server_conf)
+        return NULL;
+
+    std::list <t_content_map>::iterator loc_it;
+    std::list<std::string>::iterator    content_it;
+    
+    loc_it = server_conf->locations.begin();
+    while (loc_it != server_conf->locations.end()) {
+        content_it = (*loc_it)["path"].begin();
+
+        while (content_it != (*loc_it)["path"].end()) {
+            if (*content_it == location)
+                return &(*loc_it);
+            ++content_it;
+        }
+        ++loc_it;
+    }
+    return NULL;
+};
+
+// (1) by address
+std::list<std::string> *Config::get_location_field_content(std::string &server_host, std::string &server_port, std::string &location_path, std::string &field) {
+
+    Config::t_content_map *location = get_serv_location(server_host, server_port, location_path);
+    if (!location)
+        return NULL;
+
+    Config::t_content_map::iterator it = location->find(field);
+    if (it == location->end())
+        return NULL;
+        
+    return (&((*it).second));
+};
+
+// (2) by name
+std::list<std::string> *Config::get_location_field_content(std::string &server_name, std::string &location_path, std::string &field) {
+
+    Config::t_content_map *location = get_serv_location(server_name, location_path);
+    if (!location)
+        return NULL;
+
+    Config::t_content_map::iterator it = location->find(field);
+    if (it == location->end())
+        return NULL;
+
+    return (&((*it).second));
+};
+
+// (1) by address
+std::list<std::string> *Config::get_serv_field_content(std::string &server_host, std::string &server_port, std::string &field) {
+    
+    Config::t_conf *server_conf = get_server_conf(server_host, server_port);
+
+    Config::t_content_map::iterator it = server_conf->serv_info.find(field);
+    if (it == server_conf->serv_info.end())
+        return NULL;
+
+    return (&(*it).second);
+};
+
+// (2) by name
+std::list<std::string> *Config::get_serv_field_content(std::string &server_name, std::string &field) {
+
+    Config::t_conf *server_conf = get_server_conf(server_name);
+
+    Config::t_content_map::iterator it = server_conf->serv_info.find(field);
+    if (it == server_conf->serv_info.end())
+        return NULL;
+
+    return (&(*it).second);
 };

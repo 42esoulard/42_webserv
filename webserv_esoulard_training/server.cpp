@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 14:24:39 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/15 17:22:45 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,53 +28,58 @@ void Server::init_server(std::string &config) {
 
    this->_conf.parse_config(config);
    
-    if ((this->_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        throw Exception("socket error");
+    std::list<Config::t_conf>::iterator server = _conf.get_server_list().begin();
+    while (server != _conf.get_server_list().end()) {
 
-    // to allow for fast restart, otherwise binding fails because port is still in use from previous attempt
-    this->_reuse = 1;
-    if (setsockopt(this->_server_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&this->_reuse, sizeof(this->_reuse)) < 0)
-        throw Exception("setsockopt error");
-  
-    /*
-    ** 2) NAME A SOCKET
-    ** = assigning a transport address (= port) to the socket, the address with which we will access it.
-    **
-    ** This address is defined in a structure which is different depending on the communication type used. It contains info.
-    ** For IP, we use a sockaddr_in structure (netinet/in.h), which contains:
-    **  - sin_family: the address family (here, IPv4)
-    **  - sin_port: the transport address/port. Servers communicate the port to which clients can connect, clients just put 0.
-    **  - sin_addr: system address, leave it to default INADDR_ANY
-    ** int bind(int socket, const struct sockaddr *address, socklen_t address_len);
-    */
+        if ((this->_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            throw Exception("socket error");
 
-    memset((char *)&this->_address, 0, sizeof(this->_address));
-    this->_address.sin_family = AF_INET; // the IPv4 domain we used to open the socket
-    this->_address.sin_addr.s_addr = INADDR_ANY; 
-    this->_address.sin_port = htons(PORT); // htons() = short int to network
-    this->_address.sin_len = sizeof(this->_address); // just the size of the struct
-    memset(this->_address.sin_zero, '\0', sizeof(this->_address.sin_zero));
+        // to allow for fast restart, otherwise binding fails because port is still in use from previous attempt
+        this->_reuse = 1;
+        if (setsockopt(this->_server_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&this->_reuse, sizeof(this->_reuse)) < 0)
+            throw Exception("setsockopt error");
+    
+        /*
+        ** 2) NAME A SOCKET
+        ** = assigning a transport address (= port) to the socket, the address with which we will access it.
+        **
+        ** This address is defined in a structure which is different depending on the communication type used. It contains info.
+        ** For IP, we use a sockaddr_in structure (netinet/in.h), which contains:
+        **  - sin_family: the address family (here, IPv4)
+        **  - sin_port: the transport address/port. Servers communicate the port to which clients can connect, clients just put 0.
+        **  - sin_addr: system address, leave it to default INADDR_ANY
+        ** int bind(int socket, const struct sockaddr *address, socklen_t address_len);
+        */
 
-    // We bind our open socket with its new address
 
-    if (bind(this->_server_fd, (struct sockaddr *)&this->_address, this->_address.sin_len) < 0)
-        throw Exception("bind error");
+        memset((char *)&this->_address, 0, sizeof(this->_address));
+        this->_address.sin_family = AF_INET; // the IPv4 domain we used to open the socket
+        this->_address.sin_addr.s_addr = INADDR_ANY; 
+        this->_address.sin_port = htons(PORT); // htons() = short int to network
+        this->_address.sin_len = sizeof(this->_address); // just the size of the struct
+        memset(this->_address.sin_zero, '\0', sizeof(this->_address.sin_zero));
 
-    /*
-    ** 3) WAIT FOR A CONNECTION
-    ** int listen(int socket, int backlog)
-    ** Tells a socket that it should be capable of accepting incoming connections
-    ** backlog: maximum number of pending connections that can be queued up before connections are refused
-    */
+        // We bind our open socket with its new address
 
-    if (listen(this->_server_fd, 3) < 0) 
-        throw Exception("listen error");
-    /*
-    ** Initialize the set of active sockets. 
-    */
+        if (bind(this->_server_fd, (struct sockaddr *)&this->_address, this->_address.sin_len) < 0)
+            throw Exception("bind error");
 
-    FD_ZERO (&this->_active_fd_set);
-    FD_SET (this->_server_fd, &this->_active_fd_set);
+        /*
+        ** 3) WAIT FOR A CONNECTION
+        ** int listen(int socket, int backlog)
+        ** Tells a socket that it should be capable of accepting incoming connections
+        ** backlog: maximum number of pending connections that can be queued up before connections are refused
+        */
+
+        if (listen(this->_server_fd, 3) < 0) 
+            throw Exception("listen error");
+        /*
+        ** Initialize the set of active sockets. 
+        */
+
+        FD_ZERO (&this->_active_fd_set);
+        FD_SET (this->_server_fd, &this->_active_fd_set);
+    }
 };
 
 void Server::handle_connection(){
@@ -96,7 +101,7 @@ void Server::handle_connection(){
             }
             else {
                 /* Data arriving on an already-connected socket. */
-                    
+                //std::cout << "HERE" << std::endl;
                 this->parse_request();
                 this->format_response();
                     
@@ -111,6 +116,10 @@ void Server::handle_connection(){
         }
     }
 };
+// ESOULARD && RTURCEY FROM THE FUTURE:
+// in server.hpp, _conf should not only be _conf, but considered like a whole server. Server class is our server cluster.
+// in each _server (aka _conf), we should put _address and fd stuff. In init, iterate on each _server from _server_list.
+// same in handle_connection. Im tired.
 
 void Server::parse_request() {
 

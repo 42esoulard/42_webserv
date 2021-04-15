@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/13 10:22:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 16:54:45 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/15 16:40:05 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@
 #include "utils.hpp"
 
 class Config {
-    
-    private:
+
+    public:
         typedef std::map <std::string, std::list <std::string > >  t_content_map;
 
         typedef struct          s_conf {
@@ -45,6 +45,8 @@ class Config {
             //     std::list<std::string>      default_error;
             //------------------------------------------------------------------------
         }                       t_conf;
+    
+    private:
 
         std::list<Config::t_conf> _server_list;
 
@@ -67,6 +69,9 @@ class Config {
         void        parse_values(std::string &field, std::string &config);
         void        check_conf(std::string &config);
 
+        std::list<Config::t_conf>  get_server_list() { return _server_list; };
+
+
         void        print_config(); //DEV UTIL
         void        print_server_info(std::list<Config::t_conf>::iterator &server_it); //DEV UTIL
         void        print_server_locations(std::list<Config::t_conf>::iterator &server_it); // DEV UTIL
@@ -75,8 +80,18 @@ class Config {
         // std::map <std::string, std::list <std::string > >       &get_server_info(t_conf server) { return server.serv_info; };
         // std::list < Config::t_loc >                             &get_locations(t_conf server) { return server.locations; };
         
-        Config::t_conf *get_server_conf_by_name(std::string &searched_name);
-        Config::t_conf  *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
+        Config::t_conf *get_server_conf(std::string &searched_name);
+        Config::t_conf *get_server_conf(std::string &searched_host, std::string &searched_port);
+        
+        t_content_map *get_serv_location(std::string &server_host, std::string &server_port, std::string &location);
+        t_content_map *get_serv_location(std::string &server_name, std::string &location);
+
+        std::list<std::string> *get_location_field_content(std::string &server_host, std::string &server_port, std::string &location_path, std::string &field);
+        std::list<std::string> *get_location_field_content(std::string &server_name, std::string &location_path, std::string &field);
+        
+        std::list<std::string> *get_serv_field_content(std::string &server_host, std::string &server_port, std::string &field);
+        std::list<std::string> *get_serv_field_content(std::string &server_name, std::string &field);
+
 
 };
 
