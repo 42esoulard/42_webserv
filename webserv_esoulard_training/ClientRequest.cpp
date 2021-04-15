@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 15:46:09 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/15 17:09:16 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,13 +103,11 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
         // serv_response.error(error);
         return ;
     }
-    size_t                      found;
+    size_t  found;
     for (size_t i = 1 ; i < _vecRead.size() ; i++)
     {
-        std::cout << "HERE" << std::endl;
         if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
             save_header(_vecRead[i]);
     }
     print_map(_conf);
-     
 };
