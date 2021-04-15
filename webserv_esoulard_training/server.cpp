@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/13 14:24:39 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/15 15:47:19 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,6 @@ void Server::parse_request() {
     ** 5) SEND AND RECEIVE MESSAGES
     ** The same read and write system calls that work on files also work on sockets.
     */
-
     ClientRequest cli_request;
     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
     ServerResponse serv_response;
