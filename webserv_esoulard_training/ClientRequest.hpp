@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 17:08:06 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/16 12:34:06 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ class ClientRequest {
         bool    is_method(std::string &str);
         int     parse_method();
         void    save_header(std::string &str);
+        bool    parse_host();
+        bool    parse_language();
 
     private:
         char                _read[_MAXLINE];//to store our initial reading of the received request

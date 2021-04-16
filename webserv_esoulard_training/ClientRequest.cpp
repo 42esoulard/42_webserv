@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 17:09:16 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/16 12:34:19 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,21 @@ void    ClientRequest::save_header(std::string &str)
     }      
 }
 
+bool    ClientRequest::parse_host()
+{
+    std::map<std::string, std::string>::iterator    it = _conf.find("host");
+    if (it == _conf.end())
+        return (1);
+    if ((*it).second.find('/') > -1)
+        return (1);
+    return (0);
+}
+
+bool    ClientRequest::parse_language()
+{
+    
+}
+
 void    ClientRequest::parse_request(ServerResponse &serv_response) {
     //check if request format is good
     //if not >>> should we stop parsing here and start writing error response ? or keep parsing and recording the info we need.
@@ -94,20 +109,32 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     // std::string field("_protocol");
     // std::string protocol("HTTP/1.1");
     // serv_response.set_conf(field, protocol);
-    int     error;
     (void)serv_response;
     std::string     toRead(_read);
     _vecRead = split(toRead, '\n');
-    if ((error = parse_method()))
+    if (parse_method())
     {
-        // serv_response.error(error);
+        // serv_response.error(400);
         return ;
     }
     size_t  found;
+    // saving all headers in _conf
     for (size_t i = 1 ; i < _vecRead.size() ; i++)
     {
         if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
             save_header(_vecRead[i]);
     }
+    // checkinf if there is a "host"
+    if (parse_host())
+    {
+        // serv_response.error(400);
+        return ;
+    }
+    // now, parsing each header
+    // parse_charset();
+    // parse_language();
+    // parse_authorization();
+    // parse_referer();
+    // parse_userAgent();
     print_map(_conf);
 };
