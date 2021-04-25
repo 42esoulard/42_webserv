@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:45:52 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 16:51:32 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ bool       ClientRequest::is_method(std::string &str)
     {
         if (!str.compare(methods[i]))
         {
-            _conf["method"] = methods[i];
+            _conf["method"].push_back(methods[i]);
             return (1);
         }
     }
@@ -59,10 +59,10 @@ int       ClientRequest::parse_method()
     if (vec.size() != 3 || !is_method(vec[0]))
         return (400);
     // should we parse file now ?
-    _conf["file"] = vec[1];
+    _conf["file"].push_back(vec[1]);
     if (vec[2].compare("HTTP/1.1"))
         return (400);
-    _conf["protocol"] = vec[2];
+    _conf["protocol"].push_back(vec[2]);
     return (0);
 }
 
@@ -80,7 +80,7 @@ void    ClientRequest::save_header(std::string &str)
     {
         if (!vec[0].compare(_headers[i]))
         {
-            _conf[vec[0]] = vec[1];
+            _conf[vec[0]].push_back(vec[1]);
             return ;
         }
     }      
@@ -88,10 +88,10 @@ void    ClientRequest::save_header(std::string &str)
 
 bool    ClientRequest::parse_host()
 {
-    std::map<std::string, std::string>::iterator    it = _conf.find("host");
+    std::map<std::string, std::list<std::string> >::iterator    it = _conf.find("host");
     if (it == _conf.end())
         return (1);
-    if ((*it).second.find('/') > -1)
+    if ((*it).second.front().find('/') > -1)
         return (1);
     return (0);
 }
