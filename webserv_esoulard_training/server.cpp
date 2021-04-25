@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:37:14 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 15:46:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,68 +70,8 @@ void Server::init_server() {
     /*
     ** Initialize the set of active sockets. 
     */
-
-    
-    
+  
 };
-
-// void Server::handle_connection(){
-
-//     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
-//     this->_read_fd_set = this->_active_fd_set;
-
-//     if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
-//         throw Exception("select error");
-
-//     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
-//         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
-//             if (this->_cur_socket == this->_server_fd) {
-//                 /* Connection request on original socket. */
-//                 if ((this->_new_socket = accept(this->_server_fd, (struct sockaddr *)&this->_address, (socklen_t*)&this->_address.sin_len)) < 0)
-//                     throw Exception("accept error");
-//                 std::cerr << "Server: connect from host " << inet_ntoa (this->_address.sin_addr) << ", port " <<  ntohs (this->_address.sin_port) << std::endl;
-//                 FD_SET (this->_new_socket, &this->_active_fd_set);    
-//             }
-//             else {
-//                 /* Data arriving on an already-connected socket. */
-                    
-//                 this->parse_request();
-//                 this->format_response();
-                    
-//                 /*
-//                 ** 6) CLOSE THE SOCKET
-//                 ** The same close() that we use for files
-//                 */
-
-//                 close(this->_cur_socket);
-//                 FD_CLR (this->_cur_socket, &this->_active_fd_set);
-//             }
-//         }
-//     }
-// };
-
-// void Server::parse_request() {
-
-//     /*
-//     ** 5) SEND AND RECEIVE MESSAGES
-//     ** The same read and write system calls that work on files also work on sockets.
-//     */
-//     ClientRequest cli_request;
-//     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
-//     ServerResponse serv_response;
-//     cli_request.parse_request(serv_response);
-//     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl; 
-    
-//     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
-// };
-
-// void Server::format_response() {
-    
-//     // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
-//     char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-//     write(this->_cur_socket , hello , strlen(hello));
-//     std::cout << "[--- HELLO MSG SENT ---]" << std::endl;
-// };
 
 //prints general info on a specific server block
 void Server::print_server_info() {

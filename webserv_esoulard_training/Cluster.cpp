@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:38:00 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 15:48:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,6 @@ std::string Cluster::get_conf_token(char *line, int &index) {
         ++index;
     
     return std::string(&line[start], index - start);
-
 }
 
 void Cluster::parse_values(std::string &field, std::string &config) {
@@ -146,7 +145,7 @@ void Cluster::parse_values(std::string &field, std::string &config) {
 
 void    Cluster::check_conf(std::string &config) {
 
-    std::list<Server>::iterator         server_it = server_list.begin(); 
+    std::list<Server>::iterator                 server_it = server_list.begin(); 
     std::list<Server::t_content_map>::iterator  locations_it;  
 
     Server::t_content_map::iterator             serv_info_it;
@@ -188,8 +187,10 @@ void Cluster::handle_connection(){
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
+
             std::list<Server>::iterator server_it = server_list.begin();
             while (server_it != server_list.end()) {
+
                 if (this->_cur_socket == server_it->get_server_fd()) {
                     /* Connection request on original socket. */
                     if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&server_it->get_address(), (socklen_t*)&server_it->get_address().sin_len)) < 0)
@@ -237,7 +238,6 @@ void Cluster::format_response() {
     write(this->_cur_socket , hello , strlen(hello));
     std::cout << "[--- HELLO MSG SENT ---]" << std::endl;
 };
-
 
 // find a server with one of its names, NOT TESTED YET
 Server::t_conf *Cluster::get_server_conf_by_name(std::string &searched_name) {

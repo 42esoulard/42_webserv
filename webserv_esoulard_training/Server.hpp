@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:23:02 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 15:49:54 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,58 +62,25 @@ class Server {
 
         void init_server();
 
-        // void parse_request();
-        // void format_response();
-        // void handle_connection();
-        Server::t_conf &get_conf() { return _conf; }
-        Server::t_content_map &get_serv_info() { return _conf.serv_info; }
+        Server::t_conf              &get_conf() { return _conf; }
+        Server::t_content_map       &get_serv_info() { return _conf.serv_info; }
         std::list < t_content_map > &get_locations() {return _conf.locations;}
 
         void        print_server_info(); //DEV UTIL
         void        print_server_locations(); // DEV UTIL
 
-        
-        int &get_server_fd() { return _server_fd; }
-        sockaddr_in &get_address() { return _address; }
+        int         &get_server_fd()    { return _server_fd; }
+        sockaddr_in &get_address()      { return _address; }
 
     private:
-        // std::string _config_file;
         Server::t_conf  _conf;
 
         int             _server_fd;
         int             _reuse;
         sockaddr_in     _address;
 
-        //socket utils
-        // fd_set      _active_fd_set; 
-        // fd_set      _read_fd_set;
-        // int         _new_socket;
-        // int         _cur_socket;
-
-        //configuration info
-
-
-
-        //     std::map <std::string, std::list <std::string > >               serv_info;
-        //     // std::string                 server_host;
-        //     // std::string                 server_port;
-        //     // std::list<std::string>      server_name;
-        //     //------------------------------------------------------------------------
-
-        //     std::list <std::map <std::string, std::list <std::string > > >  locations;
-        //     //     std::list<std::string>      path;
-        //     //     std::list<std::string>      extensions;
-        //     //     std::list<std::string>      accept_methods;
-        //     //     std::list<std::string>      root;
-        //     //     std::list<std::string>      autoindex;
-        //     //     std::list<std::string>      default_error;
-        //     //------------------------------------------------------------------------
-        //     long int client_max_body_size;
- 
-        
         // ESTELLE FROM THE FUTURE: 
         // - save mime.types in a map somewhere
-        // - replace default values in init_server with the proper _conf ones
 };
 
 #endif
