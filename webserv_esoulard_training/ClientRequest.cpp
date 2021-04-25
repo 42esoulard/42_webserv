@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:36:41 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 16:44:32 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,8 +120,6 @@ bool    ClientRequest::parse_language()
         while (is_alpha(vec[j][i]))
         {
             str = cap_alpha(vec[j], i);
-            // std::cout << "CAT ALPHA=" << str << std::endl;
-            // std::cout << "vec[j]=" << vec[j] << " et i =" << i << str << std::endl;
             if (str.size() > 8)
             {
                 j++;
