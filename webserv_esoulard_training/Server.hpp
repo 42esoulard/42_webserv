@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:49:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 16:19:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,6 @@ class Server {
         int             _reuse;
         sockaddr_in     _address;
 
-        // ESTELLE FROM THE FUTURE: 
-        // - save mime.types in a map somewhere
 };
 
 #endif

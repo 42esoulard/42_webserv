@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:48:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 16:19:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void Cluster::init_cluster(std::string &config) {
 
     this->parse_config(config);
+
     FD_ZERO (&this->_active_fd_set);
     
     std::list<Server>::iterator it;

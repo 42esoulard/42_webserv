@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 15:47:10 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 16:19:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class Cluster {
 
         //CONFIG PARSING AND TRANSFER
         
+        void        set_mime();
         void        parse_config(std::string &config_file);
         std::string get_conf_token(char *line, int &index);
         void        parse_field(std::string &field, std::string &config);

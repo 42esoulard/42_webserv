@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 12:03:13 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 16:35:29 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,8 @@ class ServerResponse {
             return _methods[method];
         };
 
+        std::string get_mime_type(std::string &extension);
+        std::string get_next_token(char *line, int &index);
 
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
