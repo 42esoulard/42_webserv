@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:38:17 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 16:45:52 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,57 @@ bool    ClientRequest::parse_host()
 
 bool    ClientRequest::parse_language()
 {
-    return true;
+    std::map<std::string, std::list<std::string> >::iterator    it = _conf.find("accept-language");
+    if (it == _conf.end())
+        return (1);
+    std::vector<std::string>     vec;
+    std::string                  str;
+    std::string                  tmp;
+    std::vector<float>           ft;
+    size_t          i = 0;
+    size_t          j = 0;
+    vec = split((*it).second.front(), ',');
+    while (j < vec.size())
+    {
+        i = 0;
+        pass_spaces(vec[j], i);
+        while (is_alpha(vec[j][i]))
+        {
+            str = cap_alpha(vec[j], i);
+            if (str.size() > 8)
+            {
+                j++;
+                continue;
+            }
+            else
+                tmp += str;
+            if (i < vec[j].size() && vec[j][i] == '-')
+            {
+                ++i;
+                tmp += "-";
+            }
+        }
+        //  will have to deal with '*'
+        if (!(tmp.empty()))
+        {
+            if (i + 3 < vec[j].size() && vec[j].substr(i, i + 2) == ";q=" && vec[j][i + 3] == '0')
+            {
+                std::cout << "ATOF = " << atof(str.substr(i + 3).c_str()) << std::endl;
+                _language.push_back(std::pair<float, std::string>(atof(str.substr(i + 3).c_str()), tmp));
+            }
+            else
+                _language.push_back(std::pair<float, std::string>(1.0, tmp));
+            tmp.clear();
+        }
+        j++;        
+    }
+    _language.sort(comp_float);
+    (*it).second.clear();
+    for (std::list<std::pair<float, std::string> >::iterator ti = _language.begin() ; ti != _language.end() ; ++ti)
+    {
+        (*it).second.push_back((*ti).second);
+    }
+    return (0);
 }
 
 void    ClientRequest::parse_request(ServerResponse &serv_response) {
