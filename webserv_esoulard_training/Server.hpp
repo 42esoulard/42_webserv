@@ -3,18 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 14:02:21 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 15:23:02 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
-
-#define _MAXLINE 655360
-#define PORT 8080 // default port
 
 #include "webserv.h"
 
@@ -40,31 +37,62 @@
 class Server {
 
     public:
-        Server(std::string &config);
+        typedef std::map <std::string, std::list <std::string > >  t_content_map;
+
+        typedef struct          s_conf {
+            t_content_map               serv_info;
+            // std::list<std::string>      server_host;
+            // std::list<std::string>      server_port;
+            // std::list<std::string>      server_name;
+            // std::list<std::string>      client_max_body_size;
+            //------------------------------------------------------------------------
+
+            std::list < t_content_map > locations;
+            //     std::list<std::string>      path;
+            //     std::list<std::string>      extensions;
+            //     std::list<std::string>      accept_methods;
+            //     std::list<std::string>      root;
+            //     std::list<std::string>      autoindex;
+            //     std::list<std::string>      default_error;
+            //------------------------------------------------------------------------
+        }                       t_conf;
+
+        Server();
         ~Server();
 
-        void init_server(std::string &config);
+        void init_server();
 
-        void parse_request();
-        void format_response();
-        void handle_connection();
+        // void parse_request();
+        // void format_response();
+        // void handle_connection();
+        Server::t_conf &get_conf() { return _conf; }
+        Server::t_content_map &get_serv_info() { return _conf.serv_info; }
+        std::list < t_content_map > &get_locations() {return _conf.locations;}
+
+        void        print_server_info(); //DEV UTIL
+        void        print_server_locations(); // DEV UTIL
+
+        
+        int &get_server_fd() { return _server_fd; }
+        sockaddr_in &get_address() { return _address; }
 
     private:
-        std::string _config_file;
+        // std::string _config_file;
+        Server::t_conf  _conf;
 
-        int         _server_fd;
-        int         _reuse;
-        sockaddr_in _address;
+        int             _server_fd;
+        int             _reuse;
+        sockaddr_in     _address;
 
         //socket utils
-        fd_set      _active_fd_set; 
-        fd_set      _read_fd_set;
-        int         _new_socket;
-        int         _cur_socket;
+        // fd_set      _active_fd_set; 
+        // fd_set      _read_fd_set;
+        // int         _new_socket;
+        // int         _cur_socket;
 
         //configuration info
 
-        Config _conf;
+
 
         //     std::map <std::string, std::list <std::string > >               serv_info;
         //     // std::string                 server_host;

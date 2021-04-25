@@ -6,11 +6,12 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 11:28:30 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/10 17:15:33 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 15:18:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
+#include "Cluster.hpp"
 
 int main(int ac, char **av) {
 
@@ -23,7 +24,7 @@ int main(int ac, char **av) {
         if (ac == 2)
             config = std::string(av[1]);
 
-        Server ws(config);
+        Cluster ws(config);
         
         while (1)
             ws.handle_connection();  
