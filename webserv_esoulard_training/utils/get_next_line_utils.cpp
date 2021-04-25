@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:44:34 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/11 16:01:30 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/25 15:28:26 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,15 @@ int pass_spaces(char *line, int &index) {
 	if (!line)
 		return index;
 	while (line && is_space(line[index]))
+		index++;
+	return index;
+}
+
+int pass_spaces(std::string &line, size_t &index) {
+	
+	if (line.empty())
+		return index;
+	while (index < line.size() && is_space(line[index]))
 		index++;
 	return index;
 }

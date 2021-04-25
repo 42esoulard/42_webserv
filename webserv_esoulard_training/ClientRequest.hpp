@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/16 12:34:06 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/25 16:00:57 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,12 +48,13 @@ class ClientRequest {
         bool    parse_language();
 
     private:
-        char                _read[_MAXLINE];//to store our initial reading of the received request
-        std::string         _headers[6];
+        char                                        _read[_MAXLINE];//to store our initial reading of the received request
+        std::string                                 _headers[6];
+        std::list<std::pair<float, std::string> >   _language;
         std::vector<std::string> _vecRead;
 
         //configuration info
-        std::map<std::string, std::string> _conf;
+        std::map<std::string, std::list<std::string> > _conf;
          // ^^^ this will contain this vvv
 
         // //first line of the request contains:
