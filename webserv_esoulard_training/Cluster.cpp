@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/04/13 10:22:02 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:52:44 by rturcey          ###   ########.fr       */
+/*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
+/*   Updated: 2021/04/25 16:57:23 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void Cluster::init_cluster(std::string &config) {
 
     this->parse_config(config);
+
     FD_ZERO (&this->_active_fd_set);
     
     std::list<Server>::iterator it;
