@@ -6,7 +6,11 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2021/04/25 15:36:14 by esoulard         ###   ########.fr       */
+=======
+/*   Updated: 2021/04/25 15:19:22 by rturcey          ###   ########.fr       */
+>>>>>>> rturcey
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +38,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <cstdlib>
 
 #include "Exception.hpp"
 #include "utils.hpp"

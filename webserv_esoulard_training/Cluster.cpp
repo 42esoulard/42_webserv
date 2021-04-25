@@ -3,10 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
+<<<<<<< HEAD:webserv_esoulard_training/Cluster.cpp
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
 /*   Updated: 2021/04/25 15:48:40 by esoulard         ###   ########.fr       */
+=======
+/*   Created: 2021/04/13 10:22:02 by esoulard          #+#    #+#             */
+/*   Updated: 2021/04/25 15:26:17 by rturcey          ###   ########.fr       */
+>>>>>>> rturcey:webserv_esoulard_training/Config.cpp
 /*                                                                            */
 /* ************************************************************************** */
 
