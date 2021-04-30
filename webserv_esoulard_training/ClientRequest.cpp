@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:51:32 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:09:13 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void    ClientRequest::save_header(std::string &str)
             _conf[vec[0]].push_back(vec[1]);
             return ;
         }
-    }      
+    }
 }
 
 bool    ClientRequest::parse_host()
@@ -99,12 +99,14 @@ bool    ClientRequest::parse_host()
 bool    ClientRequest::parse_language()
 {
     std::map<std::string, std::list<std::string> >::iterator    it = _conf.find("accept-language");
+
     if (it == _conf.end())
         return (1);
-    std::vector<std::string>     vec;
-    std::string                  str;
-    std::string                  tmp;
-    std::vector<float>           ft;
+    std::vector<std::string>					vec;
+    std::string									str;
+    std::string									tmp;
+    std::vector<float>							ft;
+	std::list<std::pair<float, std::string> >	_language;
     size_t          i = 0;
     size_t          j = 0;
     vec = split((*it).second.front(), ',');
@@ -140,7 +142,7 @@ bool    ClientRequest::parse_language()
                 _language.push_back(std::pair<float, std::string>(1.0, tmp));
             tmp.clear();
         }
-        j++;        
+        j++;
     }
     _language.sort(comp_float);
     (*it).second.clear();
@@ -151,11 +153,61 @@ bool    ClientRequest::parse_language()
     return (0);
 }
 
+bool    ClientRequest::parse_charset()
+{
+    std::map<std::string, std::list<std::string> >::iterator	it = _conf.find("accept-charset");
+    if (it == _conf.end())
+        return (1);
+    std::vector<std::string>					vec;
+    std::string									str;
+    std::string									tmp;
+    std::vector<float>							ft;
+	std::list<std::pair<float, std::string> >	_charset;
+    size_t          i = 0;
+    size_t          j = 0;
+    vec = split((*it).second.front(), ',');
+    while (j < vec.size())
+    {
+        i = 0;
+        pass_spaces(vec[j], i);
+        while (is_alnum(vec[j][i]))
+        {
+            str = cap_alphanum(vec[j], i);
+            tmp += str;
+            if (i < vec[j].size() && vec[j][i] == '-')
+            {
+                ++i;
+                tmp += "-";
+            }
+        }
+        //  will have to deal with '*'
+        if (!(tmp.empty()))
+        {
+            if (i + 3 < vec[j].size() && vec[j].substr(i, i + 2) == ";q=" && vec[j][i + 3] == '0')
+            {
+                std::cout << "ATOF = " << atof(str.substr(i + 3).c_str()) << std::endl;
+                _charset.push_back(std::pair<float, std::string>(atof(str.substr(i + 3).c_str()), tmp));
+            }
+            else
+                _charset.push_back(std::pair<float, std::string>(1.0, tmp));
+            tmp.clear();
+        }
+        j++;
+    }
+    _charset.sort(comp_float);
+    (*it).second.clear();
+    for (std::list<std::pair<float, std::string> >::iterator ti = _charset.begin() ; ti != _charset.end() ; ++ti)
+    {
+        (*it).second.push_back((*ti).second);
+    }
+    return (0);
+}
+
 void    ClientRequest::parse_request(ServerResponse &serv_response) {
     //check if request format is good
     //if not >>> should we stop parsing here and start writing error response ? or keep parsing and recording the info we need.
     //first line will init _method, _file and _protocol
-    //then each header field will init each of our ClientRequest attributes. 
+    //then each header field will init each of our ClientRequest attributes.
     // std::string field("_protocol");
     // std::string protocol("HTTP/1.1");
     // serv_response.set_conf(field, protocol);
@@ -181,8 +233,8 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
         return ;
     }
     // now, parsing each header
-    // parse_charset();
-    // parse_language();
+    parse_charset();
+    parse_language();
     // parse_authorization();
     // parse_referer();
     // parse_userAgent();

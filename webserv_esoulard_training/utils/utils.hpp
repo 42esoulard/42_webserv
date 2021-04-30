@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:32:18 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:12:10 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@ std::vector<std::string>     split(std::string &str, char c, int max);
 bool			             is_alpha(char c);
 void                         print_map(std::map<std::string, std::list<std::string> > map);
 std::string                  cap_alpha(std::string &str, size_t &index);
+std::string                  cap_alphanum(std::string &str, size_t &index);
 bool                         comp_float(std::pair<float, std::string> &p1, std::pair<float, std::string> &p2);
+bool			  			is_alnum(char c);
 
 #endif

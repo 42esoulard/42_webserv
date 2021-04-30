@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/11 15:32:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/15 15:16:50 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:10:14 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,13 @@
 bool			  is_alpha(char c)
 {
 	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+		return (1);
+	return (0);
+}
+
+bool			  is_alnum(char c)
+{
+	if (is_alpha(c) || (c >= '0' || c <= '9'))
 		return (1);
 	return (0);
 }

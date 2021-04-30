@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/15 12:08:27 by rturcey           #+#    #+#             */
-/*   Updated: 2021/04/27 13:28:15 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:17:05 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,17 @@ std::string                  cap_alpha(std::string &str, size_t &index)
 {
     std::string     ret;
     while (is_alpha(str[index]))
+    {
+        ret.push_back(str[index]);
+        index++;
+    }
+    return (ret);
+}
+
+std::string                  cap_alphanum(std::string &str, size_t &index)
+{
+    std::string     ret;
+    while (is_alnum(str[index]))
     {
         ret.push_back(str[index]);
         index++;

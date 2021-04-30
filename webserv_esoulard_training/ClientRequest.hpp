@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:40:29 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:00:57 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
     ◦ Accept-Charset: character sets that are acceptable.
                 [Accept-Charset: utf-8]
-    ◦ Accept-Language: list of acceptable human languages for response. 
+    ◦ Accept-Language: list of acceptable human languages for response.
                 [Accept-Language: en-US]
     ◦ Authorization: authentication credentials for HTTP authentication.
                 [Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==] >>> Basic means the following is a simple base64 encryption of login:password. THIS IS NOT SECURE
@@ -30,12 +30,12 @@
                 [Host: en.wikipedia.org]
     ◦ Referer: the address of the previous web page from which a link to the currently requested page was followed.
                 [Referer: http://en.wikipedia.org/wiki/Main_Page]
-    ◦ User-Agent: The user agent string of the user agent. 	
+    ◦ User-Agent: The user agent string of the user agent.
                 [User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0]
 */
 
 class ClientRequest {
-    
+
     public:
         ClientRequest();
         ~ClientRequest();
@@ -47,11 +47,11 @@ class ClientRequest {
         void    save_header(std::string &str);
         bool    parse_host();
         bool    parse_language();
+		bool    parse_charset();
 
     private:
         char                                        _read[_MAXLINE];//to store our initial reading of the received request
         std::string                                 _headers[6];
-        std::list<std::pair<float, std::string> >   _language;
         std::vector<std::string> _vecRead;
 
         //configuration info
@@ -70,7 +70,7 @@ class ClientRequest {
         // std::string _accept_char;
         // std::string _accept_lang;
 
-        //FOR CHECKS, DO WE NEED A REFERENCE OF POSSIBLE VALUES FOR EACH FIELD? 
+        //FOR CHECKS, DO WE NEED A REFERENCE OF POSSIBLE VALUES FOR EACH FIELD?
         // this will depend on what nginx says in case of bad value. Maybe it doesnt check.
 
 };

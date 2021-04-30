@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:19:30 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/04/30 11:54:45 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@ class Cluster {
 
         Cluster(std::string &config) { init_cluster(config); };
         ~Cluster() {};
-        
+
         std::list<Server> server_list;
 
         void init_cluster(std::string &config);
 
         //CONFIG PARSING AND TRANSFER
-        
+
         void        set_mime();
         void        parse_config(std::string &config_file);
         std::string get_conf_token(char *line, int &index);
@@ -45,15 +45,15 @@ class Cluster {
         void parse_request();
         void format_response();
         void handle_connection();
-    
+
     private:
-    
+
         std::string _config_file;
         int         _config_fd;
-        
-        fd_set      _active_fd_set; 
+
+        fd_set      _active_fd_set;
         fd_set      _read_fd_set;
-        
+
         int         _new_socket;
         int         _cur_socket;
 
