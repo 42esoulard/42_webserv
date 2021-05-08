@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/30 12:00:57 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/08 16:16:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ class ClientRequest {
 
         //FOR CHECKS, DO WE NEED A REFERENCE OF POSSIBLE VALUES FOR EACH FIELD?
         // this will depend on what nginx says in case of bad value. Maybe it doesnt check.
+
+        // Server *requested_server;
 
 };
 
