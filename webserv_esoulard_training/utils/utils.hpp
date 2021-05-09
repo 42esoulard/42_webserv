@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/30 12:12:10 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/08 16:47:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@
 # include <string>
 # include <map>
 # include <iostream>
+
+#if defined(__linux__)
+	#define OPEN_MAX 256
+#endif
 
 #define BUFFER_SIZE 32
 

@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:26:24 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/27 14:32:20 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/08 16:45:35 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
-//pour compiler avec ubuntu
-#define OPEN_MAX 256
 
 char	*give_it_back(char *str, char **line) {
 
