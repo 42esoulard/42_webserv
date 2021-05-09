@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/30 11:54:45 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/09 15:42:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,9 @@ class Cluster {
         bool    _in_location;
         bool    _in_server;
         int     _line_nb;
+
+
+        
 };
 
 #endif

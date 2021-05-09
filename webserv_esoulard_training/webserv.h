@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/27 14:10:41 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/09 15:51:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 
 #include "Exception.hpp"
 #include "utils.hpp"
+#include "HashTable.hpp"
 
 // server
 // #include "Cluster.hpp"
@@ -50,4 +51,5 @@
 #define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"
 #define MIME_TYPES          "conf.d/mime.types"
 
+extern SimpleHashTable g_mime_types;
 #endif

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:35:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/09 15:50:11 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class ServerResponse {
         //*************************************************************************
         // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
         std::map<std::string, std::string> _conf;
+
         // ^^^ this will contain this vvv
         
         // //first line

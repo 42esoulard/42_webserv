@@ -3,16 +3,76 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 10:11:10 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/09 16:02:04 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cluster.hpp"
 
+void Cluster::set_mime() {
+
+    int mime_fd;
+    FD_ZERO (&mime_fd);
+    if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
+        throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
+    
+    // fd_set active_fd_set;
+    // FD_SET (mime_fd, &active_fd_set);
+    // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
+    //     throw Exception("select error");
+    std::cout << "HERE" << std::endl;
+    char *line;
+    SimpleHashTable g_mime_types(65);
+
+    while (get_next_line(mime_fd, &line) > 0) {
+        g_mime_types.add_entry(line);
+        free (line);
+    }
+    close (mime_fd);
+
+    // //TEST
+    // std::cout << "----------THIS IS A MIME TEST-------------" << std::endl;
+    
+    // std::string key = "jpg";
+    // std::string *value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+    // key = "cco";
+    // value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+
+    // key = "asf";
+    // value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+
+    // key = "mng";
+    // value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+
+    // key = "html";
+    // value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+
+    // key = "bullshit";
+    // value = g_mime_types.get_value(key);
+    // if (value)
+    //     std::cout << *value << std::endl;
+
+    // std::cout << "----------THIS WAS A MIME TEST-------------" << std::endl;
+
+};
+
 void Cluster::init_cluster(std::string &config) {
+
+    set_mime();
+    //set all the tables we'll use for comparison here, we'll use them for the whole program (make them global)
 
     this->parse_config(config);
 
@@ -32,10 +92,10 @@ void Cluster::parse_config(std::string &config) {
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
 
-    fd_set active_fd_set;
-    FD_SET (_config_fd, &active_fd_set);
-    if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
-        throw Exception("select error");
+    // fd_set active_fd_set;
+    // FD_SET (_config_fd, &active_fd_set);
+    // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
+    //     throw Exception("select error");
 
     _in_location = false;
     _in_server = false;

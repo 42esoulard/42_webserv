@@ -5,7 +5,7 @@ SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
 
 ##################### UTILS INCLUDES ########################
-UTIL_INC		= Exception.hpp utils.hpp
+UTIL_INC		= Exception.hpp utils.hpp HashTable.hpp
 UTIL_INC_DIR 	= ./utils/
 UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
 #############################################################

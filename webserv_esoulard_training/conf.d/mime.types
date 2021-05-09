@@ -1,46 +1,65 @@
-    text/html                             html htm shtml;
-    text/css                              css;
-    text/xml                              xml rss;
-    image/gif                             gif;
-    image/jpeg                            jpeg jpg;
-    application/x-javascript              js;
-    text/plain                            txt;
-    text/x-component                      htc;
-    text/mathml                           mml;
-    image/png                             png;
-    image/x-icon                          ico;
-    image/x-jng                           jng;
-    image/vnd.wap.wbmp                    wbmp;
-    application/java-archive              jar war ear;
-    application/mac-binhex40              hqx;
-    application/pdf                       pdf;
-    application/x-cocoa                   cco;
-    application/x-java-archive-diff       jardiff;
-    application/x-java-jnlp-file          jnlp;
-    application/x-makeself                run;
-    application/x-perl                    pl pm;
-    application/x-pilot                   prc pdb;
-    application/x-rar-compressed          rar;
-    application/x-redhat-package-manager  rpm;
-    application/x-sea                     sea;
-    application/x-shockwave-flash         swf;
-    application/x-stuffit                 sit;
-    application/x-tcl                     tcl tk;
-    application/x-x509-ca-cert            der pem crt;
-    application/x-xpinstall               xpi;
-    application/zip                       zip;
-    application/octet-stream              deb;
-    application/octet-stream              bin exe dll;
-    application/octet-stream              dmg;
-    application/octet-stream              eot;
-    application/octet-stream              iso img;
-    application/octet-stream              msi msp msm;
-    audio/mpeg                            mp3;
-    audio/x-realaudio                     ra;
-    video/mpeg                            mpeg mpg;
-    video/quicktime                       mov;
-    video/x-flv                           flv;
-    video/x-msvideo                       avi;
-    video/x-ms-wmv                        wmv;
-    video/x-ms-asf                        asx asf;
-    video/x-mng                           mng;
+    html                                    text/html                            
+    htm                                     text/html
+    shtml                                   text/html
+    css                                     text/css                    
+    xml                                     text/xml                          
+    rss                                     text/xml
+    gif                                     image/gif                             
+    jpeg                                    image/jpeg                         
+    jpg                                     image/jpeg 
+    js                                      application/x-javascript              
+    txt                                     text/plain                            
+    htc                                     text/x-component                      
+    mml                                     text/mathml                           
+    png                                     image/png                             
+    ico                                     image/x-icon                          
+    jng                                     image/x-jng                           
+    wbmp                                    image/vnd.wap.wbmp                    
+    jar                                     application/java-archive        
+    war                                     application/java-archive
+    ear                                     application/java-archive
+    hqx                                     application/mac-binhex40              
+    pdf                                     application/pdf                       
+    cco                                     application/x-cocoa                   
+    jardiff                                 application/x-java-archive-diff       
+    jnlp                                    application/x-java-jnlp-file          
+    run                                     application/x-makeself                
+    pl                                      application/x-perl                     
+    pm                                      application/x-perl    
+    prc                                     application/x-pilot                   
+    pdb                                     application/x-pilot
+    rar                                     application/x-rar-compressed          
+    rpm                                     application/x-redhat-package-manager  
+    sea                                     application/x-sea                     
+    swf                                     application/x-shockwave-flash         
+    sit                                     application/x-stuffit                 
+    tcl                                     application/x-tcl                      
+    tk                                      application/x-tcl
+    der                                     application/x-x509-ca-cert             
+    pem                                     application/x-x509-ca-cert
+    crt                                     application/x-x509-ca-cert
+    xpi                                     application/x-xpinstall               
+    zip                                     application/zip                       
+    deb                                     application/octet-stream              
+    bin                                     application/octet-stream               
+    exe                                     application/octet-stream 
+    dll                                     application/octet-stream 
+    dmg                                     application/octet-stream              
+    eot                                     application/octet-stream              
+    iso                                     application/octet-stream               
+    img                                     application/octet-stream 
+    msi                                     application/octet-stream               
+    msp                                     application/octet-stream 
+    msm                                     application/octet-stream 
+    mp3                                     audio/mpeg                            
+    ra                                      audio/x-realaudio                     
+    mpeg                                    video/mpeg                             
+    mpg                                     video/mpeg 
+    mov                                     video/quicktime                       
+    flv                                     video/x-flv                           
+    avi                                     video/x-msvideo                       
+    wmv                                     video/x-ms-wmv                        
+    asx                                     video/x-ms-asf                         
+    asf                                     video/x-ms-asf  
+    mng                                     video/x-mng                           
+    

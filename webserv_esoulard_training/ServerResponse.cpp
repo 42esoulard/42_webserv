@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/25 16:35:19 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/09 16:04:37 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,35 +26,15 @@ std::string ServerResponse::get_next_token(char *line, int &index) {
     return std::string(&line[start], index - start);
 }
 
+
+
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
-    int mime_fd;
-    FD_ZERO (&mime_fd);
-    if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
-        throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
+    std::string *value = g_mime_types.get_value(extension);
+    if (!value)
+        std::cerr << "Heck man I can't read dat" << std::endl;
+    else
+        std::cerr << "The latin name for the " << extension << " species is " << *value << std::endl;
     
-    fd_set active_fd_set;
-    FD_SET (mime_fd, &active_fd_set);
-    if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
-        throw Exception("select error");
-    
-    std::string field;
-    char *line;
-    int index;
-    std::string mime;
-    std::string ext;
-    while (get_next_line(mime_fd, &line) > 0) {
-
-        index = 0;
-        mime = get_next_token(line, index);
-        while ((ext = get_next_token(line, index)) != "") {
-            if (ext == extension) {
-                close (mime_fd);
-                return mime;
-            }
-        }
-        free (line);
-    }
-    close (mime_fd);
     //WHAT SHOULD WE DO HERE IN CASE OF UNKNOWN EXTENSION ? THROW ERROR ? IGNORE ?
 };
