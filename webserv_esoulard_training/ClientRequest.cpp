@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/04/30 12:09:13 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/09 10:09:26 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,10 +133,9 @@ bool    ClientRequest::parse_language()
         //  will have to deal with '*'
         if (!(tmp.empty()))
         {
-            if (i + 3 < vec[j].size() && vec[j].substr(i, i + 2) == ";q=" && vec[j][i + 3] == '0')
+            if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
             {
-                std::cout << "ATOF = " << atof(str.substr(i + 3).c_str()) << std::endl;
-                _language.push_back(std::pair<float, std::string>(atof(str.substr(i + 3).c_str()), tmp));
+                _language.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
             }
             else
                 _language.push_back(std::pair<float, std::string>(1.0, tmp));
@@ -183,10 +182,9 @@ bool    ClientRequest::parse_charset()
         //  will have to deal with '*'
         if (!(tmp.empty()))
         {
-            if (i + 3 < vec[j].size() && vec[j].substr(i, i + 2) == ";q=" && vec[j][i + 3] == '0')
+            if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
             {
-                std::cout << "ATOF = " << atof(str.substr(i + 3).c_str()) << std::endl;
-                _charset.push_back(std::pair<float, std::string>(atof(str.substr(i + 3).c_str()), tmp));
+                _charset.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
             }
             else
                 _charset.push_back(std::pair<float, std::string>(1.0, tmp));
