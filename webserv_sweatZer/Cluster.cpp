@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 16:02:04 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/11 10:27:50 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void Cluster::set_mime() {
     FD_ZERO (&mime_fd);
     if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
         throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
-    
+
     // fd_set active_fd_set;
     // FD_SET (mime_fd, &active_fd_set);
     // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
@@ -35,7 +35,7 @@ void Cluster::set_mime() {
 
     // //TEST
     // std::cout << "----------THIS IS A MIME TEST-------------" << std::endl;
-    
+
     // std::string key = "jpg";
     // std::string *value = g_mime_types.get_value(key);
     // if (value)

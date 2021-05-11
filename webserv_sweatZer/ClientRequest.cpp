@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/11 10:18:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/11 10:35:35 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,14 +214,15 @@ bool    ClientRequest::parse_charset()
     return (0);
 }
 
+/*bool    ClientRequest::parse_authorization()
+{
+
+}*/
+
 void    ClientRequest::parse_request(ServerResponse &serv_response) {
     //check if request format is good
-    //if not >>> should we stop parsing here and start writing error response ? or keep parsing and recording the info we need.
     //first line will init _method, _file and _protocol
     //then each header field will init each of our ClientRequest attributes.
-    // std::string field("_protocol");
-    // std::string protocol("HTTP/1.1");
-    // serv_response.set_conf(field, protocol);
     (void)serv_response;
     std::string     toRead(_read);
     _vecRead = split(toRead, '\n');
@@ -243,11 +244,7 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
         // serv_response.error(400);
         return ;
     }
-    // now, parsing each header
     parse_charset();
     parse_language();
-    // parse_authorization();
-    // parse_referer();
-    // parse_userAgent();
     print_map(_conf);
 };
