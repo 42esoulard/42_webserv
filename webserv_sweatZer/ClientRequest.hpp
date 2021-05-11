@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/08 16:16:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/11 10:07:52 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ class ClientRequest {
         // std::string _protocol;
         // std::string _auth; //credentials
         // std::string _host; //our server address
+		// std::string _port;
         // std::string _body; //message body
         // std::string _referer;
         // std::string _user_agent;

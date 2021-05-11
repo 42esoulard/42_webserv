@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 10:09:26 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/11 10:11:20 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,19 @@ bool    ClientRequest::parse_host()
         return (1);
     if ((*it).second.front().find('/') > -1)
         return (1);
+	size_t	i = (*it).second.front().find(':');
+	size_t	j = 0;
+	if (i == -1)
+		_conf["port"] = "80";
+	else
+	{
+		while ((*it).second.front()[i] >= '0' && (*it).second.front()[i] <= '9')
+		{
+			i++;
+			j++;
+		}
+		_conf["port"] = (*it).second.front().substr(i - j, j);
+	}
     return (0);
 }
 
