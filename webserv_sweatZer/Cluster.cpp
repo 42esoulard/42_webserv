@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/11 10:27:50 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/15 10:49:55 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void Cluster::set_mime() {
 
     int mime_fd;
-    FD_ZERO (&mime_fd);
+    //FD_ZERO (&mime_fd);
     if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
         throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
 
@@ -88,7 +88,7 @@ void Cluster::init_cluster(std::string &config) {
 
 void Cluster::parse_config(std::string &config) {
 
-    FD_ZERO (&_config_fd);
+    //FD_ZERO (&_config_fd);
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
 

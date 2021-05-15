@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/08 16:47:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/15 11:19:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,5 +46,8 @@ std::string                  cap_alpha(std::string &str, size_t &index);
 std::string                  cap_alphanum(std::string &str, size_t &index);
 bool                         comp_float(std::pair<float, std::string> &p1, std::pair<float, std::string> &p2);
 bool			  			is_alnum(char c);
+int							ft_atoi(const char *str);
+int							ft_stoi(std::string str);
+
 
 #endif

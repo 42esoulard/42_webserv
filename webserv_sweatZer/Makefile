@@ -17,7 +17,7 @@ SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
 #############################################################
 
 ######################### SRC UTILS #########################
-SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp split.cpp print_map.cpp
+SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp split.cpp print_map.cpp conv_utils.cpp
 SRCS_UTILS_DIR	= ./utils/
 SRCS_UTILS 		:= $(addprefix ${SRCS_UTILS_DIR}, ${SRCS_UTILS})
 #############################################################
@@ -30,7 +30,7 @@ INC_DIRS 		= $(addprefix -I,${SERV_INC_DIR} ${UTIL_INC_DIR})
 #############################################################
 
 CPP			= clang++
-CFLAGS		= -Wall -Wextra -Werror #-std=c++98 #-fsanitize=address -fno-omit-frame-pointer
+CFLAGS		= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fno-omit-frame-pointer
 NAME		= webserv
 
 .cpp.o:		${SRCS} ${INCLUDES}
