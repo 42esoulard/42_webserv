@@ -1,0 +1,4 @@
+Here's a pot pourri of ideas for those days when we got no idea what to do:
+- handle authentication encoding/hashing, dehashing and checking
+- add fcntl(fd, F_SETFL, O_NONBLOCK) here and there to our fds before we handle them.
+    I also think we'll have to add select every fcking where before reads.

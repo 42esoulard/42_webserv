@@ -1,5 +1,5 @@
 ##################### SERVER INCLUDES #######################
-SERV_INC		= webserv.h Server.hpp ClientRequest.hpp ServerResponse.hpp Cluster.hpp
+SERV_INC		= webserv.h Server.hpp ClientRequest.hpp ServerResponse.hpp Cluster.hpp Cgi.hpp
 SERV_INC_DIR 	= ./
 SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
 #############################################################
@@ -32,13 +32,17 @@ INC_DIRS 		= $(addprefix -I,${SERV_INC_DIR} ${UTIL_INC_DIR})
 CPP			= clang++
 CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address -fno-omit-frame-pointer
 NAME		= webserv
+PKGS 		= ./pkgs.sh
 
 .cpp.o:		${SRCS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -c $^ -o ${<:.cpp=.o}
 
 all:		${NAME}
 
-${NAME}:	${OBJS} ${INCLUDES}
+get_pkg:
+	${PKGS}
+
+${NAME}:	get_pkg ${OBJS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -o ${NAME} ${OBJS}
 
 clean :

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 12:16:36 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/15 18:06:35 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,12 @@
                 [Referer: http://en.wikipedia.org/wiki/Main_Page]
     ◦ User-Agent: The user agent string of the user agent.
                 [User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0]
+*/
+
+/*
+    MAYBE in the case of POST requests from a client, we might receive a chunked request
+    in Transfer-encoding header. We'll need to read from the client until content length is 0,
+    and save all the read content properly (=unchunk it).
 */
 
 class ClientRequest {

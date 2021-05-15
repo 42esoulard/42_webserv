@@ -6,7 +6,8 @@ https://www.tutorialspoint.com/cplusplus/cpp_web_programming.htm
 
 How to pass environment variables:
 http://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html
-by setting env variables like in bash? ie:
+by setting env variables like in bash? ie: 
+[NO THIS IS NOT AT ALL WHAT WE GOTTA DO]
 
 #!/bin/sh
 
@@ -41,13 +42,10 @@ Or set them as such
 https://stackoverflow.com/questions/28516393/php-cgi-environment-variable-setup/28626656
 ----------------------------------------------------------
 
-So I guess in the case of an executable, we need a CGI class instance, 
+So I guess in the case of an executable (be it .php or other), we need a CGI class instance, 
 set up its env hashtable with all the relevant info, then fork and execute it
-minishell style
-
-And I guess in the case of a CGI file, we need a CGI class instance, fork, 
-set up its env hashtable with all the relevant info, then set them via a bash script,
-and launch php-cgi with the requested file as 1st argument
+minishell style. The fact that the program is launched via bash or php-cgi or else 
+is determined within the file (eg: #!/usr/bin/php-cgi or #!/usr/bin/bash).
 
 **********************************************************
 
@@ -56,3 +54,5 @@ Concrete test cases:
 http://www6.uniovi.es/~antonio/ncsa_httpd/cgi/examples.html
 
 What I could start doing: 
+setting up a Cgi class containing a char* const envp[] with all the env we'd need. 
+It should also be able to receive any output
