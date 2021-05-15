@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 11:20:43 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/15 11:51:02 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,10 +51,11 @@ void Server::init_server() {
     this->_address.sin_addr.s_addr = INADDR_ANY;
     this->_address.sin_port = htons(ft_stoi(*(_conf.serv_info["server_port"].begin()))); // htons() = short int to network
     //this->_address.sin_len = sizeof(this->_address); // just the size of the struct
+    this->_address_sz = sizeof(this->_address); //for ubuntu compatibility since it doesn have sin_len
     memset(this->_address.sin_zero, '\0', sizeof(this->_address.sin_zero));
 
     // We bind our open socket with its new address
-    if (bind(this->_server_fd, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) 
+    if (bind(this->_server_fd, (struct sockaddr *)&this->_address, this->_address_sz) < 0) 
         throw Exception("bind error");
 
     /*

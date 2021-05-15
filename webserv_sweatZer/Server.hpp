@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/08 16:17:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/15 11:49:39 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ class Server {
 
         int         &get_server_fd()    { return _server_fd; }
         sockaddr_in &get_address()      { return _address; }
+        socklen_t   &get_address_sz()   { return _address_sz; }
 
     private:
         Server::t_conf  _conf;
@@ -78,6 +79,7 @@ class Server {
         int             _server_fd;
         int             _reuse;
         sockaddr_in     _address;
+        socklen_t       _address_sz;
 
 };
 

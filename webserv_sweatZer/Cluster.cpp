@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 10:49:55 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/15 12:28:57 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void Cluster::init_cluster(std::string &config) {
 
 void Cluster::parse_config(std::string &config) {
 
-    //FD_ZERO (&_config_fd);
+   // FD_ZERO (&_config_fd);
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
 
@@ -251,18 +251,20 @@ void Cluster::handle_connection(){
 
             std::list<Server>::iterator server_it = server_list.begin();
             while (server_it != server_list.end()) {
-
                 if (this->_cur_socket == server_it->get_server_fd()) {
                     /* Connection request on original socket. */
-                    if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&server_it->get_address(), (socklen_t*)sizeof(&server_it->get_address()))) < 0)
+                    if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&(server_it->get_address()), &server_it->get_address_sz())) < 0) {
+                        std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
                         throw Exception("accept error");
+                    }
                     std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << std::endl;
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     return ;
                 }
+                ++server_it;
             }
             /* Data arriving on an already-connected socket. */
-
+            
             this->parse_request();
             this->format_response();
 

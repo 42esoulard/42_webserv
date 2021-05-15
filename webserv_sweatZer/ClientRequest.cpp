@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/11 10:35:35 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/15 12:29:04 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ ClientRequest::ClientRequest()
     _headers[3] = "authorization";
     _headers[4] = "referer";
     _headers[5] = "user-agent";
+    _headers[6] = "";
 }
 
 ClientRequest::~ClientRequest() {};
@@ -76,8 +77,9 @@ void    ClientRequest::save_header(std::string &str)
             vec[0][i] += 32;
     }
     // if we don't handle this header, or if it's bullshit, we just ignore it
-    for (size_t i = 0 ; i < _headers[i].size() ; i++)
+    for (size_t i = 0 ; _headers[i] != "" ; i++)
     {
+        //std::cout << i << "//" << _headers[i].size() << std::endl;
         if (!vec[0].compare(_headers[i]))
         {
             _conf[vec[0]].push_back(vec[1]);
@@ -225,6 +227,7 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     //then each header field will init each of our ClientRequest attributes.
     (void)serv_response;
     std::string     toRead(_read);
+    
     _vecRead = split(toRead, '\n');
     if (parse_method())
     {
@@ -235,9 +238,12 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     // saving all headers in _conf
     for (size_t i = 1 ; i < _vecRead.size() ; i++)
     {
-        if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
+
+        if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1])) 
             save_header(_vecRead[i]);
+
     }
+
     // checkinf if there is a "host"
     if (parse_host())
     {

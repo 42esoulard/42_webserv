@@ -30,7 +30,7 @@ INC_DIRS 		= $(addprefix -I,${SERV_INC_DIR} ${UTIL_INC_DIR})
 #############################################################
 
 CPP			= clang++
-CFLAGS		= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fno-omit-frame-pointer
+CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address -fno-omit-frame-pointer
 NAME		= webserv
 
 .cpp.o:		${SRCS} ${INCLUDES}
