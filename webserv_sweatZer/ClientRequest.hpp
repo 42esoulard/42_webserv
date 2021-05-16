@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 18:06:35 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/16 11:56:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,10 @@ class ClientRequest {
         bool    parse_host();
         bool    parse_language();
 		bool    parse_charset();
+
+        typedef std::map <std::string, std::list <std::string > >  t_content_map;
+
+        t_content_map get_conf() { return _conf; };
 
     private:
         char                                        _read[_MAXLINE];//to store our initial reading of the received request
