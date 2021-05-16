@@ -110,5 +110,6 @@ content of that resource or an error message if unable to do so. The resource is
 **BEFORE HANDING IT IN, DO TESTS!!**:
 - The included tester in project page
 - Compare returns with nginx
-- Do a stress test
+- [Do a stress test](https://github.com/tsenart/vegeta)
 - Test with several programs (different languages are allowed)
+- [acoudert tester](https://github.com/acoudert/webserv_tester)
