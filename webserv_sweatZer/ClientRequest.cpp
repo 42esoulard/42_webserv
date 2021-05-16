@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 12:29:04 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/16 15:38:57 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,11 @@ ClientRequest::ClientRequest()
     _headers[3] = "authorization";
     _headers[4] = "referer";
     _headers[5] = "user-agent";
-    _headers[6] = "";
+    _headers[6] = "content-type";
+    _headers[7] = "content-length";
+    _headers[8] = "body";
+    _headers[9] = "transfer-encoding";
+    _headers[10] = "";
 }
 
 ClientRequest::~ClientRequest() {};
@@ -57,8 +61,10 @@ bool       ClientRequest::is_method(std::string &str)
 int       ClientRequest::parse_method()
 {
     std::vector<std::string>     vec = split_sp(_vecRead[0]);
-    if (vec.size() != 3 || !is_method(vec[0]))
+    if (vec.size() != 3)
         return (400);
+    else if (!is_method(vec[0]))
+        return (501);
     // should we parse file now ?
     _conf["file"].push_back(vec[1]);
     if (vec[2].compare("HTTP/1.1"))
@@ -67,7 +73,7 @@ int       ClientRequest::parse_method()
     return (0);
 }
 
-void    ClientRequest::save_header(std::string &str)
+int    ClientRequest::save_header(std::string &str)
 {
     // lowercase
     std::vector<std::string>    vec = split(str, ':', 1);
@@ -83,9 +89,12 @@ void    ClientRequest::save_header(std::string &str)
         if (!vec[0].compare(_headers[i]))
         {
             _conf[vec[0]].push_back(vec[1]);
-            return ;
+            return (0);
         }
+        if (is_space(vec[0][vec[0].size() - 1]))
+            return (400);
     }
+    return (0);
 }
 
 bool    ClientRequest::parse_host()
@@ -227,27 +236,50 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     //then each header field will init each of our ClientRequest attributes.
     (void)serv_response;
     std::string     toRead(_read);
+    int             error;
     
     _vecRead = split(toRead, '\n');
-    if (parse_method())
+    if ((error = parse_method()))
     {
-        // serv_response.error(400);
+        // serv_response.error(error);
+        std::cout << "ERROR " << error <<std::endl;
         return ;
     }
     size_t  found;
     // saving all headers in _conf
+    int     lev = 0;
     for (size_t i = 1 ; i < _vecRead.size() ; i++)
-    {
-
+    {   
         if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1])) 
             save_header(_vecRead[i]);
+        else if (found && is_space(_vecRead[i][found - 1]))
+        {
+            std::cout << "ERROR 400" <<std::endl;
+            return ;
+        }
+        else if (lev == 0 && !_vecRead[i].empty() && (_conf.find("content-length") != _conf.end()))
+        {
+            size_t  j = i + 1;
+            lev = 1;
 
+            while (j < _vecRead.size())
+            {
+                _vecRead[i] += "\n";
+                _vecRead[i] += _vecRead[j];
+                j++;
+            }
+            _conf["body"].push_back(_vecRead[i]);
+            if (_conf.find("content-type") == _conf.end())
+                _conf["content-type"].push_back("application/octet-stream");
+            break ;
+        } 
     }
 
     // checkinf if there is a "host"
     if (parse_host())
     {
         // serv_response.error(400);
+        std::cout << "ERROR 400" <<std::endl;
         return ;
     }
     parse_charset();
