@@ -5,7 +5,11 @@ Here's a pot pourri of ideas for those days when we got no idea what to do:
 
 
 RFC REQUIREMENTS:
+
+    ****************
     *** RFC 7230 ***
+    ****************
+
     Request Line (the first header line):
 OK      - invalid request-line SHOULD respond with a 400 (Bad Request) error
 OK      - bad method (unknown/too long) -> server SHOULD respond with a 501 (Not Implemented)
@@ -48,7 +52,79 @@ OK      - en effet ce ne sont pas de simples \n: la premiere ligne du header (re
             se finit par un CRLF. Le CRLF est représenté par \r\n. \r correspond à CR (Carriage
             Return) et \n (pour "new line", « nouvelle ligne ») correspond à LF (Line Feed).
 
-
     Random:
 OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing multiple requests
             and responses to be carried over a single connection.
+
+
+    ****************
+    *** RFC 7231 ***
+    ****************
+
+    Methods: HEAD, GET & POST
+        - All general-purpose servers MUST support the methods GET and HEAD. All other 
+            methods are OPTIONAL. (BUT 42 tester asks for POST and maybe others. We can still 
+            start with these three and adjust after testing.)
+        - If the request method is GET or HEAD and the response status code
+            is 200 (OK), 204 (No Content), 206 (Partial Content), or 304 (Not
+            Modified), the payload is a representation of the resource
+            identified by the effective request URI. (The HEAD method is identical to GET 
+            except that the server MUST NOT send a message body in the response (i.e., the 
+            response terminates at the end of the header section)
+        - If one or more resources has been created on the origin server as a
+            result of successfully processing a POST request, the origin server
+            SHOULD send a 201 (Created) response containing a Location header
+            field that provides an identifier for the primary resource created
+            (Section 7.1.2) and a representation that describes the status of the
+            request while referring to the new resource(s).
+
+            Just a nice methods table:
+                +---------+-------------------------------------------------+-------+
+                | Method  | Description                                     | Sec.  |
+                +---------+-------------------------------------------------+-------+
+                | GET     | Transfer a current representation of the target | 4.3.1 |
+                |         | resource.                                       |       |
+                | HEAD    | Same as GET, but only transfer the status line  | 4.3.2 |
+                |         | and header section.                             |       |
+                | POST    | Perform resource-specific processing on the     | 4.3.3 |
+                |         | request payload.                                |       |
+                | PUT     | Replace all current representations of the      | 4.3.4 |
+                |         | target resource with the request payload.       |       |
+                | DELETE  | Remove all current representations of the       | 4.3.5 |
+                |         | target resource.                                |       |
+                | CONNECT | Establish a tunnel to the server identified by  | 4.3.6 |
+                |         | the target resource.                            |       |
+                | OPTIONS | Describe the communication options for the      | 4.3.7 |
+                |         | target resource.                                |       |
+                | TRACE   | Perform a message loop-back test along the path | 4.3.8 |
+                |         | to the target resource.                         |       |
+                +---------+-------------------------------------------------+-------+
+
+    Content-type header:
+        - If a Content-Type header field is not present, the recipient MAY either assume a 
+            media type of "application/octet-stream"
+    
+    About how we don't care about negociation:
+        - If no Content-Language is specified, the default is that the content is intended 
+            for all language audiences.  This might mean that the sender does not consider it 
+            to be specific to any natural language, or that the sender does not know for which 
+            language it is intended.
+        
+    Error codes:
+        - List of error codes : RFC7231 p.48 
+
+    Security:
+        - Reject ".." pathnames to avoid disclosure of files outside the server bounds
+
+    Date header
+        - Date format is IMF-fixdate standard: Sun, 06 Nov 1994 08:49:37 GMT
+            HTTP-date is case sensitive.  A sender MUST NOT generate additional
+            whitespace in an HTTP-date beyond that specifically included as SP in
+            the grammar.
+    
+    I DONT UNDERSTAND WHAT THIS MEANS NOR IF WE SHOULD CARE:
+        - a recipient MUST be able to parse, line breaks in text media that consist of 
+            CRLF, bare CR, or bare LF.  In addition, text media in HTTP is not limited to 
+            charsets that use octets 13 and 10 for CR and LF, respectively.
+
+    

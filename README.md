@@ -37,6 +37,8 @@ When in doubt, compare program behaviour with nginx.
     - [RFC7233: *Range Requests* {3}](https://tools.ietf.org/html/rfc7233)
     - [RFC7234: *Caching* {3}](https://tools.ietf.org/html/rfc7234)
     - [RFC7235: *Authentication* {3}](https://tools.ietf.org/html/rfc7235)
+    - [RFCs explained by our new friend Stephane](https://www.bortzmeyer.org/7230.html)
+
 - **OTHER USEFUL RESOURCES**
   - ["Computer Networking: A Top-Down Approach 7th Edition" - 856p](https://www.ucg.ac.me/skladiste/blog_44233/objava_64433/fajlovi/Computer%20Networking%20_%20A%20Top%20Down%20Approach,%207th,%20converted.pdf): a huge book on networks.
 
