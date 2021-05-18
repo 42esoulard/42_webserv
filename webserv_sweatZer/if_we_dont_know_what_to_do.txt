@@ -9,46 +9,46 @@ RFC REQUIREMENTS:
     Request Line (the first header line):
 OK      - invalid request-line SHOULD respond with a 400 (Bad Request) error
 OK      - bad method (unknown/too long) -> server SHOULD respond with a 501 (Not Implemented)
-        - if a request-target is longer than any URI it wishes to parse MUST respond with a 
-            414 (URI Too Long) ->>> It is RECOMMENDED that all HTTP senders and recipients 
-            support, at a minimum, request-line lengths of 8000 octets BUT a URI should be 
+OK      - if a request-target is longer than any URI it wishes to parse MUST respond with a
+            414 (URI Too Long) ->>> It is RECOMMENDED that all HTTP senders and recipients
+            support, at a minimum, request-line lengths of 8000 octets BUT a URI should be
             limited to around 2000 octets.
     Security:
-        - For security reasons, we need to limit the accepted size everything, including (but 
-            not limited to) request methods, response status phrases, header field-names, numeric 
+        - For security reasons, we need to limit the accepted size everything, including (but
+            not limited to) request methods, response status phrases, header field-names, numeric
             values, and body chunks.
 
     Headers:
 OK      - recipients SHOULD ignore unrecognized header fields
 OK      - if we find multiple header fields with the same name: we add the value to the preexisting key
-OK      - A server MUST reject any received request message that contains whitespace between a 
+OK      - A server MUST reject any received request message that contains whitespace between a
             header field-name and colon with a response code of 400 (Bad Request)
-        - A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request 
-            message that lacks a Host header field and to any request message that contains more 
+OK      - A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request
+            message that lacks a Host header field and to any request message that contains more
             than one Host header field or a Host header field with an invalid field-value.
-        
+
     Transfer-Encoding:
-        - A server that receives a request message with a transfer coding it does not understand 
+OK      - A server that receives a request message with a transfer coding it does not understand
             SHOULD respond with 501 (Not Implemented). (We should only handle "chunked")
-        - Pour les chunked, le format est : chunk-body, suivi de CRLF, puis chunk-size, puis 
+        - Pour les chunked, le format est : chunk-body, suivi de CRLF, puis chunk-size, puis
             potentiellement le trailer (les especes de header du chunk sous forme key=value.)
 
     Content-Length:
-        - Dans le ResponseHeader qu'on renvoie, il faut qu'il y ait un Content-Length. Dans ce qu'on 
-            recoit, il faut qu'on check si il y a Transfer-Encoding: chunked, auquel cas on read jusqu'a 
-            ce que soit indiqué dans le chunk lu que chunk-size = 0; sinon on lit un body de taille 
+        - Dans le ResponseHeader qu'on renvoie, il faut qu'il y ait un Content-Length. Dans ce qu'on
+            recoit, il faut qu'on check si il y a Transfer-Encoding: chunked, auquel cas on read jusqu'a
+            ce que soit indiqué dans le chunk lu que chunk-size = 0; sinon on lit un body de taille
             Content-Length)
-        - Si Content-Length contient plusieurs values ->>> on rejette le message comme invalide
-        - if number of octets read in the body < Content-Length, the recipient MUST consider the 
+OK      - Si Content-Length contient plusieurs values ->>> on rejette le message comme invalide
+OK      - if number of octets read in the body < Content-Length, the recipient MUST consider the
             message to be incomplete and close the connection.
-        - if theres a body but no content-length, we MAY respond with the error 411 (Length Required).
-        
-    Delimiteurs - les CRLF:
-        - en effet ce ne sont pas de simples \n: la premiere ligne du header (request ou response) 
-            se finit par un CRLF. Le CRLF est représenté par \r\n. \r correspond à CR (Carriage 
-            Return) et \n (pour "new line", « nouvelle ligne ») correspond à LF (Line Feed).
-        
+OK      - if theres a body but no content-length, we MAY respond with the error 411 (Length Required).
 
-    Random:    
-OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing multiple requests 
+    Delimiteurs - les CRLF:
+OK      - en effet ce ne sont pas de simples \n: la premiere ligne du header (request ou response)
+            se finit par un CRLF. Le CRLF est représenté par \r\n. \r correspond à CR (Carriage
+            Return) et \n (pour "new line", « nouvelle ligne ») correspond à LF (Line Feed).
+
+
+    Random:
+OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing multiple requests
             and responses to be carried over a single connection.

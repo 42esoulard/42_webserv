@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/16 15:38:57 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/18 11:00:55 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ int       ClientRequest::parse_method()
         return (400);
     else if (!is_method(vec[0]))
         return (501);
+	else if (vec[1].size() > 2000)
+		return (414);
     // should we parse file now ?
     _conf["file"].push_back(vec[1]);
     if (vec[2].compare("HTTP/1.1"))
@@ -85,7 +87,20 @@ int    ClientRequest::save_header(std::string &str)
     // if we don't handle this header, or if it's bullshit, we just ignore it
     for (size_t i = 0 ; _headers[i] != "" ; i++)
     {
-        //std::cout << i << "//" << _headers[i].size() << std::endl;
+        if (vec[0] == "host" && _conf.find("host") != _conf.end())
+			return (400);
+		if (vec[0] == "content-length" && _conf.find("content-length") != _conf.end())
+			return (400);
+		if (vec[0] == "transfer-encoding" && vec[1].compare("chunked"))
+			return (501);
+		else if (vec[0] == "content-length")
+		{
+			for (size_t i = 0 ; i < vec[1].size() ; i++)
+			{
+				if (vec[1][i] < '0' || vec[1][i] > '9')
+					return (400);
+			}
+		}
         if (!vec[0].compare(_headers[i]))
         {
             _conf[vec[0]].push_back(vec[1]);
@@ -237,8 +252,8 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     (void)serv_response;
     std::string     toRead(_read);
     int             error;
-    
-    _vecRead = split(toRead, '\n');
+	size_t			body = -1;
+    _vecRead = split_crlf(toRead, &body);
     if ((error = parse_method()))
     {
         // serv_response.error(error);
@@ -247,32 +262,46 @@ void    ClientRequest::parse_request(ServerResponse &serv_response) {
     }
     size_t  found;
     // saving all headers in _conf
-    int     lev = 0;
     for (size_t i = 1 ; i < _vecRead.size() ; i++)
-    {   
-        if ((found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1])) 
-            save_header(_vecRead[i]);
+    {
+		found = 0;
+        if (i != body - 1 && (found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
+		{
+            if ((error = save_header(_vecRead[i])))
+			{
+				// serv_response.error(error);
+       			std::cout << "ERROR " << error <<std::endl;
+        		return ;
+			}
+		}
         else if (found && is_space(_vecRead[i][found - 1]))
         {
+			// serv_response.error(400);
             std::cout << "ERROR 400" <<std::endl;
             return ;
         }
-        else if (lev == 0 && !_vecRead[i].empty() && (_conf.find("content-length") != _conf.end()))
+        else if (i == body - 1)
         {
-            size_t  j = i + 1;
-            lev = 1;
-
-            while (j < _vecRead.size())
-            {
-                _vecRead[i] += "\n";
-                _vecRead[i] += _vecRead[j];
-                j++;
-            }
+			std::map<std::string, std::list<std::string> >::iterator	itc;
+			if ((itc = _conf.find("content-length")) == _conf.end())
+			{
+				// serv_response.error(411);
+            	std::cout << "ERROR 411" <<std::endl;
+           		return ;
+			}
+			// incomplete body
+            if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
+			{
+				// serv_response.error(400);
+            	std::cout << "ERROR 400" <<std::endl;
+           		return ;
+			}
+			_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));
             _conf["body"].push_back(_vecRead[i]);
             if (_conf.find("content-type") == _conf.end())
                 _conf["content-type"].push_back("application/octet-stream");
             break ;
-        } 
+        }
     }
 
     // checkinf if there is a "host"

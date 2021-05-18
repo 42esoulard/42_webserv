@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 11:19:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/18 10:47:02 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ bool                        is_space(char a);
 char	                	*ft_itoa(int n);
 std::vector<std::string>     split_sp(std::string &str);
 std::vector<std::string>     split(std::string &str, char c);
+std::vector<std::string>     split_crlf(std::string &str, size_t *body);
 std::vector<std::string>     split(std::string &str, char c, int max);
 bool			             is_alpha(char c);
 void                         print_map(std::map<std::string, std::list<std::string> > map);

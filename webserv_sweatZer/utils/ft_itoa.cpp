@@ -6,12 +6,24 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/11 15:32:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 10:02:12 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/18 10:30:09 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "utils.hpp"
+
+size_t				strtost(std::string &str)
+{
+	size_t		ret = 0;
+
+	for (size_t i = 0 ; i < str.size() ; i++)
+	{
+		ret *= 10;
+		ret += str[i];
+	}
+	return (ret);
+}
 
 bool			  is_alpha(char c)
 {

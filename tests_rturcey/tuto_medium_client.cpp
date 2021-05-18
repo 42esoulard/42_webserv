@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/16 15:17:13 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/18 11:01:25 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,10 @@
 
 int main()
 {
-    int sock = 0; 
+    int sock = 0;
     long valread;
     struct sockaddr_in serv_addr;
-    char hello[] = "POSTY / HTTP/1.1\nHost: foo.com\nContent-Length: 13\nContent-TyPe: testttt bla\n\nsay=Hi&to=Mom\ntruc\nmuch:blabla\n\n";
+    char hello[] = "POST / HTTP/1.1\r\nHost: foo.com\r\nContent-Length: 13\r\ntransfer-encoding: chunked\r\nContent-TyPe: testttt bla\r\n\r\nsay=Hi&to=Mom\r\ntruc\r\nmuch:blabla\r\n";
     char buffer[1024] = {0};
 
     // client opens his socket
@@ -38,8 +38,8 @@ int main()
         strerror(errno);
         return -1;
     }
-    
-    // Initialize the sockaddr structure 
+
+    // Initialize the sockaddr structure
     memset(&serv_addr, '0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
@@ -49,8 +49,8 @@ int main()
         strerror(errno);
         return -1;
     }
-    
-    // equivalent of bind() but when u want to connect to a remote address (a server) 
+
+    // equivalent of bind() but when u want to connect to a remote address (a server)
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         strerror(errno);
         return -1;
