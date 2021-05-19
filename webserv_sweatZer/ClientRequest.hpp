@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/16 15:22:44 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 11:20:37 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,52 +40,48 @@
     and save all the read content properly (=unchunk it).
 */
 
-class ClientRequest {
+class	ServerResponse;
 
-    public:
-        ClientRequest();
-        ~ClientRequest();
+class	ClientRequest {
 
-        void    parse_request(ServerResponse &serv_response);
-        char    *get_read(); //getter for _read
-        bool    is_method(std::string &str);
-        int     parse_method();
-        int     save_header(std::string &str);
-        bool    parse_host();
-        bool    parse_language();
-		bool    parse_charset();
+	public:
+		ClientRequest();
+		~ClientRequest();
 
-        typedef std::map <std::string, std::list <std::string > >  t_content_map;
+		int		parse_request(ServerResponse &serv_response);
+		char	*get_read(); //getter for _read
+		bool	is_method(std::string &str);
+		int		parse_method();
+		int		parse_headers(size_t body, ServerResponse &serv_response);
+		int		save_header(std::string &str);
+		int		parse_body(size_t i, ServerResponse &serv_response);
+		bool	parse_host();
+		bool	parse_language();
+		bool	parse_charset();
 
-        t_content_map get_conf() { return _conf; };
+		typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
-    private:
-        char                                        _read[_MAXLINE];//to store our initial reading of the received request
-        std::string                                 _headers[11];
-        std::vector<std::string> _vecRead;
+		t_content_map get_conf() { return _conf; };
 
-        //configuration info
-        std::map<std::string, std::list<std::string> > _conf;
-         // ^^^ this will contain this vvv
+	private:
+		char						_read[_MAXLINE];
+		std::string					_headers[10];
+		std::vector<std::string>	_vecRead;
+		t_content_map				_conf;
 
-        // //first line of the request contains:
-        // std::string _method;
-        // std::string _file;
-        // std::string _protocol;
-        // std::string _auth; //credentials
-        // std::string _host; //our server address
-		// std::string _port;
-        // std::string _body; //message body
-        // std::string _referer;
-        // std::string _user_agent;
-        // std::string _accept_char;
-        // std::string _accept_lang;
-
-        //FOR CHECKS, DO WE NEED A REFERENCE OF POSSIBLE VALUES FOR EACH FIELD?
-        // this will depend on what nginx says in case of bad value. Maybe it doesnt check.
-
-        // Server *requested_server;
-
+		// In our map, we got :
+		// accept-language
+		// accept-charset
+		// host
+		// protocol
+		// content-length
+		// content-size
+		// body
+		// transfer-encoding
+		// authorization
+		// user-agent
+		// referer
+		// method
 };
 
 #endif

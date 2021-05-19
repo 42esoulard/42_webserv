@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/16 14:33:38 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 10:34:27 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,7 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         if (_in_location)
             throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": already in a location context!");
 
-        std::map <std::string, std::list <std::string > > new_loc;
+        Server::t_content_map new_loc;
         server_list.back().get_locations().push_back(new_loc);
         _in_location = true;
 
@@ -264,7 +264,7 @@ void Cluster::handle_connection(){
                 ++server_it;
             }
             /* Data arriving on an already-connected socket. */
-            
+
             this->parse_request();
             this->format_response();
 

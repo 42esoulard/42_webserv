@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/18 10:47:02 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 10:48:17 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ bool                         comp_float(std::pair<float, std::string> &p1, std::
 bool			  			is_alnum(char c);
 int							ft_atoi(const char *str);
 int							ft_stoi(std::string str);
+void						lower(std::string &str);
+bool						is_num(std::string &str);
 
 
 #endif

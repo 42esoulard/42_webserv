@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 11:51:02 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/19 09:51:22 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void Server::init_server() {
     memset(this->_address.sin_zero, '\0', sizeof(this->_address.sin_zero));
 
     // We bind our open socket with its new address
-    if (bind(this->_server_fd, (struct sockaddr *)&this->_address, this->_address_sz) < 0) 
+    if (bind(this->_server_fd, (struct sockaddr *)&this->_address, this->_address_sz) < 0)
         throw Exception("bind error");
 
     /*

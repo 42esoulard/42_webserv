@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/16 11:56:13 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/19 09:48:48 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ class Cgi {
         ~Cgi();
 
 
-        void build_env(ClientRequest::t_content_map &cli_conf) {
-            
+        void build_env(ClientRequest::std::map<std::string, std::list<std::string> > &cli_conf) {
+
             _env[17] = NULL;
             ft_strjoin(_env[0], (*cli_conf["_auth"].begin()).c_str());
 
@@ -34,7 +34,7 @@ class Cgi {
 
 
         char *file_path; // to send as first argument
-        
+
         char *_env[18] { "AUTH_TYPE="
                         "CONTENT_LENGTH="
                         "CONTENT_TYPE="
@@ -74,6 +74,6 @@ class Cgi {
             SERVER_PROTOCOL
             SERVER_SOFTWARE
         */
-       
+
 
 }

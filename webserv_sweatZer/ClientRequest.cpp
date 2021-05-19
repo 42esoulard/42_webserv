@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/18 11:00:55 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 11:21:26 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,113 +14,169 @@
 
 ClientRequest::ClientRequest()
 {
-    _read[0] = '\0';
-    _headers[0] = "host";
-    _headers[1] = "accept-charset";
-    _headers[2] = "accept-language";
-    _headers[3] = "authorization";
-    _headers[4] = "referer";
-    _headers[5] = "user-agent";
-    _headers[6] = "content-type";
-    _headers[7] = "content-length";
-    _headers[8] = "body";
-    _headers[9] = "transfer-encoding";
-    _headers[10] = "";
+	_read[0] = '\0';
+	_headers[0] = "host";
+	_headers[1] = "accept-charset";
+	_headers[2] = "accept-language";
+	_headers[3] = "authorization";
+	_headers[4] = "referer";
+	_headers[5] = "user-agent";
+	_headers[6] = "content-type";
+	_headers[7] = "content-length";
+	_headers[8] = "transfer-encoding";
+	_headers[9] = "";
 }
 
 ClientRequest::~ClientRequest() {};
 
-char    *ClientRequest::get_read()
+char	*ClientRequest::get_read()
 {
-    return _read;
+	return _read;
 }
 
-bool       ClientRequest::is_method(std::string &str)
+bool	   ClientRequest::is_method(std::string &str)
 {
-    std::string    methods[9];
-    methods[0] = "GET";
-    methods[1] = "POST";
-    methods[2] = "HEAD";
-    methods[3] = "PUT";
-    methods[4] = "DELETE";
-    methods[5] = "CONNECT";
-    methods[6] = "OPTIONS";
-    methods[7] = "TRACE";
-    methods[8] = "PATCH";
-    for (int i = 0 ; i < 9 ; i++)
-    {
-        if (!str.compare(methods[i]))
-        {
-            _conf["method"].push_back(methods[i]);
-            return (1);
-        }
-    }
-    return (0);
+	std::string	methods[9];
+	methods[0] = "GET";
+	methods[1] = "POST";
+	methods[2] = "HEAD";
+	methods[3] = "PUT";
+	methods[4] = "DELETE";
+	methods[5] = "CONNECT";
+	methods[6] = "OPTIONS";
+	methods[7] = "TRACE";
+	methods[8] = "PATCH";
+	for (int i = 0 ; i < 9 ; i++)
+	{
+		if (!str.compare(methods[i]))
+		{
+			_conf["method"].push_back(methods[i]);
+			return (1);
+		}
+	}
+	return (0);
 }
 
-int       ClientRequest::parse_method()
+// parsing the whole request, handling errors using serv_response & RFC's error codes
+// split_crlf splits the whole buffer into vector<string> _vecRead, using "\r\n" as charset
+// int body is telling us which element of _vecRead is the body
+int		ClientRequest::parse_request(ServerResponse &serv_response)
 {
-    std::vector<std::string>     vec = split_sp(_vecRead[0]);
-    if (vec.size() != 3)
-        return (400);
-    else if (!is_method(vec[0]))
-        return (501);
+	std::string				toRead(_read);
+	int						error;
+	size_t					body = -1;
+
+	_vecRead = split_crlf(toRead, &body);
+	if ((error = parse_method()) || (error = parse_headers(body, serv_response)))
+		return (serv_response.error(error));
+	if (parse_host())
+		return (serv_response.error(400));
+	parse_charset();
+	parse_language();
+	print_map(_conf);
+	return (0);
+}
+
+// split_sp splits the method line into vector<string> vec, using spaces as charset
+// then we check if method & protocal are correct and well formated
+// URI size limit = 2000 bytes
+int		ClientRequest::parse_method()
+{
+	std::vector<std::string>	 vec = split_sp(_vecRead[0]);
+	if (vec.size() != 3)
+		return (400);
+	else if (!is_method(vec[0]))
+		return (501);
 	else if (vec[1].size() > 2000)
 		return (414);
-    // should we parse file now ?
-    _conf["file"].push_back(vec[1]);
-    if (vec[2].compare("HTTP/1.1"))
-        return (400);
-    _conf["protocol"].push_back(vec[2]);
-    return (0);
+	_conf["file"].push_back(vec[1]);
+	if (vec[2].compare("HTTP/1.1"))
+		return (400);
+	_conf["protocol"].push_back(vec[2]);
+	return (0);
 }
 
-int    ClientRequest::save_header(std::string &str)
+// each header is parsed until we encounter an error
+// we allow bullshit only if it's RFC compliant
+// for example, spaces before colons are not allowed
+int		ClientRequest::parse_headers(size_t body, ServerResponse &serv_response)
 {
-    // lowercase
-    std::vector<std::string>    vec = split(str, ':', 1);
-    for (size_t i = 0 ; i < vec[0].size() ; i++)
-    {
-        if (vec[0][i] >= 'A' && vec[0][i] <= 'Z')
-            vec[0][i] += 32;
-    }
-    // if we don't handle this header, or if it's bullshit, we just ignore it
-    for (size_t i = 0 ; _headers[i] != "" ; i++)
-    {
-        if (vec[0] == "host" && _conf.find("host") != _conf.end())
+	int						found;
+	int						error;
+
+	for (size_t i = 1 ; i < _vecRead.size() ; i++)
+	{
+		found = 0;
+		if (i != body - 1 && (found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
+		{
+			if ((error = save_header(_vecRead[i])))
+				return (serv_response.error(error));
+		}
+		else if (found && is_space(_vecRead[i][found - 1]))
+			return (serv_response.error(400));
+		else if (i == body - 1)
+			return (parse_body(i, serv_response));
+	}
+	return (0);
+}
+
+// saving each header into our t_content_map
+// we're checking if there are multiple hosts or content-length (and if it's value isn't correct)
+// if the name of the header isn't correct, we juste ignore it
+int	ClientRequest::save_header(std::string &str)
+{
+	std::vector<std::string>	vec = split(str, ':', 1);
+
+	lower(vec[0]);
+	for (size_t i = 0 ; _headers[i] != "" ; i++)
+	{
+		if (vec[0] == "host" && _conf.find("host") != _conf.end())
 			return (400);
-		if (vec[0] == "content-length" && _conf.find("content-length") != _conf.end())
+		if (vec[0] == "content-length" && (_conf.find("content-length") != _conf.end() || !is_num(vec[1])))
 			return (400);
 		if (vec[0] == "transfer-encoding" && vec[1].compare("chunked"))
 			return (501);
-		else if (vec[0] == "content-length")
+		if (!vec[0].compare(_headers[i]))
 		{
-			for (size_t i = 0 ; i < vec[1].size() ; i++)
-			{
-				if (vec[1][i] < '0' || vec[1][i] > '9')
-					return (400);
-			}
+			_conf[vec[0]].push_back(vec[1]);
+			return (0);
 		}
-        if (!vec[0].compare(_headers[i]))
-        {
-            _conf[vec[0]].push_back(vec[1]);
-            return (0);
-        }
-        if (is_space(vec[0][vec[0].size() - 1]))
-            return (400);
-    }
-    return (0);
+		if (is_space(vec[0][vec[0].size() - 1]))
+			return (400);
+	}
+	return (0);
 }
 
-bool    ClientRequest::parse_host()
+// WIP
+// first we check if we got a content-length, and if it is >= to the size of body
+//
+// then we check if content-type is defined. If not, default value
+int		ClientRequest::parse_body(size_t i, ServerResponse &serv_response)
 {
-    std::map<std::string, std::list<std::string> >::iterator    it = _conf.find("host");
+	t_content_map::iterator	itc;
+
+	if ((itc = _conf.find("content-length")) == _conf.end())
+		return (serv_response.error(411));
+	if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
+		return (serv_response.error(400));
+	_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));
+	_conf["body"].push_back(_vecRead[i]);
+	if (_conf.find("content-type") == _conf.end())
+		_conf["content-type"].push_back("application/octet-stream");
+	return (0);
+}
+
+// parsing host & port. Some bullshit is allowed but we don't accept '/'
+bool	ClientRequest::parse_host()
+{
+	t_content_map::iterator	it = _conf.find("host");
+	size_t					i = (*it).second.front().find(':');
+	size_t					j = 0;
+
 	if (it == _conf.end())
 		return (1);
 	if ((*it).second.front().find('/') > -1)
 		return (1);
-	size_t	i = (*it).second.front().find(':');
-	size_t	j = 0;
 	if (i == std::string::npos)
 		_conf["port"].push_back("80");
 	else
@@ -132,186 +188,117 @@ bool    ClientRequest::parse_host()
 		}
 		_conf["port"].push_back((*it).second.front().substr(i - j, j));
 	}
-    return (0);
+	return (0);
 }
 
-bool    ClientRequest::parse_language()
+// parsing language according to RFC, even if it seems pretty useless
+bool	ClientRequest::parse_language()
 {
-    std::map<std::string, std::list<std::string> >::iterator    it = _conf.find("accept-language");
-
-    if (it == _conf.end())
-        return (1);
-    std::vector<std::string>					vec;
-    std::string									str;
-    std::string									tmp;
-    std::vector<float>							ft;
+	t_content_map::iterator						it = _conf.find("accept-language");
+	std::vector<std::string>					vec;
+	std::string									str;
+	std::string									tmp;
+	std::vector<float>							ft;
+	size_t										i = 0;
+	size_t										j = 0;
 	std::list<std::pair<float, std::string> >	_language;
-    size_t          i = 0;
-    size_t          j = 0;
-    vec = split((*it).second.front(), ',');
-    while (j < vec.size())
-    {
-        i = 0;
-        pass_spaces(vec[j], i);
-        while (is_alpha(vec[j][i]))
-        {
-            str = cap_alpha(vec[j], i);
-            if (str.size() > 8)
-            {
-                j++;
-                continue;
-            }
-            else
-                tmp += str;
-            if (i < vec[j].size() && vec[j][i] == '-')
-            {
-                ++i;
-                tmp += "-";
-            }
-        }
-        //  will have to deal with '*'
-        if (!(tmp.empty()))
-        {
-            if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
-            {
-                _language.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
-            }
-            else
-                _language.push_back(std::pair<float, std::string>(1.0, tmp));
-            tmp.clear();
-        }
-        j++;
-    }
-    _language.sort(comp_float);
-    (*it).second.clear();
-    for (std::list<std::pair<float, std::string> >::iterator ti = _language.begin() ; ti != _language.end() ; ++ti)
-    {
-        (*it).second.push_back((*ti).second);
-    }
-    return (0);
-}
 
-bool    ClientRequest::parse_charset()
-{
-    std::map<std::string, std::list<std::string> >::iterator	it = _conf.find("accept-charset");
-    if (it == _conf.end())
-        return (1);
-    std::vector<std::string>					vec;
-    std::string									str;
-    std::string									tmp;
-    std::vector<float>							ft;
-	std::list<std::pair<float, std::string> >	_charset;
-    size_t          i = 0;
-    size_t          j = 0;
-    vec = split((*it).second.front(), ',');
-    while (j < vec.size())
-    {
-        i = 0;
-        pass_spaces(vec[j], i);
-        while (is_alnum(vec[j][i]))
-        {
-            str = cap_alphanum(vec[j], i);
-            tmp += str;
-            if (i < vec[j].size() && vec[j][i] == '-')
-            {
-                ++i;
-                tmp += "-";
-            }
-        }
-        //  will have to deal with '*'
-        if (!(tmp.empty()))
-        {
-            if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
-            {
-                _charset.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
-            }
-            else
-                _charset.push_back(std::pair<float, std::string>(1.0, tmp));
-            tmp.clear();
-        }
-        j++;
-    }
-    _charset.sort(comp_float);
-    (*it).second.clear();
-    for (std::list<std::pair<float, std::string> >::iterator ti = _charset.begin() ; ti != _charset.end() ; ++ti)
-    {
-        (*it).second.push_back((*ti).second);
-    }
-    return (0);
-}
-
-/*bool    ClientRequest::parse_authorization()
-{
-
-}*/
-
-void    ClientRequest::parse_request(ServerResponse &serv_response) {
-    //check if request format is good
-    //first line will init _method, _file and _protocol
-    //then each header field will init each of our ClientRequest attributes.
-    (void)serv_response;
-    std::string     toRead(_read);
-    int             error;
-	size_t			body = -1;
-    _vecRead = split_crlf(toRead, &body);
-    if ((error = parse_method()))
-    {
-        // serv_response.error(error);
-        std::cout << "ERROR " << error <<std::endl;
-        return ;
-    }
-    size_t  found;
-    // saving all headers in _conf
-    for (size_t i = 1 ; i < _vecRead.size() ; i++)
-    {
-		found = 0;
-        if (i != body - 1 && (found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
+	if (it == _conf.end())
+		return (1);
+	vec = split((*it).second.front(), ',');
+	while (j < vec.size())
+	{
+		i = 0;
+		pass_spaces(vec[j], i);
+		while (is_alpha(vec[j][i]))
 		{
-            if ((error = save_header(_vecRead[i])))
+			str = cap_alpha(vec[j], i);
+			if (str.size() > 8)
 			{
-				// serv_response.error(error);
-       			std::cout << "ERROR " << error <<std::endl;
-        		return ;
+				j++;
+				continue;
+			}
+			else
+				tmp += str;
+			if (i < vec[j].size() && vec[j][i] == '-')
+			{
+				++i;
+				tmp += "-";
 			}
 		}
-        else if (found && is_space(_vecRead[i][found - 1]))
-        {
-			// serv_response.error(400);
-            std::cout << "ERROR 400" <<std::endl;
-            return ;
-        }
-        else if (i == body - 1)
-        {
-			std::map<std::string, std::list<std::string> >::iterator	itc;
-			if ((itc = _conf.find("content-length")) == _conf.end())
+		if (!(tmp.empty()))
+		{
+			if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
 			{
-				// serv_response.error(411);
-            	std::cout << "ERROR 411" <<std::endl;
-           		return ;
+				_language.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
 			}
-			// incomplete body
-            if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
-			{
-				// serv_response.error(400);
-            	std::cout << "ERROR 400" <<std::endl;
-           		return ;
-			}
-			_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));
-            _conf["body"].push_back(_vecRead[i]);
-            if (_conf.find("content-type") == _conf.end())
-                _conf["content-type"].push_back("application/octet-stream");
-            break ;
-        }
-    }
+			else
+				_language.push_back(std::pair<float, std::string>(1.0, tmp));
+			tmp.clear();
+		}
+		j++;
+	}
+	_language.sort(comp_float);
+	(*it).second.clear();
+	for (std::list<std::pair<float, std::string> >::iterator ti = _language.begin() ; ti != _language.end() ; ++ti)
+	{
+		(*it).second.push_back((*ti).second);
+	}
+	return (0);
+}
 
-    // checkinf if there is a "host"
-    if (parse_host())
-    {
-        // serv_response.error(400);
-        std::cout << "ERROR 400" <<std::endl;
-        return ;
-    }
-    parse_charset();
-    parse_language();
-    print_map(_conf);
+// parsing charset according to RFC, even if it seems pretty useless
+bool	ClientRequest::parse_charset()
+{
+	t_content_map::iterator						it = _conf.find("accept-charset");
+	std::vector<std::string>					vec;
+	std::string									str;
+	std::string									tmp;
+	std::vector<float>							ft;
+	size_t										i = 0;
+	size_t										j = 0;
+	std::list<std::pair<float, std::string> >	_charset;
+
+	if (it == _conf.end())
+		return (1);
+	vec = split((*it).second.front(), ',');
+	while (j < vec.size())
+	{
+		i = 0;
+		pass_spaces(vec[j], i);
+		while (is_alpha(vec[j][i]))
+		{
+			str = cap_alpha(vec[j], i);
+			if (str.size() > 8)
+			{
+				j++;
+				continue;
+			}
+			else
+				tmp += str;
+			if (i < vec[j].size() && vec[j][i] == '-')
+			{
+				++i;
+				tmp += "-";
+			}
+		}
+		if (!(tmp.empty()))
+		{
+			if (i + 3 < vec[j].size() && vec[j].substr(i, 3) == ";q=" && vec[j][i + 3] == '0')
+			{
+				_charset.push_back(std::pair<float, std::string>(atof(vec[j].substr(i + 3).c_str()), tmp));
+			}
+			else
+				_charset.push_back(std::pair<float, std::string>(1.0, tmp));
+			tmp.clear();
+		}
+		j++;
+	}
+	_charset.sort(comp_float);
+	(*it).second.clear();
+	for (std::list<std::pair<float, std::string> >::iterator ti = _charset.begin() ; ti != _charset.end() ; ++ti)
+	{
+		(*it).second.push_back((*ti).second);
+	}
+	return (0);
 };

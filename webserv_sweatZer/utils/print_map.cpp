@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/15 15:21:42 by rturcey           #+#    #+#             */
-/*   Updated: 2021/04/25 16:02:04 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 09:50:14 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,6 @@ void        print_map(std::map<std::string, std::list<std::string> > map)
         {
             std::cout << (*it).first << " = " << (*iter) << std::endl;
         }
-        ++it; 
+        ++it;
     }
 }

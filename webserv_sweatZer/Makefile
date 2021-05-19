@@ -11,7 +11,7 @@ UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
 #############################################################
 
 ######################### SRC FILES #########################
-SRCS			= main.cpp Server.cpp ClientRequest.cpp Cluster.cpp
+SRCS			= main.cpp Server.cpp ClientRequest.cpp Cluster.cpp ServerResponse.cpp
 SRCS_DIR		= ./
 SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
 #############################################################

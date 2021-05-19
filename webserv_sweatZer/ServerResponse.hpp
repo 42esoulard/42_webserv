@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 15:50:11 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/19 10:19:05 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@
                 [Content-Length: 348]
     ◦ Content-Location: an alternate location for the returned data
                 [Content-Location: /index.htm]
-    ◦ Content-Type: the MIME type of this content - its media type two part identifier 	
+    ◦ Content-Type: the MIME type of this content - its media type two part identifier
                 [Content-Type: text/html; charset=utf-8]
     ◦ Date: the date and time that the message was sent (in "HTTP-date" format as defined by RFC 7231)
                 [Date: Tue, 15 Nov 1994 08:12:31 GMT]
     ◦ Last-Modified: last modified date for the requested object (in "HTTP-date" format as defined by RFC 7231)
                 [Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT]
-    ◦ Location: Used in redirection, or when a new resource has been created. 	
+    ◦ Location: Used in redirection, or when a new resource has been created.
                 [Location: http://www.w3.org/pub/WWW/People.html]
                 [Location: /pub/WWW/People.html]
     ◦ Retry-After: If an entity is temporarily unavailable, this instructs the client to try again later. Value could be a specified period of time (in seconds) or a HTTP-date
@@ -38,9 +38,9 @@
                 [Retry-After: Fri, 07 Nov 2014 23:59:59 GMT]
     ◦ Server: A name for the server
                 [Server: Apache/2.4.1 (Unix)]
-    ◦ Transfer-Encoding: The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity. 
+    ◦ Transfer-Encoding: The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity.
                 [Transfer-Encoding: chunked]
-    ◦ WWW-Authenticate: Indicates the authentication scheme that should be used to access the requested entity. 	
+    ◦ WWW-Authenticate: Indicates the authentication scheme that should be used to access the requested entity.
                 [WWW-Authenticate: Basic]
 */
 
@@ -65,7 +65,7 @@ class ServerResponse {
             _methods["OPTIONS"] = &ServerResponse::method_options;
             _methods["TRACE"] = &ServerResponse::method_trace;
         };
-        
+
         typedef void (ServerResponse::*method_func)();
         method_func get_method(std::string &method) {
             return _methods[method];
@@ -74,24 +74,27 @@ class ServerResponse {
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(char *line, int &index);
 
+		//this is temporary
+		int		error(int code);
+
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
-    
+
         //*************************************************************************
         // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
         std::map<std::string, std::string> _conf;
 
         // ^^^ this will contain this vvv
-        
+
         // //first line
         // std::string _protocol;// HTTP/1.1
-        // std::string _status_code; 
+        // std::string _status_code;
         // std::string _status_msg;
 
         // //general info stuff
         // std::string _server;// as declared in the config file
         // std::string _date;// need a nice time/date formatting function
-        
+
         // //content related stuff
         // std::string _content_lang;
         // std::string _content_len;
@@ -103,7 +106,7 @@ class ServerResponse {
         // //if theres an error stuff
         // std::string _allow;// if status code 405, indicate which methods were valid
         // std::string _retry_after;
-        
+
         // //security stuff
         // std::string _encoding;
         // std::string _www_auth;
@@ -112,17 +115,17 @@ class ServerResponse {
         //*************************************************************************
 
         //*************************************************************************
-        
+
         std::map< std::string, ServerResponse::method_func >  _methods;
-        
+
         void method_get(){ /* do GET related stuff here */ };
-        void method_head(){ /* do HEAD related stuff here */ }; 
-        void method_post(){ /* do POST related stuff here */ }; 
-        void method_put(){ /* do PUT related stuff here */ }; 
-        void method_delete(){ /* do DELETE related stuff here */ }; 
-        void method_connect(){ /* do CONNECT related stuff here */ }; 
-        void method_options(){ /* do OPTIONS related stuff here */ }; 
-        void method_trace(){ /* do TRACE related stuff here */ }; 
+        void method_head(){ /* do HEAD related stuff here */ };
+        void method_post(){ /* do POST related stuff here */ };
+        void method_put(){ /* do PUT related stuff here */ };
+        void method_delete(){ /* do DELETE related stuff here */ };
+        void method_connect(){ /* do CONNECT related stuff here */ };
+        void method_options(){ /* do OPTIONS related stuff here */ };
+        void method_trace(){ /* do TRACE related stuff here */ };
         // see this great simple guide https://www.tutorialspoint.com/http/http_methods.htm
         //*************************************************************************
 };

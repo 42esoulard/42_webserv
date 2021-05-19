@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 11:49:39 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/19 09:49:44 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,25 +19,25 @@
 ** struct in_addr {
 **     unsigned long s_addr;
 ** };
-** 
-** typedef struct sockaddr_in 
-** { 
-**     __uint8_t         sin_len; 
-**     sa_family_t       sin_family; 
-**     in_port_t         sin_port; 
-**     struct in_addr    sin_addr; 
-**     char              sin_zero[8]; 
+**
+** typedef struct sockaddr_in
+** {
+**     __uint8_t         sin_len;
+**     sa_family_t       sin_family;
+**     in_port_t         sin_port;
+**     struct in_addr    sin_addr;
+**     char              sin_zero[8];
 ** }              sockaddr_in;
 **
-** sockaddr_in is a struct defined in netinet/in.h, used for 
-** IP networking, contains all elements that make sense for that 
+** sockaddr_in is a struct defined in netinet/in.h, used for
+** IP networking, contains all elements that make sense for that
 ** specific communication type
 */
 
 class Server {
 
     public:
-        typedef std::map <std::string, std::list <std::string > >  t_content_map;
+        typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
         typedef struct          s_conf {
             t_content_map               serv_info;
