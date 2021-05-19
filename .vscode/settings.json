@@ -63,6 +63,11 @@
         "iomanip": "cpp",
         "__tree": "cpp",
         "map": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "*.tcc": "cpp",
+        "clocale": "cpp",
+        "deque": "cpp",
+        "memory_resource": "cpp",
+        "fstream": "cpp"
     }
 }

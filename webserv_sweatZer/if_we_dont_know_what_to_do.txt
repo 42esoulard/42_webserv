@@ -7,7 +7,7 @@ Here's a pot pourri of ideas for those days when we got no idea what to do:
 RFC REQUIREMENTS:
 
     ****************
-    *** RFC 7230 ***
+******* RFC 7230 *** >>> MESSAGE SYNTAX & ROUTING ********************************************
     ****************
 
     Request Line (the first header line):
@@ -58,7 +58,7 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
 
 
     ****************
-    *** RFC 7231 ***
+******* RFC 7231 *** >>> SEMANTICS & CONTENT *************************************************
     ****************
 
     Methods: HEAD, GET & POST
@@ -127,4 +127,64 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
             CRLF, bare CR, or bare LF.  In addition, text media in HTTP is not limited to 
             charsets that use octets 13 and 10 for CR and LF, respectively.
 
+    ****************
+******* RFC 7232 *** >>> CONDITIONAL REQUESTS ************************************************
+    ****************
+    Last-modified:
+        -  An origin server SHOULD send Last-Modified for any selected
+            representation for which a last modification date can be reasonably
+            and consistently determined
+        - An origin server with a clock MUST NOT send a Last-Modified date that
+             is later than the server's time of message origination (Date). (DUH! can modify
+             stuff in the future, Marty)
+        - In 200 (OK) responses to GET or HEAD, an origin server
+            SHOULD send a Last-Modified value if it is feasible to send one.
+
+    ****************
+******* RFC 7233 *** >>> RANGE REQUESTS *******************************************************
+    ****************
+
+    "Range requests are an OPTIONAL feature of HTTP." 
+    Bye-bye, range requests! We won't miss u!
+
+    ****************
+******* RFC 7234 *** >>> RANGE REQUESTS *******************************************************
+    ****************
+
+    "Any client or server MAY employ a cache"
+    "The goal of caching in HTTP/1.1 is to significantly improve
+   performance by reusing a prior response message to satisfy a current
+   request."
+   We're unambitious, and we are very satisfied with our average performance already.
+   No caching for SweatZers!
+
+    ****************
+******* RFC 7235 *** >>> AUTHENTICATION *******************************************************
+    ****************
     
+    Auth Challenge rules:
+    - a server challenges a client request, for the
+        client provide authentication information
+    - A 401 (Unauthorized) response message is used by an origin server to
+        challenge the authorization of a user agent, and it MUST include a
+        WWW-Authenticate header field containing at least one challenge
+        applicable to the requested resource.
+    - Authentication parameters are name=value pairs, where the name token
+        is matched case-insensitively, and each parameter name MUST only
+        occur once per challenge.
+    - Authorization field value field contains the client's credentials for the
+        realm of the resource being requested
+    - If we receive a request for a protected ressource with bad or missing credentials,
+        we SHOULD send 401 (Unauthorized) response that contains a 
+        WWW-Authenticate header field with at least one (possibly new) challenge 
+        applicable to the requested resource.
+    - A server that receives valid credentials that are not adequate to
+        gain access ought to respond with the 403 (Forbidden) status code
+
+    Header WWW-Authenticate:
+    - Contains the challenge (? not sure what they mean nor its format)
+        ex: WWW-Authenticate: Newauth realm="apps", type=1,
+                       title="Login to \"apps\"", Basic realm="simple"
+    
+    Header Authorization:
+    - Is sent by the client. Contains credentials (username=password)
