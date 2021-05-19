@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 10:34:27 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 16:08:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ void Cluster::set_mime() {
     // FD_SET (mime_fd, &active_fd_set);
     // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
     //     throw Exception("select error");
-    std::cout << "HERE" << std::endl;
     char *line;
-    SimpleHashTable g_mime_types(65);
+
+    //_mime_types = SimpleHashTable(65);
 
     while (get_next_line(mime_fd, &line) > 0) {
-        g_mime_types.add_entry(line);
+        _mime_types.add_entry(line);
         free (line);
     }
     close (mime_fd);
@@ -287,7 +287,7 @@ void Cluster::parse_request() {
     */
     ClientRequest cli_request;
     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
-    ServerResponse serv_response;
+    ServerResponse serv_response(_mime_types);
     cli_request.parse_request(serv_response);
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 

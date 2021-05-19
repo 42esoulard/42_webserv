@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 10:34:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 15:47:44 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,11 @@
 #include <vector>
 #include <cstdlib>
 
+
+
 #include "Exception.hpp"
 #include "utils.hpp"
 #include "HashTable.hpp"
-
-extern SimpleHashTable g_mime_types;
 
 // server
 //#include "Server.hpp"

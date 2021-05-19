@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 11:21:26 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 16:12:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,8 +155,10 @@ int		ClientRequest::parse_body(size_t i, ServerResponse &serv_response)
 {
 	t_content_map::iterator	itc;
 
-	if ((itc = _conf.find("content-length")) == _conf.end())
+	if ((itc = _conf.find("content-length")) == _conf.end()) {
+		std::cout << "here" << std::endl;
 		return (serv_response.error(411));
+	}
 	if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
 		return (serv_response.error(400));
 	_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));

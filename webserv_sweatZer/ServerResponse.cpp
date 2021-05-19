@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 10:36:49 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 16:10:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,12 @@ int			ServerResponse::error(int code)
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
-	/*std::string *value = g_mime_types.get_value(extension);
+	//SimpleHashTable g_mime_types(65);
+	std::string *value =_mime_types.get_value(extension);
+
 	if (!value)
 		std::cerr << "Heck man I can't read dat" << std::endl;
-	else
+	/*else
 		std::cerr << "The latin name for the " << extension << " species is " << *value << std::endl;
 */
 	//WHAT SHOULD WE DO HERE IN CASE OF UNKNOWN EXTENSION ? THROW ERROR ? IGNORE ?

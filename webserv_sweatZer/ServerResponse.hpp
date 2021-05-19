@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 10:19:05 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/19 16:10:16 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,10 @@ class ServerResponse {
 
     public:
 
-        ServerResponse() { init_methods_list(); };
+        ServerResponse(SimpleHashTable &mime_table): _mime_types(mime_table)  { 
+            init_methods_list(); 
+        };
+        
         ~ServerResponse() {};
 
         void set_conf(std::string &key, std::string &val) { _conf[key] = val; };
@@ -80,6 +83,7 @@ class ServerResponse {
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
 
+        SimpleHashTable _mime_types;
         //*************************************************************************
         // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
         std::map<std::string, std::string> _conf;
