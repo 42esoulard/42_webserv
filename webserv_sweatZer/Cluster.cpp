@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 16:08:38 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 11:23:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,8 +287,8 @@ void Cluster::parse_request() {
     */
     ClientRequest cli_request;
     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
-    ServerResponse serv_response(_mime_types);
-    cli_request.parse_request(serv_response);
+    ServerResponse serv_response(_mime_types, server_list);
+    cli_request.parse_request(serv_response);// should also take 
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
@@ -302,48 +302,48 @@ void Cluster::format_response() {
     std::cout << "[--- HELLO MSG SENT ---]" << std::endl;
 };
 
-// find a server with one of its names, NOT TESTED YET
-Server::t_conf *Cluster::get_server_conf_by_name(std::string &searched_name) {
+// // find a server with one of its names, NOT TESTED YET
+// Server::t_conf *Cluster::get_server_conf_by_name(std::string &searched_name) {
 
-    std::list<Server>::iterator server_it = server_list.begin();
-    std::list<std::string>::iterator    content_it;
+//     std::list<Server>::iterator server_it = server_list.begin();
+//     std::list<std::string>::iterator    content_it;
 
-    while (server_it != server_list.end()) {
+//     while (server_it != server_list.end()) {
 
-        content_it = (*server_it).get_serv_info()["server_name"].begin();
-        while (content_it != (*server_it).get_serv_info()["server_name"].end()) {
+//         content_it = (*server_it).get_serv_info()["server_name"].begin();
+//         while (content_it != (*server_it).get_serv_info()["server_name"].end()) {
 
-            if (*content_it == searched_name)
-                return &((*server_it).get_conf());
-            ++content_it;
-        }
-        ++server_it;
-    }
-    return NULL;
-};
+//             if (*content_it == searched_name)
+//                 return &((*server_it).get_conf());
+//             ++content_it;
+//         }
+//         ++server_it;
+//     }
+//     return NULL;
+// };
 
-Server::t_conf  *Cluster::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
+// Server::t_conf  *Cluster::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
 
-    std::list<Server>::iterator server_it = server_list.begin();
-    std::list<std::string>::iterator    host_it;
-    std::list<std::string>::iterator    port_it;
+//     std::list<Server>::iterator server_it = server_list.begin();
+//     std::list<std::string>::iterator    host_it;
+//     std::list<std::string>::iterator    port_it;
 
-    while (server_it != server_list.end()) {
+//     while (server_it != server_list.end()) {
 
-        host_it = (*server_it).get_serv_info()["server_host"].begin();
-        while (host_it != (*server_it).get_serv_info()["server_host"].end()) {
+//         host_it = (*server_it).get_serv_info()["server_host"].begin();
+//         while (host_it != (*server_it).get_serv_info()["server_host"].end()) {
 
-            if (*host_it == searched_host) {
-                port_it = (*server_it).get_serv_info()["server_port"].begin();
-                while (port_it != (*server_it).get_serv_info()["server_port"].end()) {
+//             if (*host_it == searched_host) {
+//                 port_it = (*server_it).get_serv_info()["server_port"].begin();
+//                 while (port_it != (*server_it).get_serv_info()["server_port"].end()) {
 
-                    if (*port_it == searched_port)
-                        return &((*server_it).get_conf());
-                }
-            }
-            ++host_it;
-        }
-        ++server_it;
-    }
-    return NULL;
-};
+//                     if (*port_it == searched_port)
+//                         return &((*server_it).get_conf());
+//                 }
+//             }
+//             ++host_it;
+//         }
+//         ++server_it;
+//     }
+//     return NULL;
+// };

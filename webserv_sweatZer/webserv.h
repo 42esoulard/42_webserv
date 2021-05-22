@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 15:47:44 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 11:53:10 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,12 @@
 
 // read/write/fd stuff
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 
 // utils
 #include <errno.h>
-#include <string.h>
+#include <string.h> // REMOVE THIS?
 #include <string>
 #include <stdlib.h>
 #include <unistd.h>
@@ -36,8 +37,7 @@
 #include <vector>
 #include <cstdlib>
 
-
-
+// webserv accessories
 #include "Exception.hpp"
 #include "utils.hpp"
 #include "HashTable.hpp"
@@ -45,8 +45,8 @@
 // server
 //#include "Server.hpp"
 //#include "Cluster.hpp"
-#include "ServerResponse.hpp"
-#include "ClientRequest.hpp"
+//#include "ServerResponse.hpp"
+//#include "ClientRequest.hpp"
 
 
 #define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"

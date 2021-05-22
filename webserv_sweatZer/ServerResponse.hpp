@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 16:10:16 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 11:52:19 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define SERVERRESPONSE_HPP
 
 #include "webserv.h"
+#include "Server.hpp"
 
 /*
     ◦ Allow: valid methods for a specified resource. To be used for a 405 Method not allowed
@@ -48,7 +49,7 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table): _mime_types(mime_table)  { 
+        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list)  { 
             init_methods_list(); 
         };
         
@@ -69,6 +70,8 @@ class ServerResponse {
             _methods["TRACE"] = &ServerResponse::method_trace;
         };
 
+        typedef std::map<std::string, std::list<std::string> >  t_content_map;
+        
         typedef void (ServerResponse::*method_func)();
         method_func get_method(std::string &method) {
             return _methods[method];
@@ -77,6 +80,11 @@ class ServerResponse {
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(char *line, int &index);
 
+        Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
+        Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
+        int identify_server(t_content_map &cli_conf);
+        std::string check_file_access(std::string &file, std::string &authorization);
+
 		//this is temporary
 		int		error(int code);
 
@@ -84,6 +92,9 @@ class ServerResponse {
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
 
         SimpleHashTable _mime_types;
+        std::list<Server> _server_list;
+        Server::t_conf    *_server_conf;
+
         //*************************************************************************
         // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
         std::map<std::string, std::string> _conf;
@@ -100,6 +111,7 @@ class ServerResponse {
         // std::string _date;// need a nice time/date formatting function
 
         // //content related stuff
+        // std::string _body;
         // std::string _content_lang;
         // std::string _content_len;
         // std::string _content_loc; // does this appear when there's no alternate location?
