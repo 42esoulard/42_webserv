@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:52:19 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 12:45:13 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,10 +80,12 @@ class ServerResponse {
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(char *line, int &index);
 
+        //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
-        int identify_server(t_content_map &cli_conf);
-        std::string check_file_access(std::string &file, std::string &authorization);
+        int identify_server(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "host" FIELD PARSING
+
+        int check_file_access(std::string &file, std::string &authorization); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
 
 		//this is temporary
 		int		error(int code);

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 16:03:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 11:56:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ class Cluster {
         void        check_conf(std::string &config);
         void        print_config(); //DEV UTIL
 
-        Server::t_conf *get_server_conf_by_name(std::string &searched_name);
-        Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
+        // Server::t_conf *get_server_conf_by_name(std::string &searched_name);
+        // Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
 
         void parse_request();
         void format_response();
