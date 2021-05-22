@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 16:12:30 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 15:42:58 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,14 +60,14 @@ bool	   ClientRequest::is_method(std::string &str)
 // parsing the whole request, handling errors using serv_response & RFC's error codes
 // split_crlf splits the whole buffer into vector<string> _vecRead, using "\r\n" as charset
 // int body is telling us which element of _vecRead is the body
-int		ClientRequest::parse_request(ServerResponse &serv_response)
+int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 {
 	std::string				toRead(_read);
 	int						error;
 	size_t					body = -1;
 
 	_vecRead = split_crlf(toRead, &body);
-	if ((error = parse_method()) || (error = parse_headers(body, serv_response)))
+	if ((error = parse_method()) || (error = parse_headers(body, socket)))
 		return (serv_response.error(error));
 	if (parse_host())
 		return (serv_response.error(400));
@@ -99,7 +99,7 @@ int		ClientRequest::parse_method()
 // each header is parsed until we encounter an error
 // we allow bullshit only if it's RFC compliant
 // for example, spaces before colons are not allowed
-int		ClientRequest::parse_headers(size_t body, ServerResponse &serv_response)
+int		ClientRequest::parse_headers(size_t body, int socket)
 {
 	int						found;
 	int						error;
@@ -110,12 +110,12 @@ int		ClientRequest::parse_headers(size_t body, ServerResponse &serv_response)
 		if (i != body - 1 && (found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
 		{
 			if ((error = save_header(_vecRead[i])))
-				return (serv_response.error(error));
+				return (error);
 		}
 		else if (found && is_space(_vecRead[i][found - 1]))
-			return (serv_response.error(400));
+			return (400);
 		else if (i == body - 1)
-			return (parse_body(i, serv_response));
+			return (parse_body(i, socket));
 	}
 	return (0);
 }
@@ -147,24 +147,63 @@ int	ClientRequest::save_header(std::string &str)
 	return (0);
 }
 
-// WIP
-// first we check if we got a content-length, and if it is >= to the size of body
-//
-// then we check if content-type is defined. If not, default value
-int		ClientRequest::parse_body(size_t i, ServerResponse &serv_response)
+// we check if content-type is defined. If not, default value
+// if chunked, parse_body_chunked()
+// else, we checkf if there is a contnt-length (if not, error 411)
+// then if the size of the body is correct, we save it
+int		ClientRequest::parse_body(size_t i, int socket)
 {
 	t_content_map::iterator	itc;
 
-	if ((itc = _conf.find("content-length")) == _conf.end()) {
-		std::cout << "here" << std::endl;
-		return (serv_response.error(411));
-	}
-	if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
-		return (serv_response.error(400));
-	_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));
-	_conf["body"].push_back(_vecRead[i]);
 	if (_conf.find("content-type") == _conf.end())
 		_conf["content-type"].push_back("application/octet-stream");
+	if ((itc = _conf.find("transfer-encoding")) != _conf.end())
+		return (parse_body_chunked(_vecRead[i], socket));
+	if ((itc = _conf.find("content-length")) == _conf.end())
+		return (411);
+	if (_vecRead[i].size() < (size_t)ft_stoi((*itc).second.front()))
+		return (400);
+	_vecRead[i] = _vecRead[i].substr(0, (size_t)ft_stoi((*itc).second.front()));
+	_conf["body"].push_back(_vecRead[i]);
+	return (0);
+}
+
+// parsing chunked body : size(in hexa)\r\nbody
+// until size is 0 or incorrect
+// if the size of the body is < to chunk_size, error
+// if the chunk_size is incorrect, error
+// we read until body.size() > LIMIT or until chunk_size == 0
+int		ClientRequest::parse_body_chunked(std::string str, int socket)
+{
+	size_t					j = 0;
+	int						hex = 0;
+	std::string				body;
+
+	while (42)
+	{
+		_vecChunked = split_chunked(str);
+		while (j < _vecChunked.size() && (hex = ft_stoi_hex(_vecChunked[j])) != 0)
+		{
+			if (hex < 0 || j == _vecChunked.size() - 1 || (size_t)hex > _vecChunked[j + 1].size())
+				return (400);
+			if (body.size() + hex < 4096)
+				body += _vecChunked[j + 1].substr(0, hex + 1);
+			else
+				return (400);
+			j += 2;
+		}
+		if (j >= _vecChunked.size() && hex != 0)
+		{
+			_vecChunked.clear();
+			read(socket, _read, _MAXLINE);
+			str = std::string(_read);
+			j = 0;
+			continue ;
+		}
+		else
+			break;
+	}
+	_conf["body"].push_back(body);
 	return (0);
 }
 
@@ -179,7 +218,7 @@ bool	ClientRequest::parse_host()
 		return (1);
 	if ((*it).second.front().find('/') > -1)
 		return (1);
-	if (i == std::string::npos)
+	if (i++ == std::string::npos)
 		_conf["port"].push_back("80");
 	else
 	{
@@ -189,6 +228,7 @@ bool	ClientRequest::parse_host()
 			j++;
 		}
 		_conf["port"].push_back((*it).second.front().substr(i - j, j));
+		(*it).second.front() = (*it).second.front().substr(0, i - j - 1);
 	}
 	return (0);
 }

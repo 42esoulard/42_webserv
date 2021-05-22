@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   conv_utils.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 11:15:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/15 11:18:06 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 13:09:25 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
+#include "utils/utils.hpp"
 
 int		ft_atoi(const char *str)
 {
@@ -40,4 +41,35 @@ int		ft_atoi(const char *str)
 
 int		ft_stoi(std::string str) {
 	return ft_atoi(str.c_str());
+}
+
+int		ft_atoi_hex(std::string &str)
+{
+	int 	result = 0;
+	int 	i = 0;
+	int		len = 0;
+	size_t	f;
+	std::string hexa = "0123456789abcdefgh";
+
+	while (hexa.find(str[len]) != std::string::npos)
+		len++;
+	if (len == i)
+		return (-1);
+	len -= i;
+	while ((f = hexa.find(str[i++])) != std::string::npos)
+		result += ft_pow((int)f, 16, --len);
+	return (result);
+}
+
+int		ft_pow(int nb, int f, int power)
+{
+	while (power--)
+		nb *= f;
+	return (nb);
+}
+
+int		ft_stoi_hex(std::string str)
+{
+	lower(str);
+	return ft_atoi_hex(str);
 }

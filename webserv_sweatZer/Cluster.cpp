@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:23:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 15:46:06 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,8 +287,13 @@ void Cluster::parse_request() {
     */
     ClientRequest cli_request;
     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
+<<<<<<< HEAD
     ServerResponse serv_response(_mime_types, server_list);
     cli_request.parse_request(serv_response);// should also take 
+=======
+    ServerResponse serv_response(_mime_types);
+    cli_request.parse_request(serv_response, this->_cur_socket);
+>>>>>>> body & chunk ok
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?

@@ -101,7 +101,7 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
                 +---------+-------------------------------------------------+-------+
 
     Content-type header:
-        - If a Content-Type header field is not present, the recipient MAY either assume a 
+OK      - If a Content-Type header field is not present, the recipient MAY either assume a 
             media type of "application/octet-stream"
     
     About how we don't care about negociation:

@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/15 12:08:27 by rturcey           #+#    #+#             */
-/*   Updated: 2021/05/18 10:46:57 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/22 13:06:47 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,16 +91,38 @@ std::vector<std::string>     split_crlf(std::string &str, size_t *body)
     while (i + 1 < str.size())
     {
         if ((i = str.find("\r\n", i + 1)) == std::string::npos)
-		{
 			break ;
-		}
         vec.push_back(str.substr(prev, i - prev));
 		if (vec.back().empty())
 		{
-			*body = vec.size();
-			vec.back() = str.substr(i + 2);
+            if (!str.substr(i + 2).empty())
+            {
+                *body = vec.size();
+			    vec.back() = str.substr(i + 2);
+            }
 			break ;
 		}
+        prev = i + 2;
+    }
+    return (vec);
+}
+
+std::vector<std::string>     split_chunked(std::string &str)
+{
+    std::vector<std::string>    vec;
+    size_t                      i = -1;
+
+    if (str.empty())
+        return (vec);
+    size_t          prev = 0;
+    while (i + 1 < str.size())
+    {
+        if ((i = str.find("\r\n", i + 1)) == std::string::npos)
+			break ;
+        if (!str.substr(prev, i - prev).empty())
+            vec.push_back(str.substr(prev, i - prev));
+        else
+            vec.back() += "\r\n";
         prev = i + 2;
     }
     return (vec);

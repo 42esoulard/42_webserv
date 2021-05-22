@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/18 11:01:25 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/22 15:42:24 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,9 @@ int main()
     int sock = 0;
     long valread;
     struct sockaddr_in serv_addr;
-    char hello[] = "POST / HTTP/1.1\r\nHost: foo.com\r\nContent-Length: 13\r\ntransfer-encoding: chunked\r\nContent-TyPe: testttt bla\r\n\r\nsay=Hi&to=Mom\r\ntruc\r\nmuch:blabla\r\n";
+    char hello[] = "POST / HTTP/1.1\r\nHost: foo.com\r\nContent-Length: 13\r\ntransfer-encoding: chunked\r\n\r\n26\r\nVoici les données du premier morceau\r\n\r\n1C\r\net voici un second morceau\r\n\r\n";
+    char hello2[] = "20\r\net voici deux derniers morceaux \r\n12\r\nsans saut de ligne\r\n\r\n\r\n";
+    char hello3[] = "0\r\n";
     char buffer[1024] = {0};
 
     // client opens his socket
@@ -58,6 +60,10 @@ int main()
 
     // initiate transmission of a message from the specified socket to its peer.
     send(sock , hello, strlen(hello)  , 0 );
+    std::cout << "[Hello message sent]" << std::endl;
+    send(sock , hello2, strlen(hello2)  , 0 );
+    std::cout << "[Hello message sent]" << std::endl;
+    send(sock , hello3, strlen(hello3)  , 0 );
     std::cout << "[Hello message sent]" << std::endl;
     valread = read( sock , buffer, 1024);
     std::cout << buffer << std::endl;

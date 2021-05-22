@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:21:51 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 15:45:53 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,14 @@ class	ClientRequest {
 		ClientRequest();
 		~ClientRequest();
 
-		int		parse_request(ServerResponse &serv_response);
+		int		parse_request(ServerResponse &serv_response, int socket);
 		char	*get_read(); //getter for _read
 		bool	is_method(std::string &str);
 		int		parse_method();
-		int		parse_headers(size_t body, ServerResponse &serv_response);
+		int		parse_headers(size_t body, int socket);
 		int		save_header(std::string &str);
-		int		parse_body(size_t i, ServerResponse &serv_response);
+		int		parse_body(size_t i, int socket);
+		int		parse_body_chunked(std::string str, int socket);
 		bool	parse_host();
 		bool	parse_language();
 		bool	parse_charset();
@@ -67,6 +68,7 @@ class	ClientRequest {
 		char						_read[_MAXLINE];
 		std::string					_headers[10];
 		std::vector<std::string>	_vecRead;
+		std::vector<std::string>	_vecChunked;
 		t_content_map				_conf;
 
 		// In our map, we got :
