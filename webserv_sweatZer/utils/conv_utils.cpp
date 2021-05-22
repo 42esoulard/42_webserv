@@ -6,12 +6,12 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 11:15:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 13:09:25 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/22 16:04:46 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
-#include "utils/utils.hpp"
+#include "utils.hpp"
 
 int		ft_atoi(const char *str)
 {
