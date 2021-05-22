@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 12:45:13 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/22 15:44:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,13 +79,15 @@ class ServerResponse {
 
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(char *line, int &index);
+        std::list < t_content_map > &get_locations() {return _server_conf->locations;}
 
         //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int identify_server(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "host" FIELD PARSING
+        int identify_location(std::string &file, std::string &extension);
 
-        int check_file_access(std::string &file, std::string &authorization); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
+        int check_file_access(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
 
 		//this is temporary
 		int		error(int code);
@@ -93,9 +95,11 @@ class ServerResponse {
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
 
-        SimpleHashTable _mime_types;
-        std::list<Server> _server_list;
-        Server::t_conf    *_server_conf;
+        SimpleHashTable     _mime_types;
+        std::list<Server>   _server_list;
+        Server::t_conf      *_server_conf;
+        t_content_map       *_location;
+
 
         //*************************************************************************
         // PUT ALL THIS IN A MAP<std::string, std::string>, make it shine
