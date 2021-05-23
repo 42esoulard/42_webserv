@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:53:42 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 15:09:58 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,27 @@ std::string ServerResponse::get_next_token(char *line, int &index) {
 
 int			ServerResponse::error(int code)
 {
-	std::cout << "ERROR " << code << std::endl;
+	std::string     path("html/");
+    char            buf[4096];
+    int             fd;
+
+    path += ft_itos(code);
+    path += ".html";
+    if ((fd = open(path.c_str(), O_RDONLY)) == -1)
+    {
+        std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+        return (500);
+    }
+    else
+    {
+        if (read(fd, buf, 4096) == -1)
+        {
+            std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+            close(fd);
+            return (500);
+        }
+        std::cout << buf << std::endl;
+    }
 	return (code);
 }
 

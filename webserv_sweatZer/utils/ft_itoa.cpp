@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/11 15:32:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 16:04:23 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 15:01:36 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,5 +89,24 @@ char			*ft_itoa(int n)
 		i = i / 10;
 	}
 	result = init_tab(quot, n, minus);
+	return (result);
+}
+
+std::string		ft_itos(int n)
+{
+	std::string	result;
+	long		i = n;
+
+	if (n < 0)
+		i *= -1;
+	while (i > 9)
+	{
+		result += i % 10 + '0';
+		i /= 10;
+	}
+	result += i + '0';
+	if (n < 0)
+		result = '-';
+	std::reverse(result.begin(), result.end());
 	return (result);
 }

@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 13:42:53 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 15:10:23 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,9 +288,11 @@ void Cluster::parse_request() {
     ** The same read and write system calls that work on files also work on sockets.
     */
     ClientRequest cli_request;
-    read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
     ServerResponse serv_response(_mime_types, server_list);
-    cli_request.parse_request(serv_response, this->_cur_socket);// should also take 
+    if (read(this->_cur_socket, cli_request.get_read(), _MAXLINE) == -1)
+        serv_response.error(500);
+    else
+        cli_request.parse_request(serv_response, this->_cur_socket);// should also take 
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
