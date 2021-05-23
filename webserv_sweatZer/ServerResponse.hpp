@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 15:44:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 14:25:50 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ class ServerResponse {
         };
 
         std::string get_mime_type(std::string &extension);
-        std::string get_next_token(char *line, int &index);
+        std::string get_next_token(std::string &line, size_t &index);
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
 
         //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
@@ -99,6 +99,7 @@ class ServerResponse {
         std::list<Server>   _server_list;
         Server::t_conf      *_server_conf;
         t_content_map       *_location;
+        std::string         resource_path;
 
 
         //*************************************************************************

@@ -6,21 +6,21 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 16:22:02 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 14:26:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 
 // simply parses spaces and returns the next non space character sequence
-std::string ServerResponse::get_next_token(char *line, int &index) {
+std::string ServerResponse::get_next_token(std::string &line, size_t &index) {
 
     pass_spaces(line, index);
-    if (line && !line[index])
+    if (index >= line.size())
         return "";
 
-    int start = index;
-    while (line && line[index] && !is_space(line[index]) && line[index] != ';')
+    size_t start = index;
+    while (index < line.size() && !is_space(line[index]))
         ++index;
 
     return std::string(&line[start], index - start);
@@ -186,9 +186,12 @@ int ServerResponse::check_file_access(t_content_map &cli_conf) {
 
     // 2) get location from a identify_location function 
     //  when a match is found, replace this with the location["root"], end of loop
-
-    std::string file = *(*_location)["root"].begin() + "/" + full_path.substr(i + 1);
-
+    std::string file;
+    if ((*_location).find("root") != (*_location).end())
+        file = *(*_location)["root"].begin() + "/" + full_path.substr(i + 1);
+    else
+        file = full_path;
+    
     // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
     //  if not, error 403 (forbidden)
 
@@ -202,12 +205,21 @@ int ServerResponse::check_file_access(t_content_map &cli_conf) {
         return error(405); // method not allowed
 
 	// 4) check file exists	with the newly built path
-    if (stat(full_path.c_str(), buf) < 0)
+    if (stat(file.c_str(), buf) < 0)
         return error(404); // file not found
         
     // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
-    if (*(*_location)["accept_method"].begin() == "on") {
-        
+    if (*(*_location)["auth"].begin() == "on") {
+        size_t j;
+        if (*cli_conf.find("authorization") == *cli_conf.end())
+            return error(401); // unauthorized (missing credentials)
+        std::string tmp = get_next_token(*cli_conf["authorization"].begin(), j);
+        if (tmp != "Basic")
+            return error(401); // unauthorized (authorization method unknown)
+        if ((tmp = get_next_token(*cli_conf["authorization"].begin(), j)) == "")
+            return error(401); // unauthorized (missing credentials)
+        //if (tmp decoded from base64 as login:password is not found in *(*_location)["root"].begin() + "/" + ".auth" file )
+        //  return (401) // bad credentials
     }
 
 
@@ -216,7 +228,7 @@ int ServerResponse::check_file_access(t_content_map &cli_conf) {
     // 7) else if IS_DIR && autoindex = "off"
     //  return if_dir file
     
-	
+    resource_path = file;
     return (200);
 }
 
