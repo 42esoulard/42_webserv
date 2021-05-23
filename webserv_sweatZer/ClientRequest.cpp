@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 15:42:58 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 13:46:13 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,8 @@ int		ClientRequest::parse_body_chunked(std::string str, int socket)
 		if (j >= _vecChunked.size() && hex != 0)
 		{
 			_vecChunked.clear();
-			read(socket, _read, _MAXLINE);
+			if (read(socket, _read, _MAXLINE) == -1)
+				return (400);
 			str = std::string(_read);
 			j = 0;
 			continue ;
