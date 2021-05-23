@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:53:10 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 17:50:57 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 // utils
 #include <errno.h>

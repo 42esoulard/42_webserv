@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 14:41:49 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 18:38:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list)  { 
+        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list), _error(200), _body("")  { 
             init_methods_list(); 
         };
         
@@ -87,7 +87,11 @@ class ServerResponse {
         int identify_server(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "host" FIELD PARSING
         int identify_location(std::string &file, std::string &extension);
 
-        int check_file_access(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
+        int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
+        int file_to_body(void);
+        int build_response_headers(void);
+        int make_index(void);
+
 
 		//this is temporary
 		int		error(int code);
@@ -99,7 +103,9 @@ class ServerResponse {
         std::list<Server>   _server_list;
         Server::t_conf      *_server_conf;
         t_content_map       *_location;
-        std::string         resource_path;
+        std::string         _resource_path;
+        int                 _error;
+        std::string         _body;
 
 
         //*************************************************************************
