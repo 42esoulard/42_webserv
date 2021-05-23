@@ -1,6 +1,6 @@
 Here's a pot pourri of ideas for those days when we got no idea what to do:
         - handle authentication encoding/hashing, dehashing and checking
-        - add fcntl(fd, F_SETFL, O_NONBLOCK) here and there to our fds before we handle them.
+(OK?)   - add fcntl(fd, F_SETFL, O_NONBLOCK) here and there to our fds before we handle them.
             I also think we'll have to add select every fcking where before reads.
 
 
@@ -34,7 +34,7 @@ OK      - A server MUST respond with a 400 (Bad Request) status code to any HTTP
     Transfer-Encoding:
 OK      - A server that receives a request message with a transfer coding it does not understand
             SHOULD respond with 501 (Not Implemented). (We should only handle "chunked")
-        - Pour les chunked, le format est : chunk-body, suivi de CRLF, puis chunk-size, puis
+OK      - Pour les chunked, le format est : chunk-body, suivi de CRLF, puis chunk-size, puis
             potentiellement le trailer (les especes de header du chunk sous forme key=value.)
 
     Content-Length:
@@ -101,7 +101,7 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
                 +---------+-------------------------------------------------+-------+
 
     Content-type header:
-        - If a Content-Type header field is not present, the recipient MAY either assume a 
+OK      - If a Content-Type header field is not present, the recipient MAY either assume a 
             media type of "application/octet-stream"
     
     About how we don't care about negociation:

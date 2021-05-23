@@ -6,45 +6,12 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/11 15:32:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 10:48:08 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/22 16:04:23 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "utils.hpp"
-
-bool				is_num(std::string &str)
-{
-	for (size_t i = 0 ; i < str.size() ; i++)
-	{
-		if (str[i] < '0' || str[i] > '9')
-			return (0);
-	}
-	return (1);
-}
-
-void				lower(std::string &str)
-{
-	for (size_t i = 0 ; i < str.size() ; i++)
-	{
-		if (str[i] >= 'A' && str[i] <= 'Z')
-			str[i] += 32;
-	}
-}
-
-bool			  is_alpha(char c)
-{
-	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-		return (1);
-	return (0);
-}
-
-bool			  is_alnum(char c)
-{
-	if (is_alpha(c) || (c >= '0' && c <= '9'))
-		return (1);
-	return (0);
-}
 
 static size_t     ft_strlen(char *str) {
     int size = -1;

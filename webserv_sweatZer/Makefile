@@ -17,7 +17,7 @@ SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
 #############################################################
 
 ######################### SRC UTILS #########################
-SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp split.cpp print_map.cpp conv_utils.cpp
+SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp split.cpp print_map.cpp conv_utils.cpp utils.cpp
 SRCS_UTILS_DIR	= ./utils/
 SRCS_UTILS 		:= $(addprefix ${SRCS_UTILS_DIR}, ${SRCS_UTILS})
 #############################################################

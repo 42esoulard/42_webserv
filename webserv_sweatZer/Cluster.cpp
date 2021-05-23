@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:23:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 13:42:53 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,7 +257,9 @@ void Cluster::handle_connection(){
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
                         throw Exception("accept error");
                     }
+
                     std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << std::endl;
+                    fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     return ;
                 }
@@ -288,7 +290,7 @@ void Cluster::parse_request() {
     ClientRequest cli_request;
     read(this->_cur_socket, cli_request.get_read(), _MAXLINE);
     ServerResponse serv_response(_mime_types, server_list);
-    cli_request.parse_request(serv_response);// should also take 
+    cli_request.parse_request(serv_response, this->_cur_socket);// should also take 
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
