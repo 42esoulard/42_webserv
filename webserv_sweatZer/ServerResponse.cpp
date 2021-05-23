@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 18:46:57 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 19:44:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,33 @@ std::string ServerResponse::get_next_token(std::string &line, size_t &index) {
 
 int			ServerResponse::error(int code)
 {
-	std::cout << "ERROR " << code << std::endl;
-    _error = code;
     //find the html file corresponding to the error
     //save its path in resource_path
     //file_to_body()
     //build_response_headers();
+    _error = code;
 
+	std::string     path("html/");
+    char            buf[4096];
+    int             fd;
+
+    path += ft_itos(code);
+    path += ".html";
+    if ((fd = open(path.c_str(), O_RDONLY)) == -1) //if not found, try to see if theres a default page!! (see conf, "default_error")
+    {
+        std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+        return (500);
+    }
+    else
+    {
+        if (read(fd, buf, 4096) == -1)
+        {
+            std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+            close(fd);
+            return (500);
+        }
+        std::cout << buf << std::endl;
+    }
 	return (code);
 }
 
@@ -247,29 +267,70 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     // 7) else if IS_DIR && autoindex = "off"
     //  return if_dir _resource_path
 
-    if (S_ISDIR(buf.st_mode) && *(*_location)["autoindex"].begin() == "on") {
+    if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
         
         if ((i = make_index()) != 0)
             return error(500);
     }
     else {
+        
         if (S_ISDIR(buf.st_mode))
             _resource_path = *(*_location)["if_dir"].begin();
         if (file_to_body() != 0)
             return error(500);
     }
+    std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
+    std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
     std::cout << "BODY CONTENT: [" << _body << "]" << std::endl;
     
-    build_response_headers();
+    //HERE: go to the proper header function
+    
+    build_response_headers(cli_conf);
+    std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     
     return (200);
 }
 
 int ServerResponse::file_to_body(void) {
+
+    int fd;
+    if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
+        return error(500);
+
+    std::string smax_body;
+    if (get_serv_info().find("client_max_body_size") == get_serv_info().end())
+        smax_body = DEFAULT_MAX_BODY;
+    else
+        smax_body = *get_serv_info()["client_max_body_size"].begin();
+
+    int max_body = ft_stoi(smax_body);
+    char buf[max_body + 1];
+    if (read(fd, buf, max_body) < 0)
+        return error(500);
+    _body += buf;
+
+    close(fd);
     return 0;
 }
 
-int ServerResponse::build_response_headers(void) {
+int ServerResponse::build_response_headers(t_content_map &cli_conf) {
+    (void)cli_conf;
+    //
+    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+    //  _payload += "HTTP/1.1" + ft_itos(_error) + table[_error] + "\n";
+    //
+    // then
+    //  Content-Type: IS THERE ONE IN THE CLIENT REQUEST? IF YES WE'LL TAKE THAT ONE, otherwise:
+    //      application/octet-stream
+    //>>> _payload += "Content-Type: application/octet-stream\n";
+
+    //  Content-Length: 
+    //      _body.size();
+    //>>> _payload += "Content-Length: " + ft_stoi(_body.size()) + "\n";
+
+    //  blank line, then content BODY        
+    //>>> _payload += "\r\n" + _body;
+    //
     return 0;
 }
 

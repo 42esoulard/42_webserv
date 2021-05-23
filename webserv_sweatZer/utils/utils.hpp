@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:42:53 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 15:00:38 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <string>
 # include <map>
 # include <iostream>
+# include <algorithm>
 
 #if defined(__linux__)
 	#define OPEN_MAX 256
@@ -55,6 +56,7 @@ bool						is_num(std::string &str);
 int							ft_pow(int nb, int f, int power);
 int							ft_stoi_hex(std::string str);
 int							ft_atoi_hex(std::string &str);
+std::string					ft_itos(int n);
 
 
 #endif

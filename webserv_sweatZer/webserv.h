@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 17:50:57 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 19:03:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@
 
 #define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"
 #define MIME_TYPES          "conf.d/mime.types"
+#define DEFAULT_MAX_BODY    "1000000"
 
 
 #endif

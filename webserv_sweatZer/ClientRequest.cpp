@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 13:46:13 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 15:13:03 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 	size_t					body = -1;
 
 	_vecRead = split_crlf(toRead, &body);
+	if (_vecRead.empty())
+		return (serv_response.error(400));
 	if ((error = parse_method()) || (error = parse_headers(body, socket)))
 		return (serv_response.error(error));
 	if (parse_host())
@@ -83,6 +85,7 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 int		ClientRequest::parse_method()
 {
 	std::vector<std::string>	 vec = split_sp(_vecRead[0]);
+	
 	if (vec.size() != 3)
 		return (400);
 	else if (!is_method(vec[0]))
@@ -90,8 +93,10 @@ int		ClientRequest::parse_method()
 	else if (vec[1].size() > 2000)
 		return (414);
 	_conf["file"].push_back(vec[1]);
-	if (vec[2].compare("HTTP/1.1"))
+	if (vec[2].substr(0, 5).compare("HTTP/"))
 		return (400);
+	else if (vec[2].compare("HTTP/1.1"))
+		return (505);
 	_conf["protocol"].push_back(vec[2]);
 	return (0);
 }

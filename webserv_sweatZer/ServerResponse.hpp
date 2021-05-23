@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 18:38:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 19:37:29 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list), _error(200), _body("")  { 
+        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list), _error(200), _body(""), _payload("")  { 
             init_methods_list(); 
         };
         
@@ -80,16 +80,17 @@ class ServerResponse {
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(std::string &line, size_t &index);
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
+        Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
 
         //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
-        int identify_server(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "host" FIELD PARSING
+        int identify_server(t_content_map &cli_conf); 
         int identify_location(std::string &file, std::string &extension);
 
-        int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER "authorization" FIELD PARSING OR AFTER PARSING FIELDS
+        int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
-        int build_response_headers(void);
+        int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
 
 
@@ -106,6 +107,7 @@ class ServerResponse {
         std::string         _resource_path;
         int                 _error;
         std::string         _body;
+        std::string         _payload;
 
 
         //*************************************************************************
