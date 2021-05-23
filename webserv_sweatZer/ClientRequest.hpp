@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 15:45:53 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/23 14:42:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class	ClientRequest {
 
 		typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
-		t_content_map get_conf() { return _conf; };
+		t_content_map &get_conf() { return _conf; };
 
 	private:
 		char						_read[_MAXLINE];

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 14:26:18 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/23 15:32:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,16 +72,20 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 int ServerResponse::identify_location(std::string &file, std::string &extension) {
     
     unsigned int i = file.find_first_of("/");
+
     std::string path;
     std::list < t_content_map >::iterator it;
     std::list < std::string >::iterator ext_it;
 
-    while (i != file.npos) {
-        path = file.substr(0, i + 1);
+    while (i < file.size()) {
+        if (file.size() > 1)
+            path = file.substr(0, i + 1);
+        else
+            path = file;
 
         it = get_locations().begin();
         while(it != get_locations().end()) {
-
+            std::cout << "asdasdasd extension [" << extension << "]" << std::endl;
             //check if extension fits extension listed in location conf
             if (extension != "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) { //first check extension
                 ext_it = (*it)["extensions"].begin();
@@ -95,16 +99,18 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
                     continue;
                 }
             }
-           
+           std::cout << "HERE [" << *(*it)["path"].begin() << "][" << path << "]" << std::endl;
            //check if path matches path
-            if (*(*it)["root"].begin() == path) {
-                *_location = *it;
+            if (*(*it)["path"].begin() == path) {
+                std::cout << "HERE1" << std::endl;
+                _location = &(*it);
+                std::cout << "HERE2" << std::endl;
                 return i;
             }
+            
            ++it;
         }
-
-        i = file.find_first_of("/", i);
+        i = file.find_first_of("/", i + 1);
     }
     return -1;
 }
@@ -171,30 +177,37 @@ int ServerResponse::check_file_access(t_content_map &cli_conf) {
 
     // 0) save extension in a string
     std::string full_path = *cli_conf["file"].begin();
-    std::string extension = full_path.substr(full_path.find_last_of("."));
 
+    std::string extension = "";
+    if (full_path.find_last_of(".") != full_path.npos)
+        extension = full_path.substr(full_path.find_last_of("."));
+    
     // first, rebuild path thanks to conf
     // TO GET LOCATION, LOOP ON:
     // 1) split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
     //  first compare up to first /, then go to the next (ex: for /bla/bli/blou check /bla then /bla/bli then /bla/bli/blou)
     //  each time, first compare location["extensions"] if theres one with the extension. If it doesnt match, next.
     //  if theres no location["extensions"] -> just check path
-    
+    std::cout << "asdasdasdlhasd" << std::endl;
     int i;
     if ((i = identify_location(full_path, extension)) < 0)
         return error(404); // location not found
 
     // 2) get location from a identify_location function 
     //  when a match is found, replace this with the location["root"], end of loop
+    std::cout << "asdasdasdlhasd" << std::endl;
     std::string file;
-    if ((*_location).find("root") != (*_location).end())
+    if ((*_location).find("root") != (*_location).end() && full_path != "/")
         file = *(*_location)["root"].begin() + "/" + full_path.substr(i + 1);
+    else if ((*_location).find("root") != (*_location).end() && full_path == "/")
+        file = *(*_location)["root"].begin();
     else
         file = full_path;
     
+    std::cout << "asdlhasd" << std::endl;
     // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
     //  if not, error 403 (forbidden)
-
+    
     std::list<std::string>::iterator it = (*_location)["accept_method"].begin();
     while (it != (*_location)["accept_method"].end()) {
         if (*it == *cli_conf["method"].begin())
@@ -203,11 +216,12 @@ int ServerResponse::check_file_access(t_content_map &cli_conf) {
     }
     if (it != (*_location)["accept_method"].end())
         return error(405); // method not allowed
-
+    
+    std::cout << "mymymy" << std::endl;
 	// 4) check file exists	with the newly built path
     if (stat(file.c_str(), buf) < 0)
         return error(404); // file not found
-        
+    std::cout << "mumumu" << std::endl;
     // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
     if (*(*_location)["auth"].begin() == "on") {
         size_t j;
