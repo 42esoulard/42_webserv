@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 18:51:47 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/25 18:53:27 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ void Cluster::set_mime() {
         _mime_types.add_entry(line);
         free (line);
     }
+    free(line);
     close (mime_fd);
 
     // //TEST
@@ -69,9 +70,27 @@ void Cluster::set_mime() {
 
 };
 
+void Cluster::set_error() {
+
+    int err_fd;
+
+    if ((err_fd = open(ERROR_CODES, O_RDONLY)) < 0)
+        throw Exception("Couldn't open error codes file " + std::string(ERROR_CODES));
+
+    char *line;
+
+    while (get_next_line(err_fd, &line) > 0) {
+        _error_codes.add_entry_w_spaces(line);
+        free (line);
+    }
+    free(line);
+    close (err_fd);
+};
+
 void Cluster::init_cluster(std::string &config) {
 
     set_mime();
+    set_error();
     //set all the tables we'll use for comparison here, we'll use them for the whole program (make them global)
 
     this->parse_config(config);
@@ -111,6 +130,7 @@ void Cluster::parse_config(std::string &config) {
 
         free (_line);
     }
+    free(_line);
     close (_config_fd);
     print_config(); //prints all the contents of _conf
     check_conf(config);
@@ -241,6 +261,7 @@ void    Cluster::check_conf(std::string &config) {
 void Cluster::handle_connection(){
 
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
+    std::string response;
     this->_read_fd_set = this->_active_fd_set;
 
     if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
@@ -267,8 +288,8 @@ void Cluster::handle_connection(){
             }
             /* Data arriving on an already-connected socket. */
 
-            this->parse_request();
-            this->format_response();
+            response = this->parse_request();
+            this->send_response(response);
 
             /*
             ** 6) CLOSE THE SOCKET
@@ -281,14 +302,22 @@ void Cluster::handle_connection(){
     }
 };
 
-void Cluster::parse_request() {
+void Cluster::send_response(std::string &response) {
+
+    // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
+   // char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+    write(this->_cur_socket , response.c_str() , response.size());
+    std::cout << "[--- MSG SENT ---]" << std::endl;
+};
+
+std::string Cluster::parse_request() {
 
     /*
     ** 5) SEND AND RECEIVE MESSAGES
     ** The same read and write system calls that work on files also work on sockets.
     */
     ClientRequest cli_request;
-    ServerResponse serv_response(_mime_types, server_list);
+    ServerResponse serv_response(_mime_types, _error_codes, server_list);
     if (read(this->_cur_socket, cli_request.get_read(), _MAXLINE) == -1)
         serv_response.error(500);
     else
@@ -297,15 +326,16 @@ void Cluster::parse_request() {
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
     serv_response.build_response(cli_request.get_conf());
+    return serv_response.get_payload();
 };
 
-void Cluster::format_response() {
+// void Cluster::send_response() {
 
-    // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
-    char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-    write(this->_cur_socket , hello , strlen(hello));
-    std::cout << "[--- HELLO MSG SENT ---]" << std::endl;
-};
+//     // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
+//     char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+//     write(this->_cur_socket , hello , strlen(hello));
+//     std::cout << "[--- MSG SENT ---]" << std::endl;
+// };
 
 // // find a server with one of its names, NOT TESTED YET
 // Server::t_conf *Cluster::get_server_conf_by_name(std::string &searched_name) {

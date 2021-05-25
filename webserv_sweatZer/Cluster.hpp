@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 11:56:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/25 18:33:09 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class Cluster {
 
     public:
 
-        Cluster(std::string &config): _mime_types(SimpleHashTable(65)) { init_cluster(config); };
+        Cluster(std::string &config): _mime_types(SimpleHashTable(65)), _error_codes(SimpleHashTable(42)) { init_cluster(config); };
         ~Cluster() {};
 
         std::list<Server> server_list;
@@ -32,6 +32,7 @@ class Cluster {
         //CONFIG PARSING AND TRANSFER
 
         void        set_mime();
+        void        set_error();
         void        parse_config(std::string &config_file);
         std::string get_conf_token(char *line, int &index);
         void        parse_field(std::string &field, std::string &config);
@@ -42,8 +43,8 @@ class Cluster {
         // Server::t_conf *get_server_conf_by_name(std::string &searched_name);
         // Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
 
-        void parse_request();
-        void format_response();
+        std::string parse_request();
+        void send_response(std::string &response);
         void handle_connection();
 
     private:
@@ -64,6 +65,7 @@ class Cluster {
         bool    _in_server;
         int     _line_nb;
         SimpleHashTable _mime_types;
+        SimpleHashTable _error_codes;
 
 
         

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 19:44:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/25 19:27:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,15 +61,17 @@ int			ServerResponse::error(int code)
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
 	//SimpleHashTable g_mime_types(65);
+    if (extension.size() > 1 && extension[0] == '.')
+        extension = extension.substr(1);
 	std::string *value =_mime_types.get_value(extension);
+    std::string ret = "application/octet-stream";
 
-	if (!value) {
-		std::cerr << "Heck man I can't read dat" << std::endl; 
-		*value = std::string("application/octet-stream");
-	}
+	if (value)
+		ret = *value;
+
 	//unknown extension defaults to application/octet-stream type
 	
-	return (*value);
+	return (ret);
 };
 
 // find which server is requested by the client and save its conf
@@ -85,6 +87,7 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 	if (cli_conf.find("host") != cli_conf.end()) {
 		it = cli_conf["host"].begin();
 		while (it != cli_conf["host"].end()) {
+            std::cout << "NAME [" << *it << "]" << std::endl;
 			if ((_server_conf = get_server_conf_by_name(*it, port)) != NULL ||
 				(_server_conf = get_server_conf_by_address(*it, port)) != NULL)
 				return (200);
@@ -194,29 +197,30 @@ Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searche
     return NULL;
 };
 
-//t_content_map &cli_conf as param ?
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // -1) find which server is the request addressed to
+    
     int i;
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
 
+
     // 0) save extension in a string
     std::string requested_path = *cli_conf["file"].begin();
 
-    std::string extension = "";
+    _extension = "";
     if (requested_path.find_last_of(".") != requested_path.npos)
-        extension = requested_path.substr(requested_path.find_last_of("."));
+       _extension = requested_path.substr(requested_path.find_last_of("."));
     
     // first, rebuild path thanks to conf
     // TO GET LOCATION, LOOP ON:
     // 1) split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
     //  first compare up to first /, then go to the next (ex: for /bla/bli/blou check /bla then /bla/bli then /bla/bli/blou)
     //  each time, first compare location["extensions"] if theres one with the extension. If it doesnt match, next.
-    //  if theres no location["extensions"] -> just check path
+    //  if theres no location["extensions"] -> just check pathrequested_path.substr(requested_path.find_last_of("."));
 
-    if ((i = identify_location(requested_path, extension)) < 0)
+    if ((i = identify_location(requested_path, _extension)) < 0)
         return error(404); // location not found
 
     // 2) get location from a identify_location function 
@@ -229,10 +233,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         _resource_path = *(*_location)["root"].begin();
     else
         _resource_path = requested_path;
-    
+    if (_resource_path.find_last_of(".") != _resource_path.npos)
+        _extension = _resource_path.substr(_resource_path.find_last_of("."));
+  
     // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
-    //  if not, error 403 (forbidden)
-    
+    //  if not, error 403 (forbidden) 
     std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
     while (it != (*_location)["accept_methods"].end()) {
         if (*it == *cli_conf["method"].begin())
@@ -266,30 +271,70 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     //  return an autoindexing of website tree. SHOULD WE BUILD AN INDEX OURSELVES OR IS IT AN AUTOMATIC THINGY?
     // 7) else if IS_DIR && autoindex = "off"
     //  return if_dir _resource_path
-
-    if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
-        
+    if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
         if ((i = make_index()) != 0)
             return error(500);
     }
     else {
-        
-        if (S_ISDIR(buf.st_mode))
+        if (S_ISDIR(buf.st_mode)) {
             _resource_path = *(*_location)["if_dir"].begin();
+            if (_resource_path.find_last_of(".") != _resource_path.npos)
+                _extension = _resource_path.substr(_resource_path.find_last_of("."));
+        }
+        // if (*_location).find("cgi_bin") != (*_location).end()
+        //  go CGI
         if (file_to_body() != 0)
             return error(500);
     }
+
     std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
     std::cout << "BODY CONTENT: [" << _body << "]" << std::endl;
     
-    //HERE: go to the proper header function
-    
-    build_response_headers(cli_conf);
+    // go to the proper header function
+    (this->*_methods[*(cli_conf["method"].begin())])();
     std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     
-    return (200);
+    return (0);
 }
+
+void ServerResponse::method_get() {
+ 
+    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+
+    _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+
+    //  blank line, then content BODY        
+    _payload += "\r\n" + _body + "\r\n";
+};
+
+void ServerResponse::method_head() {
+
+    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+
+    _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+
+    //  blank line, then NO content BODY        
+    _payload += "\r\n";
+};
 
 int ServerResponse::file_to_body(void) {
 
@@ -313,26 +358,26 @@ int ServerResponse::file_to_body(void) {
     return 0;
 }
 
-int ServerResponse::build_response_headers(t_content_map &cli_conf) {
-    (void)cli_conf;
-    //
-    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
-    //  _payload += "HTTP/1.1" + ft_itos(_error) + table[_error] + "\n";
-    //
-    // then
-    //  Content-Type: IS THERE ONE IN THE CLIENT REQUEST? IF YES WE'LL TAKE THAT ONE, otherwise:
-    //      application/octet-stream
-    //>>> _payload += "Content-Type: application/octet-stream\n";
+// int ServerResponse::build_response_headers(t_content_map &cli_conf) {
+//     (void)cli_conf;
+//     //
+//     //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+//     //  _payload += "HTTP/1.1" + ft_itos(_error) + table[_error] + "\n";
+//     //
+//     // then
+//     //  Content-Type: IS THERE ONE IN THE CLIENT REQUEST? IF YES WE'LL TAKE THAT ONE, otherwise:
+//     //      application/octet-stream
+//     //>>> _payload += "Content-Type: application/octet-stream\n";
 
-    //  Content-Length: 
-    //      _body.size();
-    //>>> _payload += "Content-Length: " + ft_stoi(_body.size()) + "\n";
+//     //  Content-Length: 
+//     //      _body.size();
+//     //>>> _payload += "Content-Length: " + ft_stoi(_body.size()) + "\n";
 
-    //  blank line, then content BODY        
-    //>>> _payload += "\r\n" + _body;
-    //
-    return 0;
-}
+//     //  blank line, then content BODY        
+//     //>>> _payload += "\r\n" + _body;
+//     //
+//     return 0;
+// }
 
 int ServerResponse::make_index(void) {
     
@@ -340,16 +385,16 @@ int ServerResponse::make_index(void) {
     if (!(cur_dir = opendir(_resource_path.c_str())))
         return error(500);
 
-    _body += "<!DOCTYPE html>\n<title><b> Index:\n" + _resource_path + "</b></title>\n<ul>";
+    _body += "<!DOCTYPE html>\r\n<title><b> Index:\r\n" + _resource_path + "</b></title>\r\n<ul>";
     
     struct dirent *content;
     while ((content = readdir(cur_dir)) != NULL) {
         if (content->d_type == DT_DIR)
-            _body += "<li><b>" + std::string(content->d_name) + "</b></li>\n";
+            _body += "<li><b>" + std::string(content->d_name) + "</b></li>\r\n";
         else
-            _body += "<li>" + std::string(content->d_name) + "</li>\n";
+            _body += "<li>" + std::string(content->d_name) + "</li>\r\n";
     }
-    _body += "</ul>";
+    _body += "</ul>\r\n";
     closedir(cur_dir);
     return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/09 10:41:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/09 15:45:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/25 18:17:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,10 @@ class SimpleHashTable {
             long int prime_a = 71; //another prime number
             
             std::string::iterator ite = key.end();
-            for (std::string::iterator c = key.begin(); c != ite; ++c)
+            for (std::string::iterator c = key.begin(); c != ite; ++c) {
+                
                 hash = (hash * prime_a + *c) % _size;
+            }
 
             return hash;
         }
@@ -126,6 +128,37 @@ class SimpleHashTable {
                 return ;
 
             std::string value = get_next_token(input, i);
+            
+            _bucket_list[index].push_back(Pair(key, value));
+
+        }
+
+        std::string get_next_token_w_spaces(char *line, int &index) {
+
+            pass_spaces(line, index);
+            if (!line || !line[index])
+                return "";
+
+            int start = index;
+            while (line && line[index])// && line[index] != ';')
+                ++index;
+
+            return std::string(&line[start], index - start);
+        }
+
+        void add_entry_w_spaces(char *input) {
+
+            int i = 0;
+            std::string key = get_next_token(input, i);
+            long int    index = hashFunction(key);
+            
+            std::list<Pair>::iterator it = get_pair(key, index);
+            std::list<Pair>::iterator ite = get_index_end(index);
+
+            if (it != ite && it->getKey() == key) 
+                return ;
+
+            std::string value = get_next_token_w_spaces(input, i);
             
             _bucket_list[index].push_back(Pair(key, value));
 

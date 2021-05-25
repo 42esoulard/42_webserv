@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 19:37:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/25 18:32:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,13 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table, std::list<Server> &server_list): _mime_types(mime_table), _server_list(server_list), _error(200), _body(""), _payload("")  { 
+        ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("")  { 
             init_methods_list(); 
         };
         
         ~ServerResponse() {};
+
+        std::string &get_payload() { return _payload; }
 
         void set_conf(std::string &key, std::string &val) { _conf[key] = val; };
 
@@ -90,7 +92,7 @@ class ServerResponse {
 
         int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
-        int build_response_headers(t_content_map &cli_conf);
+       // int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
 
 
@@ -101,10 +103,12 @@ class ServerResponse {
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
 
         SimpleHashTable     _mime_types;
+        SimpleHashTable     _error_codes;
         std::list<Server>   _server_list;
         Server::t_conf      *_server_conf;
         t_content_map       *_location;
         std::string         _resource_path;
+        std::string         _extension;
         int                 _error;
         std::string         _body;
         std::string         _payload;
@@ -147,10 +151,10 @@ class ServerResponse {
 
         //*************************************************************************
 
-        std::map< std::string, ServerResponse::method_func >  _methods;
+        std::map< std::string, method_func >  _methods;
 
-        void method_get(){ /* do GET related stuff here */ };
-        void method_head(){ /* do HEAD related stuff here */ };
+        void method_get();
+        void method_head();
         void method_post(){ /* do POST related stuff here */ };
         void method_put(){ /* do PUT related stuff here */ };
         void method_delete(){ /* do DELETE related stuff here */ };
