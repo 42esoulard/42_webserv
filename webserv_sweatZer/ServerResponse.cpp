@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 18:11:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 18:39:07 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,6 +195,38 @@ Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searche
     }
     return NULL;
 };
+//if (tmp decoded from base64 as login=password is not found in *(*_location)["root"].begin()
+// + "/" + ".auth" file ) (each entry in auth being in format login=base64password or 
+//something like that)
+
+int ServerResponse::check_auth(std::string &tmp) {
+
+    int ir;
+    struct stat buf;
+    if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
+        return error(500);
+
+    std::string chest;
+    if (!S_ISDIR(buf.st_mode))
+        chest = _resource_path.substr(0, _resource_path.find_last_of("/"));
+    else
+        chest += _resource_path + "/";
+    chest += ".auth";
+
+    int fd;
+    if ((fd = open(chest.c_str(), O_RDONLY)) < 0)
+        return error(500);
+    std::string cred = decode(tmp);
+
+    // gnl on .auth
+    // decode .auth line by line && compare w cred
+    // if match -> return 0
+    // end of function -> return -1
+
+    close(fd);
+    return 0;
+    return -1;
+}
 
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
@@ -285,6 +317,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             return error(401); // unauthorized (missing credentials)
         //if (tmp decoded from base64 as login=password is not found in *(*_location)["root"].begin() + "/" + ".auth" file ) (each entry in auth being in format login=base64password or something like that)
         //  return (401) // bad credentials
+        if (check_auth(tmp) < 0)
+            return error(401); //unauthorized(bad credentials)
     }
 
     // 6) if IS_DIR && autoindex = "on"
@@ -310,15 +344,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                 return error(500);
         }
     }
-
-    
     
     // go to the proper header function
     (this->*_methods[method])();
 
     std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
-    // std::cout << "BODY CONTENT: [" << _body << "]" << std::endl;
     std::cout << "PAYLOAD: [" << _payload << "]" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "AFTER BUILD RESPONSE" << std::endl;
@@ -346,7 +377,7 @@ void ServerResponse::method_get() {
 
 void ServerResponse::method_head() {
 
-    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+    //  do first line
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
     std::string s_error_msg = "";
@@ -359,7 +390,7 @@ void ServerResponse::method_head() {
 
     _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 
-    //  blank line, then NO content BODY        
+    //  blank line     
     _payload += "\r\n";
 };
 
@@ -380,12 +411,7 @@ void ServerResponse::method_put() {
     //1) if CGI
     //      go CGI
     //      CGI result to body ?
-    //2) else
-    //      do PUT stuff
-    
-    //      if resource target IS_DIR or doesn't exist -> 201 created
-    //      if IS_DIR, default to : _resource_path += "/new.txt"
-    
+    //2) do POST stuff
     // else {
     int fd;
     if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
@@ -412,7 +438,7 @@ void ServerResponse::method_put() {
     
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
-    //  blank line, then content BODY        
+    //  blank line      
     _payload += "\r\n";
 };
 
@@ -421,12 +447,8 @@ void ServerResponse::method_post() {
     //1) if CGI
     //      go CGI
     //      CGI result to body ?
-    //2) else
-    //      do POST stuff
     
-    //      if resource target IS_DIR or doesn't exist -> 201 created
-    //      if IS_DIR, default to : _resource_path += "/new.txt"
-    
+    //2) do POST stuff
     // else {
     int fd;
     if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
@@ -453,7 +475,7 @@ void ServerResponse::method_post() {
     
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
-    //  blank line, then content BODY        
+    //  blank line      
     _payload += "\r\n";
 };
 
@@ -479,27 +501,6 @@ int ServerResponse::file_to_body(void) {
     close(fd);
     return 0;
 }
-
-// int ServerResponse::build_response_headers(t_content_map &cli_conf) {
-//     (void)cli_conf;
-//     //
-//     //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
-//     //  _payload += "HTTP/1.1" + ft_itos(_error) + table[_error] + "\n";
-//     //
-//     // then
-//     //  Content-Type: IS THERE ONE IN THE CLIENT REQUEST? IF YES WE'LL TAKE THAT ONE, otherwise:
-//     //      application/octet-stream
-//     //>>> _payload += "Content-Type: application/octet-stream\n";
-
-//     //  Content-Length: 
-//     //      _body.size();
-//     //>>> _payload += "Content-Length: " + ft_stoi(_body.size()) + "\n";
-
-//     //  blank line, then content BODY        
-//     //>>> _payload += "\r\n" + _body;
-//     //
-//     return 0;
-// }
 
 int ServerResponse::make_index(void) {
     

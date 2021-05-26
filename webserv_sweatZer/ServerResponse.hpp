@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 17:43:09 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 18:20:46 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ class ServerResponse {
         int file_to_body(void);
        // int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
+        int check_auth(std::string &tmp);
 
 
 		//this is temporary
