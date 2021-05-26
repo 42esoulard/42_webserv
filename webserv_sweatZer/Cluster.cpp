@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 18:53:27 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 12:47:01 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,9 +287,12 @@ void Cluster::handle_connection(){
                 ++server_it;
             }
             /* Data arriving on an already-connected socket. */
-
+            std::cout << "BEFORE PARSE REQUEST" << std::endl;
             response = this->parse_request();
+            std::cout << "AFTER PARSE REQUEST" << std::endl;
+            std::cout << "BEFORE SEND RESPONSE" << std::endl;
             this->send_response(response);
+            std::cout << "AFTER SEND RESPONSE" << std::endl;
 
             /*
             ** 6) CLOSE THE SOCKET
