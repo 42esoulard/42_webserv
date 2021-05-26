@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 17:29:45 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 16:49:00 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,6 @@
 #define MIME_TYPES          "conf.d/mime.types"
 #define ERROR_CODES         "conf.d/error_codes"
 #define DEFAULT_MAX_BODY    "1000000"
-
+#define DEFAULT_UPLOAD_NAME "new.txt"
 
 #endif

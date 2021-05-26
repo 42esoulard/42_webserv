@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 18:32:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 17:43:09 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,10 @@ class ServerResponse {
             _methods["HEAD"] = &ServerResponse::method_head;
             _methods["POST"] = &ServerResponse::method_post;
             _methods["PUT"] = &ServerResponse::method_put;
-            _methods["DELETE"] = &ServerResponse::method_delete;
-            _methods["CONNECT"] = &ServerResponse::method_connect;
-            _methods["OPTIONS"] = &ServerResponse::method_options;
-            _methods["TRACE"] = &ServerResponse::method_trace;
+            // _methods["DELETE"] = &ServerResponse::method_delete;
+            // _methods["CONNECT"] = &ServerResponse::method_connect;
+            // _methods["OPTIONS"] = &ServerResponse::method_options;
+            // _methods["TRACE"] = &ServerResponse::method_trace;
         };
 
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
@@ -110,6 +110,7 @@ class ServerResponse {
         std::string         _resource_path;
         std::string         _extension;
         int                 _error;
+        std::string         _cli_body;
         std::string         _body;
         std::string         _payload;
 
@@ -155,12 +156,12 @@ class ServerResponse {
 
         void method_get();
         void method_head();
-        void method_post(){ /* do POST related stuff here */ };
-        void method_put(){ /* do PUT related stuff here */ };
-        void method_delete(){ /* do DELETE related stuff here */ };
-        void method_connect(){ /* do CONNECT related stuff here */ };
-        void method_options(){ /* do OPTIONS related stuff here */ };
-        void method_trace(){ /* do TRACE related stuff here */ };
+        void method_post();
+        void method_put();
+        // void method_delete(){ /* do DELETE related stuff here */ };
+        // void method_connect(){ /* do CONNECT related stuff here */ };
+        // void method_options(){ /* do OPTIONS related stuff here */ };
+        // void method_trace(){ /* do TRACE related stuff here */ };
         // see this great simple guide https://www.tutorialspoint.com/http/http_methods.htm
         //*************************************************************************
 };

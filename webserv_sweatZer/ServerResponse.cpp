@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 12:41:56 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 17:48:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searche
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // -1) find which server is the request addressed to
-    
+    std::cout << "BEFORE BUILD RESPONSE" << std::endl;
     int i;
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
@@ -208,7 +208,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     std::string requested_path = *cli_conf["file"].begin();
 
     _extension = "";
-    if (requested_path.find_last_of(".") != requested_path.npos)
+    if (requested_path.find_last_of(".") < requested_path.size())
        _extension = requested_path.substr(requested_path.find_last_of("."));
     // first, rebuild path thanks to conf
     // TO GET LOCATION, LOOP ON:
@@ -223,17 +223,45 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     //  when a match is found, replace this with the location["root"], end of loop
 
     //std::string actual_path;
-    if ((*_location).find("root") != (*_location).end() && requested_path != "/")
-        _resource_path = *(*_location)["root"].begin() + "/" + requested_path.substr(i + 1);
-    else if ((*_location).find("root") != (*_location).end() && requested_path == "/")
-        _resource_path = *(*_location)["root"].begin();
-    else
-        _resource_path = requested_path;
-    if (_resource_path.find_last_of(".") != _resource_path.npos)
-        _extension = _resource_path.substr(_resource_path.find_last_of("."));
+    int ir;
+    struct stat buf;
+    std::string method = *(cli_conf["method"].begin());
+    if (method == "PUT" || method == "POST") {
+        if ((*_location).find("up_dir") == (*_location).end())
+            return error(500); //uploads path not configured
+
+        if ((*_location).find("root") != (*_location).end() && requested_path != "/")
+            _resource_path = *(*_location)["root"].begin() + *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
+        else if ((*_location).find("root") != (*_location).end() && requested_path == "/")
+            _resource_path = *(*_location)["root"].begin() + *(*_location)["up_dir"].begin();
+        else
+            _resource_path = requested_path;
+
+        if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
+            _error = 201; //not an error, means file doesn't exist and is created
+        if (S_ISDIR(buf.st_mode)) {
+            _error = 201;
+            _resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
+        }
+        std::cout << "_resource_path " << _resource_path << " requested_path " << requested_path << " up_dir " << *(*_location)["up_dir"].begin() << std::endl;
+        _cli_body = (*cli_conf["body"].begin());
+    }
+    else {
+        if ((*_location).find("root") != (*_location).end() && requested_path != "/")
+            _resource_path = *(*_location)["root"].begin() + "/" + requested_path.substr(i + 1);
+        else if ((*_location).find("root") != (*_location).end() && requested_path == "/")
+            _resource_path = *(*_location)["root"].begin();
+        else
+            _resource_path = requested_path;
+
+        // 4) check file exists	with the newly built path
+        
+        if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
+            return error(404); // file not found        
+    }
   
     // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
-    //  if not, error 403 (forbidden) 
+    //  if not, error 405 method not allowed
     std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
     while (it != (*_location)["accept_methods"].end()) {
         if (*it == *cli_conf["method"].begin())
@@ -243,11 +271,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     if (it == (*_location)["accept_methods"].end())
         return error(405); // method not allowed
     
-	// 4) check file exists	with the newly built path
-    int ir;
-    struct stat buf;
-    if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
-        return error(404); // file not found
+	
 
     // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
     if (*(*_location)["auth"].begin() == "on") {
@@ -267,30 +291,37 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     //  return an autoindexing of website tree. SHOULD WE BUILD AN INDEX OURSELVES OR IS IT AN AUTOMATIC THINGY?
     // 7) else if IS_DIR && autoindex = "off"
     //  return if_dir _resource_path
-    if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
-        if ((i = make_index()) != 0)
-            return error(500);
-    }
-    else {
-        if (S_ISDIR(buf.st_mode)) {
-            _resource_path = *(*_location)["if_dir"].begin();
-            if (_resource_path.find_last_of(".") != _resource_path.npos)
-                _extension = _resource_path.substr(_resource_path.find_last_of("."));
+    if (method == "GET" || method == "HEAD" || (_error != 200 && _error != 201)) {
+        if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
+            if ((i = make_index()) != 0)
+                return error(500);
         }
-        // if (*_location).find("cgi_bin") != (*_location).end()
-        //  go CGI
-        if (file_to_body() != 0)
-            return error(500);
+        else {
+            if (S_ISDIR(buf.st_mode)) {
+                _resource_path = *(*_location)["if_dir"].begin();
+                if (_resource_path.find_last_of(".") < _resource_path.size())
+                    _extension = _resource_path.substr(_resource_path.find_last_of("."));
+            }
+            // if (*_location).find("cgi_bin") != (*_location).end()
+            //      go CGI
+            //      CGI result to body ?
+            // else
+            if (file_to_body() != 0)
+                return error(500);
+        }
     }
+
+    
+    
+    // go to the proper header function
+    (this->*_methods[method])();
 
     std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
-    std::cout << "BODY CONTENT: [" << _body << "]" << std::endl;
-    
-    // go to the proper header function
-    (this->*_methods[*(cli_conf["method"].begin())])();
+    // std::cout << "BODY CONTENT: [" << _body << "]" << std::endl;
+    std::cout << "PAYLOAD: [" << _payload << "]" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
-    
+    std::cout << "AFTER BUILD RESPONSE" << std::endl;
     return (0);
 }
 
@@ -331,6 +362,76 @@ void ServerResponse::method_head() {
     //  blank line, then NO content BODY        
     _payload += "\r\n";
 };
+
+/*La différence entre PUT et POST tient au fait que PUT est une méthode idempotente. 
+Une requête PUT, envoyée une ou plusieurs fois avec succès, aura toujours le même 
+effet (il n'y a pas d'effet de bord). À l'inverse, des requêtes POST successives et 
+identiques peuvent avoir des effets additionnels, ce qui peut revenir par exemple à 
+passer plusieurs fois une commande.*/
+
+/* PUT puts a file or resource at a specific URI, and exactly at that URI. If there's 
+already a file or resource at that URI, PUT replaces that file or resource. If there is 
+no file or resource there, PUT creates one. Replaces target resource with the request 
+payload. Can be used to update or create a new resources.
+POST: Performs resource-specific processing on the payload. Can be used for different actions 
+including creating a new resource, uploading a file or submitting a web form.*/
+void ServerResponse::method_put() {
+    
+    //1) if CGI
+    //      go CGI
+    //      CGI result to body ?
+    //2) else
+    //      do PUT stuff
+    
+    //      if resource target IS_DIR or doesn't exist -> 201 created
+    //      if IS_DIR, default to : _resource_path += "/new.txt"
+    int fd;
+    if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
+        error(500);
+        return;
+    }
+   // char buf[ft_atoi(DEFAULT_MAX_BODY)];
+    std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+    if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
+        error(500);
+        return;
+    }
+    close(fd);
+    //3) build response
+
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    _payload += "Content-Location: " + _resource_path + "\r\n";
+
+    //  blank line, then content BODY        
+    _payload += "\r\n";
+};
+
+void ServerResponse::method_post() {
+ 
+    // //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
+    // std::string s_error = ft_itos(_error);
+    // std::string *p_error_msg = _error_codes.get_value(s_error);
+    // std::string s_error_msg = "";
+    // std::string sp = " ";
+    // if (p_error_msg)
+    //     s_error_msg = *p_error_msg;
+    // _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    // _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+
+    // _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+
+    // //  blank line, then content BODY        
+    // _payload += "\r\n" + _body + "\r\n";
+};
+
 
 int ServerResponse::file_to_body(void) {
 
