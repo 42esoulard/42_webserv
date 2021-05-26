@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 17:48:30 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 18:11:05 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -385,18 +385,21 @@ void ServerResponse::method_put() {
     
     //      if resource target IS_DIR or doesn't exist -> 201 created
     //      if IS_DIR, default to : _resource_path += "/new.txt"
+    
+    // else {
     int fd;
     if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
         error(500);
         return;
     }
-   // char buf[ft_atoi(DEFAULT_MAX_BODY)];
     std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
     if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
         error(500);
         return;
     }
     close(fd);
+    //}
+
     //3) build response
 
     std::string s_error = ft_itos(_error);
@@ -415,21 +418,43 @@ void ServerResponse::method_put() {
 
 void ServerResponse::method_post() {
  
-    // //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
-    // std::string s_error = ft_itos(_error);
-    // std::string *p_error_msg = _error_codes.get_value(s_error);
-    // std::string s_error_msg = "";
-    // std::string sp = " ";
-    // if (p_error_msg)
-    //     s_error_msg = *p_error_msg;
-    // _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    //1) if CGI
+    //      go CGI
+    //      CGI result to body ?
+    //2) else
+    //      do POST stuff
     
-    // _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+    //      if resource target IS_DIR or doesn't exist -> 201 created
+    //      if IS_DIR, default to : _resource_path += "/new.txt"
+    
+    // else {
+    int fd;
+    if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
+        error(500);
+        return;
+    }
+    std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+    if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
+        error(500);
+        return;
+    }
+    close(fd);
+    //}
 
-    // _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+    //3) build response
 
-    // //  blank line, then content BODY        
-    // _payload += "\r\n" + _body + "\r\n";
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    _payload += "Content-Location: " + _resource_path + "\r\n";
+
+    //  blank line, then content BODY        
+    _payload += "\r\n";
 };
 
 
