@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 15:13:03 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/26 12:41:16 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,7 @@ bool	ClientRequest::parse_host()
 	if ((*it).second.front().find('/') > -1)
 		return (1);
 	if (i++ == std::string::npos)
-		_conf["port"].push_back("80");
+		_conf["port"].push_back(ft_itos(PORT));
 	else
 	{
 		while ((*it).second.front()[i] >= '0' && (*it).second.front()[i] <= '9')
@@ -236,6 +236,7 @@ bool	ClientRequest::parse_host()
 		_conf["port"].push_back((*it).second.front().substr(i - j, j));
 		(*it).second.front() = (*it).second.front().substr(0, i - j - 1);
 	}
+	std::cout << "[IN CLIREQ PARS] HOST [" << *_conf["host"].begin() << "] PORT[" << *_conf["port"].begin() << "]" << std::endl;
 	return (0);
 }
 

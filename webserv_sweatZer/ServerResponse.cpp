@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 19:27:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/26 12:41:56 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,9 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 	
 	if (cli_conf.find("host") != cli_conf.end()) {
 		it = cli_conf["host"].begin();
+        
 		while (it != cli_conf["host"].end()) {
-            std::cout << "NAME [" << *it << "]" << std::endl;
+            std::cout << "[IN SERVRESP ID_SERV] SERVER HOST NAME [" << *it << "]" << std::endl;
 			if ((_server_conf = get_server_conf_by_name(*it, port)) != NULL ||
 				(_server_conf = get_server_conf_by_address(*it, port)) != NULL)
 				return (200);
@@ -156,12 +157,10 @@ Server::t_conf *ServerResponse::get_server_conf_by_name(std::string &searched_na
             if (*content_it == searched_name) {
 				port_it = (*server_it).get_serv_info()["server_port"].begin();
                 while (port_it != (*server_it).get_serv_info()["server_port"].end()) {
-
                     if (*port_it == searched_port)
                         return &((*server_it).get_conf());
-                }
-			    return &((*server_it).get_conf());
-			
+                    ++port_it;
+                }			
 			}
             ++content_it;
         }
@@ -181,13 +180,13 @@ Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searche
 
         host_it = (*server_it).get_serv_info()["server_host"].begin();
         while (host_it != (*server_it).get_serv_info()["server_host"].end()) {
-
             if (*host_it == searched_host) {
                 port_it = (*server_it).get_serv_info()["server_port"].begin();
                 while (port_it != (*server_it).get_serv_info()["server_port"].end()) {
 
                     if (*port_it == searched_port)
                         return &((*server_it).get_conf());
+                    ++port_it;
                 }
             }
             ++host_it;
@@ -205,14 +204,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
 
-
     // 0) save extension in a string
     std::string requested_path = *cli_conf["file"].begin();
 
     _extension = "";
     if (requested_path.find_last_of(".") != requested_path.npos)
        _extension = requested_path.substr(requested_path.find_last_of("."));
-    
     // first, rebuild path thanks to conf
     // TO GET LOCATION, LOOP ON:
     // 1) split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
@@ -222,7 +219,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
     if ((i = identify_location(requested_path, _extension)) < 0)
         return error(404); // location not found
-
     // 2) get location from a identify_location function 
     //  when a match is found, replace this with the location["root"], end of loop
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 15:10:43 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/05/26 12:03:16 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int main()
     int sock = 0;
     long valread;
     struct sockaddr_in serv_addr;
-    char hello[] = "POST / HTTP/1.1\r\nHost: foo.com\r\nContent-Length: 13\r\ntransfer-encoding: chunked\r\n\r\n26\r\nVoici les données du premier morceau\r\n\r\n1C\r\net voici un second morceau\r\n\r\n";
+    char hello[] = "GET / HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 13\r\ntransfer-encoding: chunked\r\n\r\n26\r\nVoici les données du premier morceau\r\n\r\n1C\r\net voici un second morceau\r\n\r\n";
     char hello2[] = "20\r\net voici deux derniers morceaux \r\n12\r\nsans saut de ligne\r\n\r\n\r\n";
     char hello3[] = "0\r\n";
     char buffer[1024] = {0};
