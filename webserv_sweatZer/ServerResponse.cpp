@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 18:39:07 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/27 15:30:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,28 +34,78 @@ int			ServerResponse::error(int code)
     //build_response_headers();
     _error = code;
 
-	std::string     path("html/");
+	// std::string     path("html/");
+    // char            buf[4096];
+    // int             fd;
+
+    // path += ft_itos(code);
+    // path += ".html";
+    // if ((fd = open(path.c_str(), O_RDONLY)) == -1) //if not found, try to see if theres a default page!! (see conf, "default_error")
+    // {
+    //     std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+    //     return (500);
+    // }
+    // else
+    // {
+    //     if (read(fd, buf, 4096) == -1)
+    //     {
+    //         std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
+    //         close(fd);
+    //         return (500);
+    //     }
+    //     std::cout << buf << std::endl;
+    // }
+	return (code);
+}
+
+int ServerResponse::build_error_response(int code) {
+    std::string     path(ERROR_FOLDER);
     char            buf[4096];
     int             fd;
 
+    // try to open error matching path
+    // if it doesnt work, try to open default path
+    // if it doesn't work, give default string to body
+    // 
+
+    _error = code; //in case the call is for an error in the latest stages
     path += ft_itos(code);
     path += ".html";
-    if ((fd = open(path.c_str(), O_RDONLY)) == -1) //if not found, try to see if theres a default page!! (see conf, "default_error")
-    {
-        std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
-        return (500);
+     //if not found, try to see if theres a default page!! (see conf, "default_error")
+        //check if theres a default err for location or server
+    if ((fd = open(path.c_str(), O_RDONLY)) == -1 && 
+        ((*_location).find("default_error") == get_serv_info().end() ||
+        (fd = open((*(*_location)["default_error"].begin()).c_str(), O_RDONLY)) == -1) 
+        && (get_serv_info().find("default_error") == get_serv_info().end() || 
+        (fd = open((*get_serv_info()["default_error"].begin()).c_str(), O_RDONLY)) == -1 )) {
+          
+            _body = "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error.";
     }
-    else
-    {
+    else {
         if (read(fd, buf, 4096) == -1)
-        {
-            std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
-            close(fd);
-            return (500);
-        }
-        std::cout << buf << std::endl;
+            _body = "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error.";
+        else
+            _body = std::string(buf);
+        close(fd);
     }
-	return (code);
+
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    
+    _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+
+    _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+
+    if (_error == 401)
+        _payload += "WWW-Authenticate: Basic realm=\"login\"\r\n";
+    //  blank line, then content BODY        
+    _payload += "\r\n" + _body + "\r\n";
+    return (_error);
 }
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
@@ -213,22 +263,44 @@ int ServerResponse::check_auth(std::string &tmp) {
         chest += _resource_path + "/";
     chest += ".auth";
 
+    std::cout << "AUTH path ["<< chest <<"]" << std::endl;
     int fd;
     if ((fd = open(chest.c_str(), O_RDONLY)) < 0)
         return error(500);
-    std::string cred = decode(tmp);
+    std::string sub = decode(tmp);
 
     // gnl on .auth
     // decode .auth line by line && compare w cred
     // if match -> return 0
     // end of function -> return -1
-
-    close(fd);
-    return 0;
+    char *line;
+    std::string cred;
+    std::string pass;
+    unsigned int i;
+    while (get_next_line(fd, &line) > 0) {
+        cred = std::string(line);
+        if ((i = cred.find_first_of('=')) != cred.npos && i < cred.size()) {// '=' can be in pwd, but not in login. Also format has to be login=password, if there's no '=' we disregard the entry
+            pass = decode(cred.substr(i + 1, cred.size()));
+            cred = cred.substr(0, i);
+            cred += pass;
+            std::cout << "AUTH cred ["<< cred <<"] sub ["<< sub <<"]" << std::endl;
+            if (sub == cred) {
+                free(line);
+                close (fd);
+                return 0;
+            }
+        }
+        free (line);
+    }
+    free(line);
+    close (fd);
+ 
     return -1;
 }
 
 int ServerResponse::build_response(t_content_map &cli_conf) {
+
+   
 
     // -1) find which server is the request addressed to
     std::cout << "BEFORE BUILD RESPONSE" << std::endl;
@@ -254,13 +326,19 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     // 2) get location from a identify_location function 
     //  when a match is found, replace this with the location["root"], end of loop
 
+     //3) FIRST THING SHOULD BE TO INTERCEPT ERROR
+    // AFTER WE FOUND THE SERVER AND LOCATION
+    // IF ERROR != 200 || 201, RETURN BUILD_ERROR()
+    if (_error != 200 && _error != 201)
+        return build_error_response(_error);
+
     //std::string actual_path;
     int ir;
     struct stat buf;
     std::string method = *(cli_conf["method"].begin());
     if (method == "PUT" || method == "POST") {
         if ((*_location).find("up_dir") == (*_location).end())
-            return error(500); //uploads path not configured
+            return build_error_response(500); //uploads path not configured
 
         if ((*_location).find("root") != (*_location).end() && requested_path != "/")
             _resource_path = *(*_location)["root"].begin() + *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
@@ -289,7 +367,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         // 4) check file exists	with the newly built path
         
         if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
-            return error(404); // file not found        
+            return build_error_response(404); // file not found        
     }
   
     // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
@@ -301,24 +379,23 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         ++it;
     }
     if (it == (*_location)["accept_methods"].end())
-        return error(405); // method not allowed
+        return build_error_response(405); // method not allowed
     
 	
 
     // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
     if (*(*_location)["auth"].begin() == "on") {
         size_t j;
-        if (*cli_conf.find("authorization") == *cli_conf.end())
-            return error(401); // unauthorized (missing credentials)
+        if (cli_conf.find("authorization") == cli_conf.end())
+            return build_error_response(401); // unauthorized (missing credentials)
         std::string tmp = get_next_token(*cli_conf["authorization"].begin(), j);
         if (tmp != "Basic")
-            return error(401); // unauthorized (authorization method unknown)
+            return build_error_response(401); // unauthorized (authorization method unknown)
         if ((tmp = get_next_token(*cli_conf["authorization"].begin(), j)) == "")
-            return error(401); // unauthorized (missing credentials)
-        //if (tmp decoded from base64 as login=password is not found in *(*_location)["root"].begin() + "/" + ".auth" file ) (each entry in auth being in format login=base64password or something like that)
-        //  return (401) // bad credentials
+            return build_error_response(401); // unauthorized (missing credentials)
+        std::cout << "+++++++++++++HEREEEE" << std::endl;
         if (check_auth(tmp) < 0)
-            return error(401); //unauthorized(bad credentials)
+            return build_error_response(401); //unauthorized(bad credentials)
     }
 
     // 6) if IS_DIR && autoindex = "on"
@@ -328,7 +405,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     if (method == "GET" || method == "HEAD" || (_error != 200 && _error != 201)) {
         if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
             if ((i = make_index()) != 0)
-                return error(500);
+                return build_error_response(500);
         }
         else {
             if (S_ISDIR(buf.st_mode)) {
@@ -341,7 +418,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             //      CGI result to body ?
             // else
             if (file_to_body() != 0)
-                return error(500);
+                return build_error_response(500);
         }
     }
     
@@ -415,12 +492,12 @@ void ServerResponse::method_put() {
     // else {
     int fd;
     if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
-        error(500);
+        build_error_response(500);
         return;
     }
     std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
     if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
-        error(500);
+        build_error_response(500);
         return;
     }
     close(fd);
@@ -452,12 +529,12 @@ void ServerResponse::method_post() {
     // else {
     int fd;
     if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
-        error(500);
+        build_error_response(500);
         return;
     }
     std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
     if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
-        error(500);
+        build_error_response(500);
         return;
     }
     close(fd);
@@ -484,7 +561,7 @@ int ServerResponse::file_to_body(void) {
 
     int fd;
     if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
-        return error(500);
+        return build_error_response(500);
 
     std::string smax_body;
     if (get_serv_info().find("client_max_body_size") == get_serv_info().end())
@@ -495,7 +572,7 @@ int ServerResponse::file_to_body(void) {
     int max_body = ft_stoi(smax_body);
     char buf[max_body + 1];
     if (read(fd, buf, max_body) < 0)
-        return error(500);
+        return build_error_response(500);
     _body += buf;
 
     close(fd);
@@ -506,7 +583,7 @@ int ServerResponse::make_index(void) {
     
     DIR *cur_dir;
     if (!(cur_dir = opendir(_resource_path.c_str())))
-        return error(500);
+        return build_error_response(500);
 
     _body += "<!DOCTYPE html>\r\n<title><b> Index:\r\n" + _resource_path + "</b></title>\r\n<ul>";
     

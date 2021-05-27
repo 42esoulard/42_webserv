@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 18:20:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/27 14:32:05 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,15 @@ class ServerResponse {
 
 
 		//this is temporary
-		int		error(int code);
+		int		error(int code);//this one should be called if error in Clireq along with a return
+                        // ie: if (blabla != 0)
+                        //          return error(500);
+                        //this way we cut parsing short and head straight to response building
+        int     build_error_response(int code);// <- once in build_response, we first check if _error
+                        // indicates a previous error, and all subsequent errors will go straight
+                        // there and return
+                        // ie: if (blabla is ugly)
+                        //          return build_error_response(error code);
 
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
