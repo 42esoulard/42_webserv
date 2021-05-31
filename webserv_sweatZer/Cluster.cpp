@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/27 13:50:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/31 13:35:49 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,6 +311,7 @@ void Cluster::send_response(std::string &response) {
    // char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
     write(this->_cur_socket , response.c_str() , response.size());
     std::cout << "[--- MSG SENT ---]" << std::endl;
+    std::cout << "[" << response.c_str() << "]" << std::endl;
 };
 
 std::string Cluster::parse_request() {

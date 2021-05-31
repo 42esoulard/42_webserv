@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/31 13:15:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/31 14:09:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,35 +26,11 @@ std::string ServerResponse::get_next_token(std::string &line, size_t &index) {
     return std::string(&line[start], index - start);
 }
 
+// This just sets up the error code. Error return handling is done
+// via build_error_response upon entering serverResponse
 int			ServerResponse::error(int code)
 {
-    //find the html file corresponding to the error
-    //save its path in resource_path
-    //file_to_body()
-    //build_response_headers();
     _error = code;
-
-	// std::string     path("html/");
-    // char            buf[4096];
-    // int             fd;
-
-    // path += ft_itos(code);
-    // path += ".html";
-    // if ((fd = open(path.c_str(), O_RDONLY)) == -1) //if not found, try to see if theres a default page!! (see conf, "default_error")
-    // {
-    //     std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
-    //     return (500);
-    // }
-    // else
-    // {
-    //     if (read(fd, buf, 4096) == -1)
-    //     {
-    //         std::cout << "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error." << std::endl;
-    //         close(fd);
-    //         return (500);
-    //     }
-    //     std::cout << buf << std::endl;
-    // }
 	return (code);
 }
 
@@ -66,13 +42,13 @@ int ServerResponse::build_error_response(int code) {
     // try to open error matching path
     // if it doesnt work, try to open default path
     // if it doesn't work, give default string to body
-    // 
 
     _error = code; //in case the call is for an error in the latest stages
     path += ft_itos(code);
     path += ".html";
      //if not found, try to see if theres a default page!! (see conf, "default_error")
         //check if theres a default err for location or server
+        //if we fail at opening anything, we format a default error 500
     if ((fd = open(path.c_str(), O_RDONLY)) == -1 && 
         ((*_location).find("default_error") == get_serv_info().end() ||
         (fd = open((*(*_location)["default_error"].begin()).c_str(), O_RDONLY)) == -1) 
@@ -111,17 +87,15 @@ int ServerResponse::build_error_response(int code) {
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
-	//SimpleHashTable g_mime_types(65);
     if (extension.size() > 1 && extension[0] == '.')
         extension = extension.substr(1);
 	std::string *value =_mime_types.get_value(extension);
     std::string ret = "application/octet-stream";
+   	//unknown extension defaults to application/octet-stream type
 
 	if (value)
 		ret = *value;
 
-	//unknown extension defaults to application/octet-stream type
-	
 	return (ret);
 };
 
@@ -185,7 +159,6 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
                 _location = &(*it);
                 return i;
             }
-            
            ++it;
         }
         i = file.find_first_of("/", i + 1);
@@ -193,7 +166,7 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
     return -1;
 }
 
-// find a server with one of its names, NOT TESTED YET
+// find a server with one of its names
 Server::t_conf *ServerResponse::get_server_conf_by_name(std::string &searched_name, std::string &searched_port) {
 
     std::list<Server>::iterator server_it = _server_list.begin();
@@ -220,7 +193,7 @@ Server::t_conf *ServerResponse::get_server_conf_by_name(std::string &searched_na
     return NULL;
 };
 
-// find a server with its address, NOT TESTED YET
+// find a server with its address
 Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
 
     std::list<Server>::iterator server_it = _server_list.begin();
@@ -246,10 +219,11 @@ Server::t_conf  *ServerResponse::get_server_conf_by_address(std::string &searche
     }
     return NULL;
 };
-//if (tmp decoded from base64 as login=password is not found in *(*_location)["root"].begin()
-// + "/" + ".auth" file ) (each entry in auth being in format login=base64password or 
-//something like that)
 
+// tmp decoded from base64 as login:password and searched in *(*_location)["root"].begin()
+// + "/" + ".auth" file ) (each entry in .auth being in format login:base64password
+// If a folder is protected, the location root MUST contain a .auth file with credentials
+// This is NOT secure, but it's better than nothing
 int ServerResponse::check_auth(std::string &tmp) {
 
     int ir;
@@ -264,27 +238,22 @@ int ServerResponse::check_auth(std::string &tmp) {
         chest += _resource_path + "/";
     chest += ".auth";
 
-    std::cout << "AUTH path ["<< chest <<"]" << std::endl;
     int fd;
     if ((fd = open(chest.c_str(), O_RDONLY)) < 0)
         return error(500);
     std::string sub = decode(tmp);
 
-    // gnl on .auth
-    // decode .auth line by line && compare w cred
-    // if match -> return 0
-    // end of function -> return -1
+    // decode .auth line by line && compare w submitted cred
     char *line;
     std::string cred;
     std::string pass;
     unsigned int i;
     while (get_next_line(fd, &line) > 0) {
         cred = std::string(line);
-        if ((i = cred.find_first_of('=')) != cred.npos && i < cred.size()) {// '=' can be in pwd, but not in login. Also format has to be login=password, if there's no '=' we disregard the entry
+        if ((i = cred.find_first_of(':')) != cred.npos && i < cred.size()) {// ':' can be in pwd, but not in login. Also format has to be login=password, if there's no '=' we disregard the entry
             pass = decode(cred.substr(i + 1, cred.size()));
-            cred = cred.substr(0, i);
+            cred = cred.substr(0, i + 1);
             cred += pass;
-            std::cout << "AUTH cred ["<< cred <<"] sub ["<< sub <<"]" << std::endl;
             if (sub == cred) {
                 free(line);
                 close (fd);
@@ -301,39 +270,36 @@ int ServerResponse::check_auth(std::string &tmp) {
 
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
-   
-
-    // -1) find which server is the request addressed to
+    // 0) find which server is the request addressed to
     std::cout << "BEFORE BUILD RESPONSE" << std::endl;
     int i;
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
 
-    // 0) save extension in a string
+    // 1) save file extension in a string
     std::string requested_path = *cli_conf["file"].begin();
 
     _extension = "";
     if (requested_path.find_last_of(".") < requested_path.size())
        _extension = requested_path.substr(requested_path.find_last_of("."));
-    // first, rebuild path thanks to conf
-    // TO GET LOCATION, LOOP ON:
-    // 1) split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
+   
+    // 2) rebuild path thanks to conf
+    //  TO GET LOCATION, LOOP ON:
+    //  split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
     //  first compare up to first /, then go to the next (ex: for /bla/bli/blou check /bla then /bla/bli then /bla/bli/blou)
     //  each time, first compare location["extensions"] if theres one with the extension. If it doesnt match, next.
     //  if theres no location["extensions"] -> just check pathrequested_path.substr(requested_path.find_last_of("."));
-
+    //  when a match is found, replace this with the location["root"], end of loop
     if ((i = identify_location(requested_path, _extension)) < 0)
         return error(404); // location not found
-    // 2) get location from a identify_location function 
-    //  when a match is found, replace this with the location["root"], end of loop
 
-     //3) FIRST THING SHOULD BE TO INTERCEPT ERROR
-    // AFTER WE FOUND THE SERVER AND LOCATION
+    // 3) after we got our Server and Location info, we can check if we have a previous error
     // IF ERROR != 200 || 201, RETURN BUILD_ERROR()
     if (_error != 200 && _error != 201)
         return build_error_response(_error);
 
-    //std::string actual_path;
+    // 4) substitute requested path location alias with root path
+    //   check file existence and status (or uploads dir existence for PUT/POST)
     int ir;
     struct stat buf;
     std::string method = *(cli_conf["method"].begin());
@@ -349,12 +315,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             _resource_path = requested_path;
 
         if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
-            _error = 201; //not an error, means file doesn't exist and is created
+            _error = 201; //not an error, means file doesn't exist and will be created
         if (S_ISDIR(buf.st_mode)) {
-            _error = 201;
+            _error = 201; //not an error, means no file name was provided, will be created
             _resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
         }
-        std::cout << "_resource_path " << _resource_path << " requested_path " << requested_path << " up_dir " << *(*_location)["up_dir"].begin() << std::endl;
         _cli_body = (*cli_conf["body"].begin());
     }
     else {
@@ -364,14 +329,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             _resource_path = *(*_location)["root"].begin();
         else
             _resource_path = requested_path;
-
-        // 4) check file exists	with the newly built path
         
         if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
             return build_error_response(404); // file not found        
     }
   
-    // 3) check that one of location["accept_method"] is compatible with cli_conf["method"]
+    // 5) check that method is allowed (in conf location)
     //  if not, error 405 method not allowed
     std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
     while (it != (*_location)["accept_methods"].end()) {
@@ -381,33 +344,26 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     }
     if (it == (*_location)["accept_methods"].end())
         return build_error_response(405); // method not allowed
-    
-	
 
-    // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
+    // 6) if protected  (in conf location auth: on), check authorization (first Basic,
+    //  else Unknown auth method error. Second, decode base64 and check against against 
+    //  location root's .auth file)
     if (*(*_location)["auth"].begin() == "on") {
         size_t j = 0;
-        std::cout << "blou" << std::endl;
         if (cli_conf.find("authorization") == cli_conf.end())
             return build_error_response(401); // unauthorized (missing credentials)
-        std::cout << "+++++++++++++HER000E" << std::endl;
         std::string tmp = get_next_token(*cli_conf["authorization"].begin(), j);
-        if (tmp != "Basic") {
-            std::cout << "IN ERROR TOKEN [" << tmp << "]" << std::endl;
+        if (tmp != "Basic")
             return build_error_response(401); // unauthorized (authorization method unknown)
-        }
-        std::cout << "+++++++++++++HERaaaaE" << std::endl;
         if ((tmp = get_next_token(*cli_conf["authorization"].begin(), j)) == "")
             return build_error_response(401); // unauthorized (missing credentials)
-        std::cout << "+++++++++++++HEREEEE" << std::endl;
         if (check_auth(tmp) < 0)
             return build_error_response(401); //unauthorized(bad credentials)
     }
 
-    // 6) if IS_DIR && autoindex = "on"
-    //  return an autoindexing of website tree. SHOULD WE BUILD AN INDEX OURSELVES OR IS IT AN AUTOMATIC THINGY?
-    // 7) else if IS_DIR && autoindex = "off"
-    //  return if_dir _resource_path
+    // 7) if IS_DIR and we didn't define an index in conf and autoindex = "on"
+    //  return an autoindexing of website tree. 
+    //  if IS_DIR && we have an index, use index as requested file
     if (method == "GET" || method == "HEAD" || (_error != 200 && _error != 201)) {
         if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
             if ((i = make_index()) != 0)
@@ -428,7 +384,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         }
     }
     
-    // go to the proper header function
+    // 8) go to the proper header function
     (this->*_methods[method])();
 
     std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
@@ -441,7 +397,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 void ServerResponse::method_get() {
  
-    //  do first line - we should do a std::string table of [error codes x error message] maybe (ex: table[500] = "Internal Server Error")
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
     std::string s_error_msg = "";
@@ -460,7 +415,6 @@ void ServerResponse::method_get() {
 
 void ServerResponse::method_head() {
 
-    //  do first line
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
     std::string s_error_msg = "";
@@ -482,7 +436,6 @@ Une requête PUT, envoyée une ou plusieurs fois avec succès, aura toujours le 
 effet (il n'y a pas d'effet de bord). À l'inverse, des requêtes POST successives et 
 identiques peuvent avoir des effets additionnels, ce qui peut revenir par exemple à 
 passer plusieurs fois une commande.*/
-
 /* PUT puts a file or resource at a specific URI, and exactly at that URI. If there's 
 already a file or resource at that URI, PUT replaces that file or resource. If there is 
 no file or resource there, PUT creates one. Replaces target resource with the request 
@@ -507,9 +460,6 @@ void ServerResponse::method_put() {
         return;
     }
     close(fd);
-    //}
-
-    //3) build response
 
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
@@ -521,7 +471,6 @@ void ServerResponse::method_put() {
     
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
-    //  blank line      
     _payload += "\r\n";
 };
 
@@ -544,9 +493,6 @@ void ServerResponse::method_post() {
         return;
     }
     close(fd);
-    //}
-
-    //3) build response
 
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
@@ -558,10 +504,8 @@ void ServerResponse::method_post() {
     
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
-    //  blank line      
     _payload += "\r\n";
 };
-
 
 int ServerResponse::file_to_body(void) {
 
