@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/27 15:30:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/05/31 13:15:54 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,7 @@ int ServerResponse::build_error_response(int code) {
         _payload += "WWW-Authenticate: Basic realm=\"login\"\r\n";
     //  blank line, then content BODY        
     _payload += "\r\n" + _body + "\r\n";
+    std::cout << "[ERROR PAYLOAD:][" << _payload << "]" << std::endl;
     return (_error);
 }
 
@@ -385,12 +386,17 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // 5) if protected, check authorization (first Basic, else Unknown auth method error. Second, decode base64 and check against against server /admin/.htaccess) .)
     if (*(*_location)["auth"].begin() == "on") {
-        size_t j;
+        size_t j = 0;
+        std::cout << "blou" << std::endl;
         if (cli_conf.find("authorization") == cli_conf.end())
             return build_error_response(401); // unauthorized (missing credentials)
+        std::cout << "+++++++++++++HER000E" << std::endl;
         std::string tmp = get_next_token(*cli_conf["authorization"].begin(), j);
-        if (tmp != "Basic")
+        if (tmp != "Basic") {
+            std::cout << "IN ERROR TOKEN [" << tmp << "]" << std::endl;
             return build_error_response(401); // unauthorized (authorization method unknown)
+        }
+        std::cout << "+++++++++++++HERaaaaE" << std::endl;
         if ((tmp = get_next_token(*cli_conf["authorization"].begin(), j)) == "")
             return build_error_response(401); // unauthorized (missing credentials)
         std::cout << "+++++++++++++HEREEEE" << std::endl;
