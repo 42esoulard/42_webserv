@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/31 14:09:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/03 14:40:09 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,18 +48,19 @@ int ServerResponse::build_error_response(int code) {
     path += ".html";
      //if not found, try to see if theres a default page!! (see conf, "default_error")
         //check if theres a default err for location or server
-        //if we fail at opening anything, we format a default error 500
+        //if we fail at opening anything, we format a default error
+
     if ((fd = open(path.c_str(), O_RDONLY)) == -1 && 
-        ((*_location).find("default_error") == get_serv_info().end() ||
-        (fd = open((*(*_location)["default_error"].begin()).c_str(), O_RDONLY)) == -1) 
+        ((*_location).find("default_error") == (*_location).end() ||
+        (fd = open((ERROR_FOLDER + (*(*_location)["default_error"].begin())).c_str(), O_RDONLY)) == -1) 
         && (get_serv_info().find("default_error") == get_serv_info().end() || 
-        (fd = open((*get_serv_info()["default_error"].begin()).c_str(), O_RDONLY)) == -1 )) {
-          
-            _body = "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error.";
+        (fd = open((ERROR_FOLDER + (*get_serv_info()["default_error"].begin())).c_str(), O_RDONLY)) == -1 )) {
+            
+            _body = "<!DOCTYPE html>\n<title>Error0</title>\n";
     }
     else {
         if (read(fd, buf, 4096) == -1)
-            _body = "<!DOCTYPE html>\n<title>Error 500 (Internal Server Error)</title>\n<p><b>Error 500.</b>\n<p>Internal Server Error.";
+            _body = "<!DOCTYPE html>\n<title>Error1</title>\n";
         else
             _body = std::string(buf);
         close(fd);
@@ -303,20 +304,27 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     int ir;
     struct stat buf;
     std::string method = *(cli_conf["method"].begin());
-    if (method == "PUT" || method == "POST") {
+    if (method == "PUT" || method == "POST" || method == "DELETE") {
         if ((*_location).find("up_dir") == (*_location).end())
             return build_error_response(500); //uploads path not configured
+        // note: we also forbid a DELETE if an uploads path isn't configured.
+        // I figured it was wise to only allow DELETE in a directory where the user
+        // is already allowed to upload something. This is a personal security choice.
 
-        if ((*_location).find("root") != (*_location).end() && requested_path != "/")
-            _resource_path = *(*_location)["root"].begin() + *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
-        else if ((*_location).find("root") != (*_location).end() && requested_path == "/")
-            _resource_path = *(*_location)["root"].begin() + *(*_location)["up_dir"].begin();
+        if ((*_location).find("root") != (*_location).end())
+            _resource_path = *(*_location)["root"].begin();
+        if (requested_path == "/")
+            _resource_path += *(*_location)["up_dir"].begin();
         else
-            _resource_path = requested_path;
+            _resource_path += *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
 
         if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
             _error = 201; //not an error, means file doesn't exist and will be created
-        if (S_ISDIR(buf.st_mode)) {
+        if (method == "DELETE" && ir < 0)
+            return build_error_response(404); // file not found
+        else if (method == "DELETE" && S_ISDIR(buf.st_mode))
+            return build_error_response(405);//trying to delete a folder is forbidden
+        else if (S_ISDIR(buf.st_mode)) {
             _error = 201; //not an error, means no file name was provided, will be created
             _resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
         }
@@ -504,6 +512,27 @@ void ServerResponse::method_post() {
     
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
+    _payload += "\r\n";
+};
+
+void ServerResponse::method_delete() {
+ 
+    //1) if CGI
+    //      go CGI
+    //      CGI result to body ?
+    
+    //2) do POST stuff
+    // else {
+    remove(_resource_path.c_str());
+    _error = 204;
+
+    std::string s_error = ft_itos(_error);
+    std::string *p_error_msg = _error_codes.get_value(s_error);
+    std::string s_error_msg = "";
+    std::string sp = " ";
+    if (p_error_msg)
+        s_error_msg = *p_error_msg;
+    _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
     _payload += "\r\n";
 };
 

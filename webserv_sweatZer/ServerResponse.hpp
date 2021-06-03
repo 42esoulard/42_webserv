@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/27 14:32:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/03 12:19:17 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ class ServerResponse {
             _methods["HEAD"] = &ServerResponse::method_head;
             _methods["POST"] = &ServerResponse::method_post;
             _methods["PUT"] = &ServerResponse::method_put;
-            // _methods["DELETE"] = &ServerResponse::method_delete;
+            _methods["DELETE"] = &ServerResponse::method_delete;
             // _methods["CONNECT"] = &ServerResponse::method_connect;
             // _methods["OPTIONS"] = &ServerResponse::method_options;
             // _methods["TRACE"] = &ServerResponse::method_trace;
@@ -167,7 +167,7 @@ class ServerResponse {
         void method_head();
         void method_post();
         void method_put();
-        // void method_delete(){ /* do DELETE related stuff here */ };
+        void method_delete();
         // void method_connect(){ /* do CONNECT related stuff here */ };
         // void method_options(){ /* do OPTIONS related stuff here */ };
         // void method_trace(){ /* do TRACE related stuff here */ };

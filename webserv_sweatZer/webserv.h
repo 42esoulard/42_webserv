@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/27 14:52:16 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/03 14:10:48 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 #include <list>
 #include <vector>
 #include <cstdlib>
+#include <cstdio>
 
 // webserv accessories
 #include "Exception.hpp"
