@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 14:40:09 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/03 16:26:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,16 +273,21 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // 0) find which server is the request addressed to
     std::cout << "BEFORE BUILD RESPONSE" << std::endl;
-    int i;
+
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
 
-    // 1) save file extension in a string
+    // 1) save file extension in a string + extract potential query from url
     std::string requested_path = *cli_conf["file"].begin();
 
+    if (i = requested_path.find_first_of("?") < requested_path.size()) {
+        _query = requested_path.substr(i + 1);
+        requested_path = requested_path.substr(0, i);
+    }
     _extension = "";
-    if (requested_path.find_last_of(".") < requested_path.size())
-       _extension = requested_path.substr(requested_path.find_last_of("."));
+    if (requested_path.find_last_of(".") < requested_path.size()) {
+        _extension = requested_path.substr(requested_path.find_last_of("."));
+    }
    
     // 2) rebuild path thanks to conf
     //  TO GET LOCATION, LOOP ON:
@@ -383,11 +388,10 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                 if (_resource_path.find_last_of(".") < _resource_path.size())
                     _extension = _resource_path.substr(_resource_path.find_last_of("."));
             }
-            // if (*_location).find("cgi_bin") != (*_location).end()
-            //      go CGI
-            //      CGI result to body ?
-            // else
-            if (file_to_body() != 0)
+            if ((*_location).find("cgi_bin") != (*_location).end()) {
+                _cgi.launch_cgi(*this, cli_conf);
+            }
+            else if (file_to_body() != 0)
                 return build_error_response(500);
         }
     }
