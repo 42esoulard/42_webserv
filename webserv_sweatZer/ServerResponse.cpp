@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 16:26:21 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 13:46:08 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,8 +279,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // 1) save file extension in a string + extract potential query from url
     std::string requested_path = *cli_conf["file"].begin();
-
-    if (i = requested_path.find_first_of("?") < requested_path.size()) {
+    i = requested_path.find_first_of("?");
+    if ((size_t)i < requested_path.size()) {
         _query = requested_path.substr(i + 1);
         requested_path = requested_path.substr(0, i);
     }
@@ -343,8 +343,9 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         else
             _resource_path = requested_path;
         
-        if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
-            return build_error_response(404); // file not found        
+        if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
+            return build_error_response(404); // file not found
+             
     }
   
     // 5) check that method is allowed (in conf location)
@@ -389,7 +390,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                     _extension = _resource_path.substr(_resource_path.find_last_of("."));
             }
             if ((*_location).find("cgi_bin") != (*_location).end()) {
-                _cgi.launch_cgi(*this, cli_conf);
+                _cgi->launch_cgi(*this, cli_conf);
             }
             else if (file_to_body() != 0)
                 return build_error_response(500);

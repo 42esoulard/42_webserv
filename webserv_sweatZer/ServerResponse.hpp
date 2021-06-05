@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 16:56:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 14:04:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,6 @@ class ServerResponse {
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
         Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
 
-        //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int identify_server(t_content_map &cli_conf); 
@@ -128,7 +127,7 @@ class ServerResponse {
         int i;
 
         friend class Cgi;
-        Cgi                _cgi;
+        Cgi                *_cgi;
 
 
         //*************************************************************************
