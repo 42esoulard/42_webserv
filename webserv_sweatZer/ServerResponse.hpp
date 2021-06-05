@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 14:04:42 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 15:21:58 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,9 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("")  { 
+        ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("") {
+            _cgi = new Cgi();
+
             init_methods_list(); 
         };
         
