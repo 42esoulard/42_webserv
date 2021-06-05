@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 14:40:09 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 12:55:10 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,12 @@ int ServerResponse::build_error_response(int code) {
         //check if theres a default err for location or server
         //if we fail at opening anything, we format a default error
 
-    if ((fd = open(path.c_str(), O_RDONLY)) == -1 && 
+    if ((fd = open(path.c_str(), O_RDONLY)) == -1 &&
         ((*_location).find("default_error") == (*_location).end() ||
-        (fd = open((ERROR_FOLDER + (*(*_location)["default_error"].begin())).c_str(), O_RDONLY)) == -1) 
-        && (get_serv_info().find("default_error") == get_serv_info().end() || 
+        (fd = open((ERROR_FOLDER + (*(*_location)["default_error"].begin())).c_str(), O_RDONLY)) == -1)
+        && (get_serv_info().find("default_error") == get_serv_info().end() ||
         (fd = open((ERROR_FOLDER + (*get_serv_info()["default_error"].begin())).c_str(), O_RDONLY)) == -1 )) {
-            
+
             _body = "<!DOCTYPE html>\n<title>Error0</title>\n";
     }
     else {
@@ -73,14 +73,14 @@ int ServerResponse::build_error_response(int code) {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-    
+
     _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 
     _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 
     if (_error == 401)
         _payload += "WWW-Authenticate: Basic realm=\"login\"\r\n";
-    //  blank line, then content BODY        
+    //  blank line, then content BODY
     _payload += "\r\n" + _body + "\r\n";
     std::cout << "[ERROR PAYLOAD:][" << _payload << "]" << std::endl;
     return (_error);
@@ -88,11 +88,11 @@ int ServerResponse::build_error_response(int code) {
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
-    if (extension.size() > 1 && extension[0] == '.')
-        extension = extension.substr(1);
+	if (extension.size() > 1 && extension[0] == '.')
+		extension = extension.substr(1);
 	std::string *value =_mime_types.get_value(extension);
-    std::string ret = "application/octet-stream";
-   	//unknown extension defaults to application/octet-stream type
+	std::string ret = "application/octet-stream";
+	//unknown extension defaults to application/octet-stream type
 
 	if (value)
 		ret = *value;
@@ -102,17 +102,17 @@ std::string ServerResponse::get_mime_type(std::string &extension) {
 
 // find which server is requested by the client and save its conf
 int ServerResponse::identify_server(t_content_map &cli_conf) {
-	
+
 	std::list<std::string>::iterator it;
 	std::string port;
 	if (cli_conf.find("port") == cli_conf.end())
 		port = std::string(ft_itoa(PORT));
 	else
 		port = *(cli_conf["port"].begin());
-	
+
 	if (cli_conf.find("host") != cli_conf.end()) {
 		it = cli_conf["host"].begin();
-        
+
 		while (it != cli_conf["host"].end()) {
             std::cout << "[IN SERVRESP ID_SERV] SERVER HOST NAME [" << *it << "]" << std::endl;
 			if ((_server_conf = get_server_conf_by_name(*it, port)) != NULL ||
@@ -126,7 +126,7 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 
 // find which location in the server is requested by the client and save its conf in *_location
 int ServerResponse::identify_location(std::string &file, std::string &extension) {
-    
+
     unsigned int i = file.find_first_of("/");
 
     std::string path;
@@ -141,7 +141,7 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
 
         it = get_locations().begin();
         while(it != get_locations().end()) {
-           
+
             //check if extension fits extension listed in location conf
             if (extension != "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) { //first check extension
                 ext_it = (*it)["extensions"].begin();
@@ -185,7 +185,7 @@ Server::t_conf *ServerResponse::get_server_conf_by_name(std::string &searched_na
                     if (*port_it == searched_port)
                         return &((*server_it).get_conf());
                     ++port_it;
-                }			
+                }
 			}
             ++content_it;
         }
@@ -229,7 +229,7 @@ int ServerResponse::check_auth(std::string &tmp) {
 
     int ir;
     struct stat buf;
-    if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
+    if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
         return error(500);
 
     std::string chest;
@@ -265,7 +265,7 @@ int ServerResponse::check_auth(std::string &tmp) {
     }
     free(line);
     close (fd);
- 
+
     return -1;
 }
 
@@ -283,7 +283,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     _extension = "";
     if (requested_path.find_last_of(".") < requested_path.size())
        _extension = requested_path.substr(requested_path.find_last_of("."));
-   
+
     // 2) rebuild path thanks to conf
     //  TO GET LOCATION, LOOP ON:
     //  split path from file name until you get something in the format / + dir (ex: /bla/blou) (ex: /) (ex: /bli):
@@ -318,7 +318,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         else
             _resource_path += *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
 
-        if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
+        if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
             _error = 201; //not an error, means file doesn't exist and will be created
         if (method == "DELETE" && ir < 0)
             return build_error_response(404); // file not found
@@ -337,11 +337,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             _resource_path = *(*_location)["root"].begin();
         else
             _resource_path = requested_path;
-        
-        if ((ir = stat(_resource_path.c_str(), &buf)) < 0) 
-            return build_error_response(404); // file not found        
+
+        if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
+            return build_error_response(404); // file not found
     }
-  
+
     // 5) check that method is allowed (in conf location)
     //  if not, error 405 method not allowed
     std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
@@ -354,7 +354,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
         return build_error_response(405); // method not allowed
 
     // 6) if protected  (in conf location auth: on), check authorization (first Basic,
-    //  else Unknown auth method error. Second, decode base64 and check against against 
+    //  else Unknown auth method error. Second, decode base64 and check against against
     //  location root's .auth file)
     if (*(*_location)["auth"].begin() == "on") {
         size_t j = 0;
@@ -370,10 +370,10 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     }
 
     // 7) if IS_DIR and we didn't define an index in conf and autoindex = "on"
-    //  return an autoindexing of website tree. 
+    //  return an autoindexing of website tree.
     //  if IS_DIR && we have an index, use index as requested file
     if (method == "GET" || method == "HEAD" || (_error != 200 && _error != 201)) {
-        if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") { 
+        if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
             if ((i = make_index()) != 0)
                 return build_error_response(500);
         }
@@ -391,7 +391,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                 return build_error_response(500);
         }
     }
-    
+
     // 8) go to the proper header function
     (this->*_methods[method])();
 
@@ -404,7 +404,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 }
 
 void ServerResponse::method_get() {
- 
+
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
     std::string s_error_msg = "";
@@ -412,12 +412,12 @@ void ServerResponse::method_get() {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-    
+
     _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 
     _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 
-    //  blank line, then content BODY        
+    //  blank line, then content BODY
     _payload += "\r\n" + _body + "\r\n";
 };
 
@@ -430,28 +430,28 @@ void ServerResponse::method_head() {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-    
+
     _payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 
     _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 
-    //  blank line     
+    //  blank line
     _payload += "\r\n";
 };
 
-/*La différence entre PUT et POST tient au fait que PUT est une méthode idempotente. 
-Une requête PUT, envoyée une ou plusieurs fois avec succès, aura toujours le même 
-effet (il n'y a pas d'effet de bord). À l'inverse, des requêtes POST successives et 
-identiques peuvent avoir des effets additionnels, ce qui peut revenir par exemple à 
+/*La différence entre PUT et POST tient au fait que PUT est une méthode idempotente.
+Une requête PUT, envoyée une ou plusieurs fois avec succès, aura toujours le même
+effet (il n'y a pas d'effet de bord). À l'inverse, des requêtes POST successives et
+identiques peuvent avoir des effets additionnels, ce qui peut revenir par exemple à
 passer plusieurs fois une commande.*/
-/* PUT puts a file or resource at a specific URI, and exactly at that URI. If there's 
-already a file or resource at that URI, PUT replaces that file or resource. If there is 
-no file or resource there, PUT creates one. Replaces target resource with the request 
+/* PUT puts a file or resource at a specific URI, and exactly at that URI. If there's
+already a file or resource at that URI, PUT replaces that file or resource. If there is
+no file or resource there, PUT creates one. Replaces target resource with the request
 payload. Can be used to update or create a new resources.
-POST: Performs resource-specific processing on the payload. Can be used for different actions 
+POST: Performs resource-specific processing on the payload. Can be used for different actions
 including creating a new resource, uploading a file or submitting a web form.*/
 void ServerResponse::method_put() {
-    
+
     //1) if CGI
     //      go CGI
     //      CGI result to body ?
@@ -476,18 +476,18 @@ void ServerResponse::method_put() {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-    
+
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
     _payload += "\r\n";
 };
 
 void ServerResponse::method_post() {
- 
+
     //1) if CGI
     //      go CGI
     //      CGI result to body ?
-    
+
     //2) do POST stuff
     // else {
     int fd;
@@ -509,18 +509,18 @@ void ServerResponse::method_post() {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-    
+
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
     _payload += "\r\n";
 };
 
 void ServerResponse::method_delete() {
- 
+
     //1) if CGI
     //      go CGI
     //      CGI result to body ?
-    
+
     //2) do POST stuff
     // else {
     remove(_resource_path.c_str());
@@ -559,13 +559,13 @@ int ServerResponse::file_to_body(void) {
 }
 
 int ServerResponse::make_index(void) {
-    
+
     DIR *cur_dir;
     if (!(cur_dir = opendir(_resource_path.c_str())))
         return build_error_response(500);
 
     _body += "<!DOCTYPE html>\r\n<title><b> Index:\r\n" + _resource_path + "</b></title>\r\n<ul>";
-    
+
     struct dirent *content;
     while ((content = readdir(cur_dir)) != NULL) {
         if (content->d_type == DT_DIR)
