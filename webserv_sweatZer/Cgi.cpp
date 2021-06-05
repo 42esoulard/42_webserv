@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 15:39:24 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 18:15:47 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,10 +67,45 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     _env[13] = NULL;
 };
         
-void Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
+int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     std::cout << "IN CGI" << std::endl;
     build_env(serv_resp, cli_conf);
     // std::cout << "  ENV   " << std::endl;
     // for (int i = 0; i < 13; i++)
     //     std::cout << _env[i] << std::endl;
+
+    int pid;
+    int status;
+    if (pipe(_pipe) == -1)
+		return (serv_resp.build_error_response(500));
+    if ((pid = fork()) < 0)
+		return (serv_resp.build_error_response(500));
+	else if (pid == 0)
+	{
+		// if (sh->obj->prev && sh->obj->prev->pip == IS_PIPE)
+        // {
+        //     if (dup2(sh->obj->prev->tube[0], 0) == -1)
+        //         return (-1);
+        //     if (sh->obj->prev->tube[1] != -1)
+        //         close(sh->obj->prev->tube[1]);
+        // }
+        // if (sh->obj->pip == IS_PIPE)
+        // {
+        if (dup2(_pipe[1], 1) == -1)
+            return (serv_resp.build_error_response(500));
+        close(_pipe[0]);
+        char **args = NULL;
+		execve(serv_resp._resource_path.c_str(), args, _env);
+		return (serv_resp.build_error_response(500));
+	}
+	else {
+		waitpid(pid, &status, 0);
+        char buf[_MAXLINE] = {0};
+		while (read(1, buf, _MAXLINE) > 0) {
+			memset(buf, 0, _MAXLINE);
+			serv_resp._body += buf;
+		}
+        close(_pipe[1]);
+    }
+    return 0;
 };

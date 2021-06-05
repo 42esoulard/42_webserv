@@ -6,13 +6,13 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 16:09:39 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 18:10:00 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 
-ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("") {
+ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload(""), _cgi_on(false) {
     _cgi = new Cgi();
 
     init_methods_list(); 
@@ -396,11 +396,18 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                     _extension = _resource_path.substr(_resource_path.find_last_of("."));
             }
             if ((*_location).find("cgi_bin") != (*_location).end()) {
-                _cgi->launch_cgi(*this, cli_conf);
+                if (_cgi->launch_cgi(*this, cli_conf) != 0)
+                    return (500);
+                _cgi_on = true;
             }
             else if (file_to_body() != 0)
                 return build_error_response(500);
         }
+    }
+    else if ((*_location).find("cgi_bin") != (*_location).end() && (method == "PUT" || method == "POST" || method == "DELETE")) {
+        if (_cgi->launch_cgi(*this, cli_conf) != 0)
+            return (500);
+        _cgi_on = true;
     }
 
     // 8) go to the proper header function
@@ -463,22 +470,19 @@ POST: Performs resource-specific processing on the payload. Can be used for diff
 including creating a new resource, uploading a file or submitting a web form.*/
 void ServerResponse::method_put() {
 
-    //1) if CGI
-    //      go CGI
-    //      CGI result to body ?
-    //2) do POST stuff
-    // else {
-    int fd;
-    if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
-        build_error_response(500);
-        return;
+    if (!_cgi_on) {
+        int fd;
+        if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
+            build_error_response(500);
+            return;
+        }
+        std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+        if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
+            build_error_response(500);
+            return;
+        }
+        close(fd);
     }
-    std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
-    if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
-        build_error_response(500);
-        return;
-    }
-    close(fd);
 
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
@@ -490,28 +494,28 @@ void ServerResponse::method_put() {
 
     _payload += "Content-Location: " + _resource_path + "\r\n";
 
+    if (_cgi_on) {
+        _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+        _payload += "\r\n" + _body;
+    }
     _payload += "\r\n";
 };
 
 void ServerResponse::method_post() {
 
-    //1) if CGI
-    //      go CGI
-    //      CGI result to body ?
-
-    //2) do POST stuff
-    // else {
-    int fd;
-    if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
-        build_error_response(500);
-        return;
+    if (!_cgi_on) {
+        int fd;
+        if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
+            build_error_response(500);
+            return;
+        }
+        std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+        if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
+            build_error_response(500);
+            return;
+        }
+        close(fd);
     }
-    std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
-    if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
-        build_error_response(500);
-        return;
-    }
-    close(fd);
 
     std::string s_error = ft_itos(_error);
     std::string *p_error_msg = _error_codes.get_value(s_error);
@@ -522,19 +526,19 @@ void ServerResponse::method_post() {
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
 
     _payload += "Content-Location: " + _resource_path + "\r\n";
+    
+    if (_cgi_on) {
+        _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+        _payload += "\r\n" + _body;
+    }
 
     _payload += "\r\n";
 };
 
 void ServerResponse::method_delete() {
 
-    //1) if CGI
-    //      go CGI
-    //      CGI result to body ?
-
-    //2) do POST stuff
-    // else {
-    remove(_resource_path.c_str());
+    if (!_cgi_on)
+        remove(_resource_path.c_str());
     _error = 204;
 
     std::string s_error = ft_itos(_error);
@@ -544,6 +548,10 @@ void ServerResponse::method_delete() {
     if (p_error_msg)
         s_error_msg = *p_error_msg;
     _payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+    if (_cgi_on) {
+        _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+        _payload += "\r\n" + _body;
+    }
     _payload += "\r\n";
 };
 

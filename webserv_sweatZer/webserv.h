@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 14:10:48 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 18:12:07 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,10 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <dirent.h>
+
+// CGI and process
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // utils
 #include <errno.h>

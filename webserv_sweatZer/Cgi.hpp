@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 15:39:51 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 17:58:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Cgi {
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
         void build_env(ServerResponse &serv_resp, t_content_map &cli_conf);
-        void launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf);
+        int launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf);
 
     private:
 
@@ -34,6 +34,8 @@ class Cgi {
         char        *_env[17];
 
         std::string s_env[17];
+        int         _pipe[2];
+        std::string _cgi_body;
         /* CONTENT OF THE ENV SHOULD BE THE FOLLOWING, IN A FORMAT
            such as "key=value" : */
         /*
