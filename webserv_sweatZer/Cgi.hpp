@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 15:18:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 15:39:51 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,7 @@ class ServerResponse;
 class Cgi {
 
     public:
-        Cgi() {
-            s_env[0] = "bla";
-            std::cout << "---------------------okokokokokokokokokokokokokokokokokok" << std::endl;
-        };
+        Cgi() {};
         ~Cgi() {};
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
 

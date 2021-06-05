@@ -6,11 +6,19 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 15:14:20 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 15:41:35 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
+
+ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("") {
+    _cgi = new Cgi();
+
+    init_methods_list(); 
+};
+
+ServerResponse::~ServerResponse() { delete _cgi; };
 
 // simply parses spaces and returns the next non space character sequence
 std::string ServerResponse::get_next_token(std::string &line, size_t &index) {
