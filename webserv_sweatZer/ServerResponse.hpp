@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 12:19:17 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/05 15:41:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include "webserv.h"
 #include "Server.hpp"
+#include "Cgi.hpp"
+class Cgi;
 
 /*
     ◦ Allow: valid methods for a specified resource. To be used for a 405 Method not allowed
@@ -49,11 +51,9 @@ class ServerResponse {
 
     public:
 
-        ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload("")  { 
-            init_methods_list(); 
-        };
+        ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list);
         
-        ~ServerResponse() {};
+        ~ServerResponse();
 
         std::string &get_payload() { return _payload; }
 
@@ -84,7 +84,6 @@ class ServerResponse {
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
         Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
 
-        //FUNCTIONS WHICH SHOULD BE CALLED IN CLIENTREQUEST ARE COMMENTED WITH INFO
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int identify_server(t_content_map &cli_conf); 
@@ -118,10 +117,15 @@ class ServerResponse {
         t_content_map       *_location;
         std::string         _resource_path;
         std::string         _extension;
+        std::string         _query;
         int                 _error;
         std::string         _cli_body;
         std::string         _body;
         std::string         _payload;
+        int i;
+
+        friend class        Cgi;
+        Cgi                 *_cgi;
 
 
         //*************************************************************************

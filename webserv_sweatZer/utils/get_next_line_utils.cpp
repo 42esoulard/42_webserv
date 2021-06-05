@@ -6,13 +6,13 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:44:34 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 13:42:52 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/03 16:51:56 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
-char	*ft_strjoin(char *s1, char *s2) {
+char	*ft_strjoin(char *s1, const char *s2) {
 	
 	char	*new_str;
 	int		s1len;

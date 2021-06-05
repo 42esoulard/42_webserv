@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 10:26:52 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/03 15:52:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 
 int		            	    get_next_line(int fd, char **line);
 char	            	    *give_it_back(char *str, char **line);
-char	            	    *ft_strjoin(char *s1, char *s2);
+char	            	    *ft_strjoin(char *s1, const char *s2);
 char	                 	*ft_strchr(const char *s, int c);
 char	                	*ft_strdup(const char *s1);
 char	                	*ft_strndup(const char *s1, int len);

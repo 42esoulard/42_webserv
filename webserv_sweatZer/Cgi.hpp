@@ -3,56 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 09:48:48 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/05 15:39:51 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef CGI_HPP
+#define CGI_HPP
+
 #include "webserv.h"
-#include "ClientRequest.hpp"
+#include "ServerResponse.hpp"
+class ServerResponse;
 
 class Cgi {
 
     public:
-        Cgi();
-        ~Cgi();
+        Cgi() {};
+        ~Cgi() {};
+        typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
-
-        void build_env(ClientRequest::std::map<std::string, std::list<std::string> > &cli_conf) {
-
-            _env[17] = NULL;
-            ft_strjoin(_env[0], (*cli_conf["_auth"].begin()).c_str());
-
-
-        };
-        void launch_cgi();
-
+        void build_env(ServerResponse &serv_resp, t_content_map &cli_conf);
+        void launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf);
 
     private:
 
+       // char *file_path; // to send as first argument
+        
+        char        *_env[17];
 
-        char *file_path; // to send as first argument
-
-        char *_env[18] { "AUTH_TYPE="
-                        "CONTENT_LENGTH="
-                        "CONTENT_TYPE="
-                        "GATEWAY_INTERFACE="
-                        "PATH_INFO="
-                        "PATH_TRANSLATED="
-                        "QUERY_STRING="
-                        "REMOTE_ADDR="
-                        "REMOTE_IDENT="
-                        "REMOTE_USER="
-                        "REQUEST_METHOD="
-                        "REQUEST_URI="
-                        "SCRIPT_NAME="
-                        "SERVER_NAME="
-                        "SERVER_PORT="
-                        "SERVER_PROTOCOL="
-                        "SERVER_SOFTWARE="}; /* LAST ONE SHOULD BE NULL*/
-
+        std::string s_env[17];
         /* CONTENT OF THE ENV SHOULD BE THE FOLLOWING, IN A FORMAT
            such as "key=value" : */
         /*
@@ -76,4 +57,6 @@ class Cgi {
         */
 
 
-}
+};
+
+#endif
