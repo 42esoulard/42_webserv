@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 13:17:44 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:04:47 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ int ServerResponse::build_error_response(int code) {
             _body = "<!DOCTYPE html>\n<title>Error0</title>\n";
     }
     else {
+        //should we change 4096 ?
+        memset(buf, 0, 4096);
         if (read(fd, buf, 4096) == -1)
             _body = "<!DOCTYPE html>\n<title>Error1</title>\n";
         else
@@ -284,7 +286,6 @@ int ServerResponse::check_auth(std::string &tmp) {
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // 0) find which server is the request addressed to
-    std::cout << "BEFORE BUILD RESPONSE" << std::endl;
 
     if ((i = identify_server(cli_conf)) != 200)
         return error(i); //404, server not found
@@ -416,12 +417,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
     // 8) go to the proper header function
     (this->*_methods[method])();
-
-    std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
+    
+    /*std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
     std::cout << "PAYLOAD: [" << _payload << "]" << std::endl;
-    std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
-    std::cout << "AFTER BUILD RESPONSE" << std::endl;
+    std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;*/
     return (0);
 }
 
@@ -440,7 +440,7 @@ void ServerResponse::method_get() {
     _payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 
     //  blank line, then content BODY
-    _payload += "\r\n" + _body + "\r\n";
+    _payload += "\r\n" + _body;
 };
 
 void ServerResponse::method_head() {
@@ -562,6 +562,7 @@ void ServerResponse::method_delete() {
 int ServerResponse::file_to_body(void) {
 
     int fd;
+    int size;
     if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
         return build_error_response(500);
 
@@ -573,10 +574,13 @@ int ServerResponse::file_to_body(void) {
 
     int max_body = ft_stoi(smax_body);
     char buf[max_body + 1];
-    if (read(fd, buf, max_body) < 0)
+    memset(buf, 0, max_body);
+    if ((size = read(fd, buf, max_body)) < 0)
         return build_error_response(500);
-    _body += buf;
-
+    for (int i = 0 ; i < size ; ++i)
+    {
+        _body.push_back(buf[i]);
+    }
     close(fd);
     return 0;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/31 13:35:49 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:03:07 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,12 +287,8 @@ void Cluster::handle_connection(){
                 ++server_it;
             }
             /* Data arriving on an already-connected socket. */
-            std::cout << "BEFORE PARSE REQUEST" << std::endl;
             response = this->parse_request();
-            std::cout << "AFTER PARSE REQUEST" << std::endl;
-            std::cout << "BEFORE SEND RESPONSE" << std::endl;
             this->send_response(response);
-            std::cout << "AFTER SEND RESPONSE" << std::endl;
 
             /*
             ** 6) CLOSE THE SOCKET
@@ -322,10 +318,16 @@ std::string Cluster::parse_request() {
     */
     ClientRequest cli_request;
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
+    memset(cli_request.get_read(), 0, _MAXLINE);
     if (read(this->_cur_socket, cli_request.get_read(), _MAXLINE) == -1)
         serv_response.error(500);
     else
-        cli_request.parse_request(serv_response, this->_cur_socket);// should also take 
+    {
+        std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << cli_request.get_read() << std::endl;
+        std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
+        cli_request.parse_request(serv_response, this->_cur_socket);
+        
+    }// should also take 
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?

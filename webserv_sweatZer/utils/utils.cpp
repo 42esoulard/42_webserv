@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/22 16:04:01 by rturcey           #+#    #+#             */
-/*   Updated: 2021/05/22 16:05:16 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/06 13:53:11 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 bool                         comp_float(std::pair<float, std::string> &p1, std::pair<float, std::string> &p2)
 {
-	std::cout << "F=" << p1.first << " FBIS=" << p2.first << std::endl;
     if (p1.first > p2.first)
         return (1);
     return (0);

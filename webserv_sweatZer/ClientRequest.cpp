@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/26 12:41:16 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:01:05 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,6 +200,7 @@ int		ClientRequest::parse_body_chunked(std::string str, int socket)
 		if (j >= _vecChunked.size() && hex != 0)
 		{
 			_vecChunked.clear();
+			memset(_read, 0, _MAXLINE);
 			if (read(socket, _read, _MAXLINE) == -1)
 				return (400);
 			str = std::string(_read);
@@ -236,7 +237,6 @@ bool	ClientRequest::parse_host()
 		_conf["port"].push_back((*it).second.front().substr(i - j, j));
 		(*it).second.front() = (*it).second.front().substr(0, i - j - 1);
 	}
-	std::cout << "[IN CLIREQ PARS] HOST [" << *_conf["host"].begin() << "] PORT[" << *_conf["port"].begin() << "]" << std::endl;
 	return (0);
 }
 
