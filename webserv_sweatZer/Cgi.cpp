@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:07:43 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:34:48 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,15 +74,14 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     // for (int i = 0; i < 13; i++)
     //     std::cout << _env[i] << std::endl;
 
-    FILE    *file_in = tmpfile();
-    FILE    *file_out = tmpfile();
-    int     fd_in = fileno(file_in);
-    int     fd_out = fileno(file_out);
+    _file[0] = tmpfile();
+    _file[1] = tmpfile();
+    _fd[0] = fileno(_file[0]);
+    _fd[1] = fileno(_file[1]);
 
     int pid;
     int status = 0;
-    if (pipe(_pipe) == -1)
-		return (serv_resp.build_error_response(500));
+
     if ((pid = fork()) < 0)
 		return (serv_resp.build_error_response(500));
 	else if (pid == 0)
@@ -98,7 +97,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         // if (sh->obj->pip == IS_PIPE)
         // {
         std::cout << "CHILD BEF DUP2" << std::endl;
-        if (dup2(fd_in, 0) == -1 || dup2(fd_out, 1) == -1) {
+        if (dup2(_fd[0], 0) == -1 || dup2(_fd[1], 1) == -1) {
             std::cerr << "CHILD DUP2 FAIL" << std::endl;
             std::cerr << strerror(errno) << std::endl;
             // serv_resp.build_error_response(500);
@@ -133,12 +132,18 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         //if error, return serv_resp._error
         std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};
+        lseek(_fd[1], 0, SEEK_SET);
         std::cout << "PARENT BEF READ" << std::endl;
-        close(_pipe[1]);
-		while (read(fd_out, buf, _MAXLINE) > 0) {
+
+        int i = 1;
+		while (i > 0) {
             std::cout << "PARENT IN READ" << std::endl;
+            i = read(_fd[1], buf, _MAXLINE);
+            std::cout << "[" << buf << "]" << std::endl;
+            for (int j = 0 ; j < i ; ++j)
+                serv_resp._body.push_back(buf[j]);
 			memset(buf, 0, _MAXLINE);
-			serv_resp._body += buf;
+			//PUT PRINTS HERE TO UNDRSTAND WHATS READ
 		}
         std::cout << "PARENT AFT READ" << std::endl;
         
@@ -146,10 +151,10 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         //     serv_resp._body
         //     return -1;
         // }
-        fclose(file_in);
-        fclose(file_out);
-        close(fd_in);
-        close(fd_out);
+        fclose(_file[0]);
+        fclose(_file[1]);
+        close(_fd[0]);
+        close(_fd[1]);
     }
     return 0;
 };

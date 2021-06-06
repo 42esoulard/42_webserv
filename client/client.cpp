@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 15:43:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:44:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <iostream>
 
+#define _MAXLINE 655360
 #define PORT 8080
 
 int main()
@@ -36,7 +37,7 @@ int main()
 
     // char hello2[] = "20\r\net voici deux derniers morceaux \r\n12\r\nsans saut de ligne\r\n\r\n\r\n";
     // char hello3[] = "0\r\n";
-    char buffer[1024] = {0};
+    char buffer[_MAXLINE] = {0};
 
     // client opens his socket
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -68,7 +69,7 @@ int main()
     // std::cout << "[Hello message sent]" << std::endl;
     // send(sock , hello3, strlen(hello3)  , 0 );
     // std::cout << "[Hello message sent]" << std::endl;
-    valread = read( sock , buffer, 1024);
+    valread = read( sock , buffer, _MAXLINE);
     std::cout << buffer << std::endl;
     return 0;
 }

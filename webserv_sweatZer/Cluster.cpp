@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:03:07 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/06 16:39:48 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,7 +307,7 @@ void Cluster::send_response(std::string &response) {
    // char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
     write(this->_cur_socket , response.c_str() , response.size());
     std::cout << "[--- MSG SENT ---]" << std::endl;
-    std::cout << "[" << response.c_str() << "]" << std::endl;
+    std::cout << "[" << response << "] SIZE{ " << response.size() << "}" << std::endl;
 };
 
 std::string Cluster::parse_request() {

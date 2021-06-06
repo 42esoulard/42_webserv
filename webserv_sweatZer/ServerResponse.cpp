@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:11:44 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:36:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -407,6 +407,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             }
             else if (file_to_body() != 0)
                 return build_error_response(500);
+            std::cout << "AFTER CGI OR FILE TO BODY: ---BODY[" << _body << "]" << std::endl;
+            std::cout << "AFTER CGI OR FILE TO BODY: ---PAYLOAD[" << _payload << "]" << std::endl;
         }
     }
     else if ((*_location).find("cgi_bin") != (*_location).end() && (method == "PUT" || method == "POST" || method == "DELETE")) {
