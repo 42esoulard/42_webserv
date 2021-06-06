@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 18:10:00 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 13:17:44 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,10 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
         while(it != get_locations().end()) {
 
             //check if extension fits extension listed in location conf
+            if (extension == "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) {
+                ++it;
+                continue;
+            }
             if (extension != "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) { //first check extension
                 ext_it = (*it)["extensions"].begin();
                 while (ext_it != (*it)["extensions"].end()) {

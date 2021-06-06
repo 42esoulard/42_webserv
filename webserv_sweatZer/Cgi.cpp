@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 18:15:47 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 13:12:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,11 +95,15 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             return (serv_resp.build_error_response(500));
         close(_pipe[0]);
         char **args = NULL;
+        std::cout << "CHILD BEFORE EXECVE" << std::endl;
 		execve(serv_resp._resource_path.c_str(), args, _env);
+        std::cout << "CHILD AFTER EXECVE" << std::endl;
 		return (serv_resp.build_error_response(500));
 	}
 	else {
+        std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(pid, &status, 0);
+        std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};
 		while (read(1, buf, _MAXLINE) > 0) {
 			memset(buf, 0, _MAXLINE);
