@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 13:12:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 14:32:52 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,13 +75,14 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     //     std::cout << _env[i] << std::endl;
 
     int pid;
-    int status;
+    int status = 0;
     if (pipe(_pipe) == -1)
 		return (serv_resp.build_error_response(500));
     if ((pid = fork()) < 0)
 		return (serv_resp.build_error_response(500));
 	else if (pid == 0)
 	{
+        std::cout << "IN CHILD" << std::endl;
 		// if (sh->obj->prev && sh->obj->prev->pip == IS_PIPE)
         // {
         //     if (dup2(sh->obj->prev->tube[0], 0) == -1)
@@ -91,25 +92,55 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         // }
         // if (sh->obj->pip == IS_PIPE)
         // {
-        if (dup2(_pipe[1], 1) == -1)
-            return (serv_resp.build_error_response(500));
+        std::cout << "CHILD BEF DUP2" << std::endl;
+        if (dup2(_pipe[0], 0) == -1 || dup2(_pipe[1], 1) == -1) {
+            std::cerr << "CHILD DUP2 FAIL" << std::endl;
+            std::cerr << strerror(errno) << std::endl;
+            serv_resp.build_error_response(500);
+
+            std::cout << serv_resp._payload << std::endl;
+            exit(500);
+        }
+        std::cerr << "CHILD AFT DUP2" << std::endl;
         close(_pipe[0]);
         char **args = NULL;
-        std::cout << "CHILD BEFORE EXECVE" << std::endl;
-		execve(serv_resp._resource_path.c_str(), args, _env);
-        std::cout << "CHILD AFTER EXECVE" << std::endl;
-		return (serv_resp.build_error_response(500));
+        
+        
+        
+        
+        if (getcwd(serv_resp._abs_resource_path, PATH_MAX)) {
+            std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
+            std::string _cgi_abs_path(serv_resp._abs_resource_path);
+            _cgi_abs_path += "/" + serv_resp._resource_path;
+            std::cerr << "Gonna exec [" << _cgi_abs_path << "]" << std::endl;
+            execve(_cgi_abs_path.c_str(), args, _env);
+        }
+        std::cerr << "CHILD AFTER EXECVE errno[" << strerror(errno) << "]" << std::endl;
+		serv_resp.build_error_response(500);
+        //std::cout << serv_resp._payload << std::endl;
+        exit(500);
 	}
-	else {
+	else { 
         std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(pid, &status, 0);
+        if (WIFEXITED(status))
+			serv_resp._error = WEXITSTATUS(status);
+        
         std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};
+        std::cout << "PARENT BEF READ" << std::endl;
 		while (read(1, buf, _MAXLINE) > 0) {
+            std::cout << "PARENT IN READ" << std::endl;
 			memset(buf, 0, _MAXLINE);
 			serv_resp._body += buf;
 		}
+        std::cout << "PARENT AFT READ" << std::endl;
         close(_pipe[1]);
+        // if (serv_resp._error != 200 && serv_resp._error != 201 && serv_resp._error != 204) {
+        //     serv_resp._body
+        //     return -1;
+        // }
+
     }
     return 0;
 };

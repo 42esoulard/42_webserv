@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/05 18:05:18 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 14:37:27 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,13 +116,15 @@ class ServerResponse {
         Server::t_conf      *_server_conf;
         t_content_map       *_location;
         std::string         _resource_path;
+        char                _abs_resource_path[PATH_MAX];
         std::string         _extension;
         std::string         _query;
         int                 _error;
         std::string         _cli_body;
         std::string         _body;
         std::string         _payload;
-        int i;
+
+        int                 i;
 
         friend class        Cgi;
         Cgi                 *_cgi;
