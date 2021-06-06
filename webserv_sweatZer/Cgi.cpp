@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 14:32:52 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:07:43 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,11 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     // for (int i = 0; i < 13; i++)
     //     std::cout << _env[i] << std::endl;
 
+    FILE    *file_in = tmpfile();
+    FILE    *file_out = tmpfile();
+    int     fd_in = fileno(file_in);
+    int     fd_out = fileno(file_out);
+
     int pid;
     int status = 0;
     if (pipe(_pipe) == -1)
@@ -93,16 +98,16 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         // if (sh->obj->pip == IS_PIPE)
         // {
         std::cout << "CHILD BEF DUP2" << std::endl;
-        if (dup2(_pipe[0], 0) == -1 || dup2(_pipe[1], 1) == -1) {
+        if (dup2(fd_in, 0) == -1 || dup2(fd_out, 1) == -1) {
             std::cerr << "CHILD DUP2 FAIL" << std::endl;
             std::cerr << strerror(errno) << std::endl;
-            serv_resp.build_error_response(500);
+            // serv_resp.build_error_response(500);
 
-            std::cout << serv_resp._payload << std::endl;
+            // std::cout << serv_resp._payload << std::endl;
             exit(500);
         }
         std::cerr << "CHILD AFT DUP2" << std::endl;
-        close(_pipe[0]);
+        //close(_pipe[0]);
         char **args = NULL;
         
         
@@ -116,8 +121,8 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             execve(_cgi_abs_path.c_str(), args, _env);
         }
         std::cerr << "CHILD AFTER EXECVE errno[" << strerror(errno) << "]" << std::endl;
-		serv_resp.build_error_response(500);
-        //std::cout << serv_resp._payload << std::endl;
+		// serv_resp.build_error_response(500);
+        // std::cout << serv_resp._payload << std::endl;
         exit(500);
 	}
 	else { 
@@ -125,22 +130,26 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		waitpid(pid, &status, 0);
         if (WIFEXITED(status))
 			serv_resp._error = WEXITSTATUS(status);
-        
+        //if error, return serv_resp._error
         std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};
         std::cout << "PARENT BEF READ" << std::endl;
-		while (read(1, buf, _MAXLINE) > 0) {
+        close(_pipe[1]);
+		while (read(fd_out, buf, _MAXLINE) > 0) {
             std::cout << "PARENT IN READ" << std::endl;
 			memset(buf, 0, _MAXLINE);
 			serv_resp._body += buf;
 		}
         std::cout << "PARENT AFT READ" << std::endl;
-        close(_pipe[1]);
+        
         // if (serv_resp._error != 200 && serv_resp._error != 201 && serv_resp._error != 204) {
         //     serv_resp._body
         //     return -1;
         // }
-
+        fclose(file_in);
+        fclose(file_out);
+        close(fd_in);
+        close(fd_out);
     }
     return 0;
 };

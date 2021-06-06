@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 13:41:03 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/06 16:05:20 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,7 +401,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             }
             if ((*_location).find("cgi_bin") != (*_location).end()) {
                 if (_cgi->launch_cgi(*this, cli_conf) != 0)
-                    return (500);
+                    return build_error_response(500);
                 _cgi_on = true;
             }
             else if (file_to_body() != 0)
@@ -410,7 +410,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     }
     else if ((*_location).find("cgi_bin") != (*_location).end() && (method == "PUT" || method == "POST" || method == "DELETE")) {
         if (_cgi->launch_cgi(*this, cli_conf) != 0)
-            return (500);
+            return build_error_response(500);
         _cgi_on = true;
     }
 
