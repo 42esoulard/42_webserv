@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:36:21 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/07 22:29:51 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,13 @@ int ServerResponse::build_error_response(int code) {
     if (_error == 401)
         _payload += "WWW-Authenticate: Basic realm=\"login\"\r\n";
     //  blank line, then content BODY
-    _payload += "\r\n" + _body + "\r\n";
+    std::cout << "IN ERROR METHOD = " << _method << std::endl;
+    _payload += "\r\n";
+    if (_method != "HEAD")
+        _payload += _body + "\r\n";
+
+
+
     std::cout << "[ERROR PAYLOAD:][" << _payload << "]" << std::endl;
     return (_error);
 }
@@ -311,19 +317,37 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
     if ((i = identify_location(requested_path, _extension)) < 0)
         return error(404); // location not found
 
+    std::cout << "----------------- SERVER + LOCATION FOUND!" << std::endl;
     // 3) after we got our Server and Location info, we can check if we have a previous error
     // IF ERROR != 200 || 201, RETURN BUILD_ERROR()
     if (_error != 200 && _error != 201)
         return build_error_response(_error);
 
+    std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;    
+
+    // 5) check that method is allowed (in conf location)
+    //  if not, error 405 method not allowed
+    _method = *(cli_conf["method"].begin());
+    std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
+    while (it != (*_location)["accept_methods"].end()) {
+        if (*it == *cli_conf["method"].begin())
+            break;
+        ++it;
+    }
+    if (it == (*_location)["accept_methods"].end())
+        return build_error_response(405); // method not allowed
+    std::cout << "----------------- METHOD OK!" << std::endl;
+
     // 4) substitute requested path location alias with root path
     //   check file existence and status (or uploads dir existence for PUT/POST)
     int ir;
     struct stat buf;
-    std::string method = *(cli_conf["method"].begin());
-    if (method == "PUT" || method == "POST" || method == "DELETE") {
-        if ((*_location).find("up_dir") == (*_location).end())
+    
+    if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
+        if ((*_location).find("up_dir") == (*_location).end()) {
+            std::cout << "------HERE WTFFFFF" << std::endl;
             return build_error_response(500); //uploads path not configured
+        }
         // note: we also forbid a DELETE if an uploads path isn't configured.
         // I figured it was wise to only allow DELETE in a directory where the user
         // is already allowed to upload something. This is a personal security choice.
@@ -337,9 +361,9 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
         if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
             _error = 201; //not an error, means file doesn't exist and will be created
-        if (method == "DELETE" && ir < 0)
+        if (_method == "DELETE" && ir < 0)
             return build_error_response(404); // file not found
-        else if (method == "DELETE" && S_ISDIR(buf.st_mode))
+        else if (_method == "DELETE" && S_ISDIR(buf.st_mode))
             return build_error_response(405);//trying to delete a folder is forbidden
         else if (S_ISDIR(buf.st_mode)) {
             _error = 201; //not an error, means no file name was provided, will be created
@@ -359,20 +383,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             return build_error_response(404); // file not found
     }
 
-    // 5) check that method is allowed (in conf location)
-    //  if not, error 405 method not allowed
-    std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
-    while (it != (*_location)["accept_methods"].end()) {
-        if (*it == *cli_conf["method"].begin())
-            break;
-        ++it;
-    }
-    if (it == (*_location)["accept_methods"].end())
-        return build_error_response(405); // method not allowed
-
+    std::cout << "----------------- FILE OK!" << std::endl;
+    
     // 6) if protected  (in conf location auth: on), check authorization (first Basic,
     //  else Unknown auth method error. Second, decode base64 and check against against
     //  location root's .auth file)
+    
     if (*(*_location)["auth"].begin() == "on") {
         size_t j = 0;
         if (cli_conf.find("authorization") == cli_conf.end())
@@ -386,10 +402,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
             return build_error_response(401); //unauthorized(bad credentials)
     }
 
+    std::cout << "----------------- AUTH OK!" << std::endl;
     // 7) if IS_DIR and we didn't define an index in conf and autoindex = "on"
     //  return an autoindexing of website tree.
     //  if IS_DIR && we have an index, use index as requested file
-    if (method == "GET" || method == "HEAD" || (_error != 200 && _error != 201)) {
+    if (_method == "GET" || _method == "HEAD" || (_error != 200 && _error != 201)) {
         if (S_ISDIR(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
             if ((i = make_index()) != 0)
                 return build_error_response(500);
@@ -400,25 +417,29 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
                 if (_resource_path.find_last_of(".") < _resource_path.size())
                     _extension = _resource_path.substr(_resource_path.find_last_of("."));
             }
+
             if ((*_location).find("cgi_bin") != (*_location).end()) {
                 if (_cgi->launch_cgi(*this, cli_conf) != 0)
                     return build_error_response(500);
                 _cgi_on = true;
             }
-            else if (file_to_body() != 0)
+            else if (file_to_body() != 0) {
+                std::cout << "----------------- FILE TO BODY FAIL: [" << _resource_path << "]!" << std::endl;
                 return build_error_response(500);
+            }
             std::cout << "AFTER CGI OR FILE TO BODY: ---BODY[" << _body << "]" << std::endl;
             std::cout << "AFTER CGI OR FILE TO BODY: ---PAYLOAD[" << _payload << "]" << std::endl;
         }
     }
-    else if ((*_location).find("cgi_bin") != (*_location).end() && (method == "PUT" || method == "POST" || method == "DELETE")) {
+    else if ((*_location).find("cgi_bin") != (*_location).end() && (_method == "PUT" || _method == "POST" || _method == "DELETE")) {
         if (_cgi->launch_cgi(*this, cli_conf) != 0)
             return build_error_response(500);
         _cgi_on = true;
     }
 
+    std::cout << "----------------- CGI OK!" << std::endl;
     // 8) go to the proper header function
-    (this->*_methods[method])();
+    (this->*_methods[_method])();
     
     /*std::cout << std::endl << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;
     std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
