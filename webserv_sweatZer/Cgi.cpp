@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 17:22:55 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 19:30:54 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,17 +107,23 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         }
         std::cerr << "CHILD AFT DUP2" << std::endl;
         //close(_pipe[0]);
-        char **args = NULL;
-        
-        
-        
-        
+        char *args[3];
+
         if (getcwd(serv_resp._abs_resource_path, PATH_MAX)) {
+            
             std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
             std::string _cgi_abs_path(serv_resp._abs_resource_path);
             _cgi_abs_path += "/" + serv_resp._resource_path;
-            std::cerr << "Gonna exec [" << _cgi_abs_path << "]" << std::endl;
-            execve(_cgi_abs_path.c_str(), args, _env);
+            
+            // if (!(args[0] = (char *)malloc(sizeof(char) * _cgi_abs_path.size() + 1)))
+            //     return -1;
+            args[0] = ft_strdup((*(*serv_resp._location)["cgi_bin"].begin()).c_str());
+            args[1] = ft_strdup(_cgi_abs_path.c_str());
+            args[2] = NULL;
+            std::cerr << "Gonna exec [" << args[0] << "with file " << args[1] << "]" << std::endl;
+            execve(args[0], args, _env);
+            free(args[0]);
+            free(args[1]);
         }
         std::cerr << "CHILD AFTER EXECVE errno[" << strerror(errno) << "]" << std::endl;
 		// serv_resp.build_error_response(500);

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 18:16:57 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 19:50:12 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,18 +106,18 @@ int		ClientRequest::parse_method()
 // for example, spaces before colons are not allowed
 int		ClientRequest::parse_headers(size_t body, int socket)
 {
-	int						found;
+	size_t					found;
 	int						error;
 
 	for (size_t i = 1 ; i < _vecRead.size() ; i++)
 	{
 		found = 0;
-		if (i != body - 1 && (found = _vecRead[i].find(':')) && is_alpha(_vecRead[i][found - 1]))
+		if (i != body - 1 && (found = _vecRead[i].find(':')) != std::string::npos && is_alpha(_vecRead[i][found - 1]))
 		{
 			if ((error = save_header(_vecRead[i])))
 				return (error);
 		}
-		else if (found && is_space(_vecRead[i][found - 1]))
+		else if (found && found != std::string::npos && is_space(_vecRead[i][found - 1]))
 			return (400);
 		else if (i == body - 1)
 			return (parse_body(i, socket));
@@ -201,7 +201,7 @@ int		ClientRequest::parse_body_chunked(std::string str, int socket)
 		{
 			_vecChunked.clear();
 			memset(_read, 0, _MAXLINE);
-			if (read(socket, _read, _MAXLINE) == -1)
+			if (recv(socket, _read, _MAXLINE - 1, 0) == -1)
 				return (400);
 			str = std::string(_read);
 			j = 0;

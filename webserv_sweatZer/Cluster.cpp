@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 18:05:11 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 19:22:26 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,82 +320,28 @@ void Cluster::parse_request() {
     */
     ClientRequest cli_request;
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
-    memset(cli_request.get_read(), 0, _MAXLINE);
+    memset(cli_request.get_read(), 0, _MAXLINE - 1);
     int ret;
     ret = recv(this->_cur_socket, cli_request.get_read(), _MAXLINE, 0);
-    if (ret == 0 || ret == -1) {
+    std::cout << "RECV RETURNED " << ret << std::endl;
+    if (ret <= 0) {
 		close(this->_cur_socket);
         FD_CLR (this->_cur_socket, &this->_active_fd_set);
-		if (!ret)
+		if (ret == 0)
 			std::cout << "\rConnection was closed by client.\n" << std::endl;
 		else
 			std::cout << "\rRead error, closing connection.\n" << std::endl;
 		return ;
 	}
-    else
-    {
-        std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << cli_request.get_read() << std::endl;
-        std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
-        cli_request.parse_request(serv_response, this->_cur_socket);
+    cli_request.parse_request(serv_response, this->_cur_socket);
+    std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << cli_request.get_read() << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
+    
         
-    }// should also take 
+    // should also take 
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
     serv_response.build_response(cli_request.get_conf());
     this->send_response(serv_response.get_payload());
 };
-
-// void Cluster::send_response() {
-
-//     // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
-//     char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-//     write(this->_cur_socket , hello , strlen(hello));
-//     std::cout << "[--- MSG SENT ---]" << std::endl;
-// };
-
-// // find a server with one of its names, NOT TESTED YET
-// Server::t_conf *Cluster::get_server_conf_by_name(std::string &searched_name) {
-
-//     std::list<Server>::iterator server_it = server_list.begin();
-//     std::list<std::string>::iterator    content_it;
-
-//     while (server_it != server_list.end()) {
-
-//         content_it = (*server_it).get_serv_info()["server_name"].begin();
-//         while (content_it != (*server_it).get_serv_info()["server_name"].end()) {
-
-//             if (*content_it == searched_name)
-//                 return &((*server_it).get_conf());
-//             ++content_it;
-//         }
-//         ++server_it;
-//     }
-//     return NULL;
-// };
-
-// Server::t_conf  *Cluster::get_server_conf_by_address(std::string &searched_host, std::string &searched_port) {
-
-//     std::list<Server>::iterator server_it = server_list.begin();
-//     std::list<std::string>::iterator    host_it;
-//     std::list<std::string>::iterator    port_it;
-
-//     while (server_it != server_list.end()) {
-
-//         host_it = (*server_it).get_serv_info()["server_host"].begin();
-//         while (host_it != (*server_it).get_serv_info()["server_host"].end()) {
-
-//             if (*host_it == searched_host) {
-//                 port_it = (*server_it).get_serv_info()["server_port"].begin();
-//                 while (port_it != (*server_it).get_serv_info()["server_port"].end()) {
-
-//                     if (*port_it == searched_port)
-//                         return &((*server_it).get_conf());
-//                 }
-//             }
-//             ++host_it;
-//         }
-//         ++server_it;
-//     }
-//     return NULL;
-// };
