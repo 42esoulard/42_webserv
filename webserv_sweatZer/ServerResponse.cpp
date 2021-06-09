@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/08 11:42:20 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/09 18:18:00 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 	std::list<std::string>::iterator it;
 	std::string port;
 	if (cli_conf.find("port") == cli_conf.end())
-		port = std::string(ft_itoa(PORT));
+		port = ft_itos(PORT);
 	else
 		port = *(cli_conf["port"].begin());
 
@@ -139,19 +139,29 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 }
 
 // find which location in the server is requested by the client and save its conf in *_location
-int ServerResponse::identify_location(std::string &file, std::string &extension) {
+unsigned long ServerResponse::identify_location(std::string &file, std::string &extension) {
 
-	unsigned int i = file.find_first_of("/");
+	unsigned long i = file.find_last_of("/");
+	if (i == std::string::npos || i == 0)
+		i = file.size();
 
 	std::string path;
 	std::list < t_content_map >::iterator it;
 	std::list < std::string >::iterator ext_it;
+	t_content_map 						*ext_location = NULL;
 
-	while (i < file.size()) {
-		if (file.size() > 1)
-			path = file.substr(0, i + 1);
+	while (i != std::string::npos) {
+		
+		// if (i > 0 && path[i] == '/')
+		// 	path = file.substr(0, i - 1);
+		if (i == 0 && path[i] == '/')
+			path = file.substr(0, 1);
 		else
-			path = file;
+			path = file.substr(0, i);
+		std::cout << "i = " << i << " path " << path << std::endl;
+		// getchar();
+		// else
+		// 	path = file;
 
 		it = get_locations().begin();
 		while(it != get_locations().end()) {
@@ -174,13 +184,24 @@ int ServerResponse::identify_location(std::string &file, std::string &extension)
 				}
 			}
 		   //check if path matches path
+		   	if (extension != "" && *(*it)["path"].begin() == "*")
+				ext_location = &(*it);
 			if (*(*it)["path"].begin() == path) {
 				_location = &(*it);
+				if (ext_location) {
+					std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
+					while (st != (*ext_location)["accept_methods"].end()) {
+						(*_location)["accept_methods"].push_back(*st);
+						++st;
+					}
+					*(*_location)["cgi_bin"].begin() = *(*ext_location)["cgi_bin"].begin();
+				}
+				std::cout << "FOUND LOCATION [" << *(*it)["path"].begin() << "] i " << i << std::endl;
 				return i;
 			}
 		   ++it;
 		}
-		i = file.find_first_of("/", i + 1);
+		i = file.find_last_of("/", i - 1);
 	}
 	return -1;
 }
@@ -296,6 +317,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// 1) save file extension in a string + extract potential query from url
 	std::string requested_path = *cli_conf["file"].begin();
+	_method = *(cli_conf["method"].begin());
+	
 	i = requested_path.find_first_of("?");
 	if ((size_t)i < requested_path.size()) {
 		_query = requested_path.substr(i + 1);
@@ -323,40 +346,40 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
-	// 5) check that method is allowed (in conf location)
-	//  if not, error 405 method not allowed
-	_method = *(cli_conf["method"].begin());
-	std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
-	while (it != (*_location)["accept_methods"].end()) {
-		if (*it == *cli_conf["method"].begin())
-			break;
-		++it;
-	}
-	if (it == (*_location)["accept_methods"].end())
-		return build_error_response(405); // method not allowed
-	std::cout << "----------------- METHOD OK!" << std::endl;
-
+	
 	// 4) substitute requested path location alias with root path
 	//   check file existence and status (or uploads dir existence for PUT/POST)
 	int ir;
 	struct stat buf;
+	if ((*_location).find("root") != (*_location).end())
+		_resource_path = *(*_location)["root"].begin();
+	if ((_method == "PUT" || _method == "POST") && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end()) 
+		_resource_path += *(*_location)["up_dir"].begin();
+	if (i < requested_path.size())
+		_resource_path +=  requested_path.substr(i);		
+
+	std::cout << "METHOD = " << _method << std::endl;
 
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
-		if ((*_location).find("up_dir") == (*_location).end()) {
-			std::cout << "------HERE WTFFFFF" << std::endl;
-			return build_error_response(500); //uploads path not configured
-		}
+		// if ((*_location).find("up_dir") == (*_location).end()) {
+		// 	std::cout << "------HERE WTFFFFF" << std::endl;
+		// 	return build_error_response(500); //uploads path not configured
+		// }
 		// note: we also forbid a DELETE if an uploads path isn't configured.
 		// I figured it was wise to only allow DELETE in a directory where the user
 		// is already allowed to upload something. This is a personal security choice.
 
-		if ((*_location).find("root") != (*_location).end())
-			_resource_path = *(*_location)["root"].begin();
-		if (requested_path == "/")
-			_resource_path += *(*_location)["up_dir"].begin();
+		// if ((*_location).find("root") != (*_location).end())
+		// 	_resource_path = *(*_location)["root"].begin();
+		// if (*(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end()) 
+		// 	_resource_path += *(*_location)["up_dir"].begin();
+		// if (requested_path != *(*_location)["path"].begin())
+		// 	_resource_path +=  "/" + requested_path.substr(i + 1);
+		if (i < requested_path.size())
+			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << requested_path.substr(i + 1) << "]" << std::endl;
 		else
-			_resource_path += *(*_location)["up_dir"].begin() + "/" + requested_path.substr(i + 1);
-
+			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << i << "]" << std::endl;
+			
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			_error = 201; //not an error, means file doesn't exist and will be created
 		if (_method == "DELETE" && ir < 0)
@@ -370,18 +393,28 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		_cli_body = (*cli_conf["body"].begin());
 	}
 	else {
-		if ((*_location).find("root") != (*_location).end() && requested_path != "/")
-			_resource_path = *(*_location)["root"].begin() + "/" + requested_path.substr(i + 1);
-		else if ((*_location).find("root") != (*_location).end() && requested_path == "/")
-			_resource_path = *(*_location)["root"].begin();
-		else
-			_resource_path = requested_path;
+		
 
-		if ((ir = stat(_resource_path.c_str(), &buf)) < 0 && (*_location).find("if_dir") == (*_location).end())
+		std::cout << "1RESOURCE PATH [" << _resource_path << "] substr [" << requested_path << "] loc [" << *(*_location)["path"].begin() << "]" << std::endl;
+
+		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			return build_error_response(404); // file not found
 	}
 
 	std::cout << "----------------- FILE OK!" << std::endl;
+
+	// 5) check that method is allowed (in conf location)
+	//  if not, error 405 method not allowed
+	std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
+	while (it != (*_location)["accept_methods"].end()) {
+		if (*it == *cli_conf["method"].begin())
+			break;
+		++it;
+	}
+	if (it == (*_location)["accept_methods"].end())
+		return build_error_response(405); // method not allowed
+	std::cout << "----------------- METHOD OK!" << std::endl;
+
 
 	// 6) if protected  (in conf location auth: on), check authorization (first Basic,
 	//  else Unknown auth method error. Second, decode base64 and check against against
@@ -411,9 +444,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		}
 		else {
 			if (!S_ISREG(buf.st_mode)) {
-				_resource_path = *(*_location)["if_dir"].begin();
+				_resource_path += "/" + *(*_location)["if_dir"].begin();
+				if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
+					return build_error_response(404); // file not found
 				if (_resource_path.find_last_of(".") < _resource_path.size())
 					_extension = _resource_path.substr(_resource_path.find_last_of("."));
+				std::cout << "RESOURCE PATH [" << _resource_path << "]" << std::endl;
 			}
 
 			if ((*_location).find("cgi_bin") != (*_location).end()) {

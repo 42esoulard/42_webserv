@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:39:48 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 18:05:11 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,6 +178,8 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         std::string tmp;
         if ((tmp = get_conf_token(_line, _index)) == "" || tmp == "{")
             throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + "location needs a path");
+        if (tmp.size() > 1 && (tmp[tmp.size() - 1] == '*' || tmp[tmp.size() - 1] == '/'))
+            tmp = tmp.substr(0, tmp.find_last_of('/'));
         server_list.back().get_locations().back()["path"].push_back(tmp);
         while ((tmp = get_conf_token(_line, _index)) != "{" && tmp != "")
             server_list.back().get_locations().back()["extensions"].push_back(tmp);
@@ -261,7 +263,7 @@ void    Cluster::check_conf(std::string &config) {
 void Cluster::handle_connection(){
 
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
-    std::string response;
+    // std::string response;
     this->_read_fd_set = this->_active_fd_set;
 
     if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
@@ -287,16 +289,16 @@ void Cluster::handle_connection(){
                 ++server_it;
             }
             /* Data arriving on an already-connected socket. */
-            response = this->parse_request();
-            this->send_response(response);
+            this->parse_request();
+            // this->send_response(response);
 
             /*
             ** 6) CLOSE THE SOCKET
             ** The same close() that we use for files
             */
 
-            close(this->_cur_socket);
-            FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            // close(this->_cur_socket);
+            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
         }
     }
 };
@@ -310,7 +312,7 @@ void Cluster::send_response(std::string &response) {
     std::cout << "[" << response << "] SIZE{ " << response.size() << "}" << std::endl;
 };
 
-std::string Cluster::parse_request() {
+void Cluster::parse_request() {
 
     /*
     ** 5) SEND AND RECEIVE MESSAGES
@@ -319,8 +321,17 @@ std::string Cluster::parse_request() {
     ClientRequest cli_request;
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
     memset(cli_request.get_read(), 0, _MAXLINE);
-    if (read(this->_cur_socket, cli_request.get_read(), _MAXLINE) == -1)
-        serv_response.error(500);
+    int ret;
+    ret = recv(this->_cur_socket, cli_request.get_read(), _MAXLINE, 0);
+    if (ret == 0 || ret == -1) {
+		close(this->_cur_socket);
+        FD_CLR (this->_cur_socket, &this->_active_fd_set);
+		if (!ret)
+			std::cout << "\rConnection was closed by client.\n" << std::endl;
+		else
+			std::cout << "\rRead error, closing connection.\n" << std::endl;
+		return ;
+	}
     else
     {
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << cli_request.get_read() << std::endl;
@@ -332,7 +343,7 @@ std::string Cluster::parse_request() {
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
     serv_response.build_response(cli_request.get_conf());
-    return serv_response.get_payload();
+    this->send_response(serv_response.get_payload());
 };
 
 // void Cluster::send_response() {

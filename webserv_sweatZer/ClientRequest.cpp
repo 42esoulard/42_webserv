@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:01:05 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/09 18:16:57 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,18 +218,20 @@ int		ClientRequest::parse_body_chunked(std::string str, int socket)
 bool	ClientRequest::parse_host()
 {
 	t_content_map::iterator	it = _conf.find("host");
-	size_t					i = (*it).second.front().find(':');
 	size_t					j = 0;
 
 	if (it == _conf.end())
 		return (1);
+	
 	if ((*it).second.front().find('/') > -1)
 		return (1);
+	size_t	i = (*it).second.front().find(':');
 	if (i++ == std::string::npos)
 		_conf["port"].push_back(ft_itos(PORT));
 	else
 	{
-		while ((*it).second.front()[i] >= '0' && (*it).second.front()[i] <= '9')
+		while (i < (*it).second.front().size() && (*it).second.front()[i] >= '0' 
+			&& (*it).second.front()[i] <= '9')
 		{
 			i++;
 			j++;

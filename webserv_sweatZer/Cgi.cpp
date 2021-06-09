@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:34:48 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 17:22:55 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,8 +127,8 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 	else { 
         std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(pid, &status, 0);
-        if (WIFEXITED(status))
-			serv_resp._error = WEXITSTATUS(status);
+        // if (WIFEXITED(status))
+		// 	serv_resp._error = WEXITSTATUS(status);
         //if error, return serv_resp._error
         std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};

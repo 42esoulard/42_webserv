@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/07 21:58:09 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/09 16:32:26 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ class ServerResponse {
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int identify_server(t_content_map &cli_conf); 
-        int identify_location(std::string &file, std::string &extension);
+        unsigned long identify_location(std::string &file, std::string &extension);
 
         int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
@@ -125,7 +125,7 @@ class ServerResponse {
         std::string         _body;
         std::string         _payload;
 
-        int                 i;
+        unsigned long       i;
 
         friend class        Cgi;
         Cgi                 *_cgi;
