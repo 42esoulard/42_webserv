@@ -6,26 +6,40 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 15:54:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 17:41:26 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cluster.hpp"
 
+void Cluster::init_cluster(std::string &config) {
+
+    //set all the tables we'll use for comparison here, we'll use them for the whole program
+    for( int i = 0; i < _MAXCLIENTS; ++i)
+        _cli_request.push_back(ClientRequest());
+    
+    set_mime();
+    set_error();
+    
+    this->parse_config(config);
+
+    FD_ZERO (&this->_active_fd_set);
+
+    std::list<Server>::iterator it;
+
+    for (it = server_list.begin(); it != server_list.end(); it++) {
+        it->init_server();
+        FD_SET (it->get_server_fd(), &this->_active_fd_set);
+    }
+};
+
 void Cluster::set_mime() {
 
     int mime_fd;
-    //FD_ZERO (&mime_fd);
     if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
         throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
 
-    // fd_set active_fd_set;
-    // FD_SET (mime_fd, &active_fd_set);
-    // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
-    //     throw Exception("select error");
     char *line;
-
-    //_mime_types = SimpleHashTable(65);
 
     while (get_next_line(mime_fd, &line) > 0) {
         _mime_types.add_entry(line);
@@ -87,37 +101,10 @@ void Cluster::set_error() {
     close (err_fd);
 };
 
-void Cluster::init_cluster(std::string &config) {
-
-    for( int i = 0; i < _MAXCLIENTS; ++i)
-        _cli_request.push_back(ClientRequest());
-    
-    set_mime();
-    set_error();
-    //set all the tables we'll use for comparison here, we'll use them for the whole program (make them global)
-
-    this->parse_config(config);
-
-    FD_ZERO (&this->_active_fd_set);
-
-    std::list<Server>::iterator it;
-
-    for (it = server_list.begin(); it != server_list.end(); it++) {
-        it->init_server();
-        FD_SET (it->get_server_fd(), &this->_active_fd_set);
-    }
-};
-
 void Cluster::parse_config(std::string &config) {
 
-   // FD_ZERO (&_config_fd);
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
-
-    // fd_set active_fd_set;
-    // FD_SET (_config_fd, &active_fd_set);
-    // if (select(FD_SETSIZE, &active_fd_set, NULL, NULL, NULL) < 0)
-    //     throw Exception("select error");
 
     _in_location = false;
     _in_server = false;
@@ -260,13 +247,12 @@ void    Cluster::check_conf(std::string &config) {
         }
         ++server_it;
     }
-    // WE WILL STILL NEED TO CHECK EACH PARAMETER'S VALIDITY UPON USING IT.
 };
 
 void Cluster::handle_connection(){
 
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
-    // std::string response;
+
     this->_read_fd_set = this->_active_fd_set;
 
     if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
@@ -293,27 +279,88 @@ void Cluster::handle_connection(){
             }
             /* Data arriving on an already-connected socket. */
             this->parse_request();
-            // this->send_response(response);
-
-            /*
-            ** 6) CLOSE THE SOCKET
-            ** The same close() that we use for files
-            */
-
-            // close(this->_cur_socket);
-            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
         }
     }
 };
 
-void Cluster::send_response(std::string &response) {
+void Cluster::parse_request() {
 
-    // we are gonna send a message with a proper HTTP header format (or the browser wouldn't accept it)
-   // char hello[] = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-    write(this->_cur_socket , response.c_str() , response.size());
-    std::cout << "[--- MSG SENT ---]" << std::endl;
-    std::cout << "[" << response << "] SIZE{ " << response.size() << "}" << std::endl;
+    /*
+    ** 5) SEND AND RECEIVE MESSAGES
+    ** The same read and write system calls that work on files also work on sockets.
+    */
+
+    memset(buf, 0, _MAXLINE);
+
+    int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
+    if (ret <= 0) {
+		close(this->_cur_socket);
+        FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        _cli_request[_cur_socket] = ClientRequest(); //reinit client request for this socket
+
+		if (ret == 0)
+			std::cout << "\rConnection was closed by client.\n" << std::endl;
+		else
+			std::cout << "\rRead error, closing connection.\n" << std::endl;
+		return ;
+	}
+
+    ServerResponse serv_response(_mime_types, _error_codes, server_list);
+
+    std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
+    std::string s_tmp = (*_sread_ptr) + std::string(buf);
+    
+    if (s_tmp.find("\r\n\r\n") == std::string::npos) { //check if headers are over
+        
+        _cli_request[this->_cur_socket].get_sread() += std::string(buf); 
+        _cli_request[this->_cur_socket].set_read();
+        return; //headers not over
+    }
+	else { //check if body is over
+
+        if (!check_body_end(s_tmp, _sread_ptr, serv_response)) //body not over
+            return ;
+	}
+
+    _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
+    std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_read() << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
+    
+    serv_response.build_response(_cli_request[_cur_socket].get_conf());
+    this->send_response(serv_response.get_payload());
+
+    _cli_request[_cur_socket] = ClientRequest(); //reinitializing client request for this socket
 };
+
+// 0 to return and take another recv to complete the request
+// 1 to go to client parse req
+bool Cluster::check_body_end(std::string &s_tmp, std::string *_sread_ptr, ServerResponse &serv_response) {
+
+ // if theres a content length, check if body size matches
+    if (s_tmp.find("Content-Length: ") != std::string::npos) { 
+        
+        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+        _cli_request[this->_cur_socket].set_read();
+        
+        size_t cl_start = s_tmp.find("Content-Length: ") + 16;
+        size_t cl_end = s_tmp.find("\r\n", cl_start);
+        size_t len = ft_stoi(s_tmp.substr(cl_start, cl_end - cl_start));
+
+        if (s_tmp.size() - (s_tmp.find("\r\n\r\n") + 4) < len) {
+            return 0; //body isn't over
+        }
+    }
+    else if (s_tmp.find("Transfer-Encoding: chunked") != std::string::npos) {
+        
+        return handle_chunk(s_tmp, _sread_ptr, serv_response);
+    }
+    else {
+        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+        _cli_request[this->_cur_socket].set_read();
+    }
+
+    return 1;
+}
 
 void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk) {
 
@@ -336,138 +383,58 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
     }
 };
 
-void Cluster::parse_request() {
+bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerResponse &serv_response) {
 
-    /*
-    ** 5) SEND AND RECEIVE MESSAGES
-    ** The same read and write system calls that work on files also work on sockets.
-    */
-
-    char buf[_MAXLINE];
-    memset(buf, 0, _MAXLINE);
-
-    int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
-
-    std::cout << "RECV RETURNED " << ret << std::endl;
-    if (ret <= 0) {
-		close(this->_cur_socket);
-        FD_CLR (this->_cur_socket, &this->_active_fd_set);
-        _cli_request[_cur_socket] = ClientRequest();
-		if (ret == 0)
-			std::cout << "\rConnection was closed by client.\n" << std::endl;
-		else
-			std::cout << "\rRead error, closing connection.\n" << std::endl;
-		return ;
-	}
-    //std::string s_tmp += std::string(buf);
-    //check if \r\n\r\n in tmp
-    //      yes >>> ok, check if body
-
-
-    // --------------------------------------------------------------------------------
-    std::cout << "buf contains [" << buf << "]" <<  std::endl;
-    // std::string sbuf = std::string(buf);
-    
-    ServerResponse serv_response(_mime_types, _error_codes, server_list);
-
-    std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
-    std::string s_tmp = (*_sread_ptr) + std::string(buf);
-    std::cout << "s_tmp contains [" << s_tmp << "]" <<  std::endl;
-    
-    if (s_tmp.find("\r\n\r\n") == std::string::npos) {
-        
-        _cli_request[this->_cur_socket].get_sread() += std::string(buf); 
-        _cli_request[this->_cur_socket].set_read();
-    
-        std::cout << "headers not over [" << *_sread_ptr << "]" <<  std::endl;
-        return; //msg isnt over
+    //input stopped before chunk
+    if ((s_tmp.find("\r\n\r\n") + 5) >= s_tmp.size()) {
+        if (_cli_request[this->_cur_socket].get_sread().size() < s_tmp.size()) {
+            _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+            _cli_request[this->_cur_socket].set_read();
+        }
+        return 0;
     }
-	else { //check if body is over
 
-		if (s_tmp.find("Content-Length: ") != std::string::npos) {
-            
-            _cli_request[this->_cur_socket].get_sread() += std::string(buf);
-            _cli_request[this->_cur_socket].set_read();
-            
-            size_t cl_start = s_tmp.find("Content-Length: ") + 16;
-            size_t cl_end = s_tmp.find("\r\n", cl_start);
-            size_t len = ft_stoi(s_tmp.substr(cl_start, cl_end - cl_start));
-            std::cout << "IN CONTENT LENGTH | len " << len << std::endl;
-
-            if (s_tmp.size() - (s_tmp.find("\r\n\r\n") + 4) < len)
-            {
-                std::cout << "body not over [" << _cli_request[this->_cur_socket].get_sread() << "]" <<  std::endl;
-                return; //body isn't over
-            }
-        }
-        else if (s_tmp.find("Transfer-Encoding: chunked") != std::string::npos) {
-            std::cout << "IN CHUNKED" << std::endl;
-            //save all chunks in a vector, size content
-            if ((s_tmp.find("\r\n\r\n") + 5) >= s_tmp.size()) {
-                if (_cli_request[this->_cur_socket].get_sread().size() < s_tmp.size()) {
-                    _cli_request[this->_cur_socket].get_sread() += std::string(buf);
-                    _cli_request[this->_cur_socket].set_read();
-                }
-                std::cout << "------------------ " << std::endl << " crlf + 5 doesnt exist, returning with sread [" << *_sread_ptr << "]" << std::endl << " stmp [" << s_tmp << "]" << std::endl << "-----------------------" << std::endl;
-                return ;
-            }
-            std::string chunk = s_tmp.substr(s_tmp.find("\r\n\r\n") + 4);
-            if ((*_sread_ptr).find("\r\n\r\n") == std::string::npos) {
-                std::string sbuf(buf);
-                _cli_request[this->_cur_socket].get_sread() += sbuf.substr(0, sbuf.find("\r\n\r\n") + 4);
-                _cli_request[this->_cur_socket].set_read();
-            }
-            std::cout << "CUR CHUNK: [" << chunk << "]" << std::endl;
-            std::vector<std::string> *_vecChunked_ptr = &(_cli_request[this->_cur_socket].get_vecChunked());
-            save_chunk(_vecChunked_ptr, chunk);
-
-            int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
-
-            std::cout << "CHUNK LEN " << chunk_len << " | CONTENT [" << (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] << "]" << std::endl;            
-            if (chunk_len == 0 && (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] == "\r\n") {
-                //HERE ADD ALL THE CHUNKS TOGETHER to _cli_request.s_read!
-                std::cout << "LAST CHUNK FOUND, ADDING CHUNKS TO REQUEST" << std::endl;
-                for (size_t i = 0; i < (*_vecChunked_ptr).size(); i++) {
-                    if ((*_vecChunked_ptr)[i] == "0")
-                        break;
-
-                    size_t len = ft_stoi((*_vecChunked_ptr)[i]);
-                    
-                    //bad chunk len || no chunk content || incomplete chunk || too big chunk ?!
-                    if (len < 0 || i == (*_vecChunked_ptr).size() - 1 || len > (*_vecChunked_ptr)[i + 1].size()
-                        || len < (*_vecChunked_ptr)[i + 1].size())
-                        serv_response.error(400);
-
-                    i++;
-                    _cli_request[this->_cur_socket].get_sread() += (*_vecChunked_ptr)[i];
-                }
-                _cli_request[this->_cur_socket].set_read();
-            }
-            else
-                return;
-        }
-        else {
-            _cli_request[this->_cur_socket].get_sread() += std::string(buf);
-            _cli_request[this->_cur_socket].set_read();
-        }
-	}
-    // --------------------------------------------------------------------------------
-
-    std::cout << "GOING IN CLI REQ [" << _cli_request[this->_cur_socket].get_read() << "]" << std::endl;
-
-    _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
-    std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_read() << std::endl;
-    std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::string chunk = s_tmp.substr(s_tmp.find("\r\n\r\n") + 4);
     
-        
-    // should also take 
-    // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
+    //if the end of the header was just sent with the chunk, we update _sread with the end of the headers
+    if ((*_sread_ptr).find("\r\n\r\n") == std::string::npos) {
+        std::string sbuf(buf);
+        _cli_request[this->_cur_socket].get_sread() += sbuf.substr(0, sbuf.find("\r\n\r\n") + 4);
+        _cli_request[this->_cur_socket].set_read();
+    }
 
-    //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
-    serv_response.build_response(_cli_request[_cur_socket].get_conf());
-    this->send_response(serv_response.get_payload());
-    // _cli_request[_cur_socket].get_sread() = std::string("");
-    // _cli_request[_cur_socket].set_read();
-    _cli_request[_cur_socket] = ClientRequest();
-   
+    //save all chunks in a vector alternating size and content
+    std::vector<std::string> *_vecChunked_ptr = &(_cli_request[this->_cur_socket].get_vecChunked());
+    save_chunk(_vecChunked_ptr, chunk);
+    int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
+
+    if (chunk_len == 0 && (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] == "\r\n") {
+        // we got the last chunk, we can now add all the chunks together to _sread
+        for (size_t i = 0; i < (*_vecChunked_ptr).size(); i++) {
+            if ((*_vecChunked_ptr)[i] == "0")
+                break;
+
+            size_t len = ft_stoi((*_vecChunked_ptr)[i]);
+            
+            //bad chunk len || no chunk content || incomplete chunk || too big chunk ?!
+            if (len < 0 || i == (*_vecChunked_ptr).size() - 1 || len > (*_vecChunked_ptr)[i + 1].size()
+                || len < (*_vecChunked_ptr)[i + 1].size())
+                serv_response.error(400);
+
+            i++;
+            _cli_request[this->_cur_socket].get_sread() += (*_vecChunked_ptr)[i];
+        }
+        _cli_request[this->_cur_socket].set_read();
+    }
+    else //not the last chunk, we saved it to our vector and will add it later
+        return 0;
+        
+    return 1;
+}
+
+void Cluster::send_response(std::string &response) {
+
+    write(this->_cur_socket , response.c_str() , response.size());
+    std::cout << "[--- MSG SENT ---]" << std::endl;
+    std::cout << "[" << response << "]" << std::endl << "SIZE{ " << response.size() << "}" << std::endl;
 };
