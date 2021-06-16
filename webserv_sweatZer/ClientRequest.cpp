@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 19:50:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 12:26:27 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ ClientRequest::~ClientRequest() {};
 char	*ClientRequest::get_read()
 {
 	return _read;
+}
+std::string &ClientRequest::get_sread()
+{
+	return _sread;
 }
 
 bool	   ClientRequest::is_method(std::string &str)

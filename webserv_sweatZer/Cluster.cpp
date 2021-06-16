@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 12:21:06 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 12:33:13 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,9 +323,12 @@ void Cluster::parse_request() {
     */
 
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
-    memset(_cli_request[_cur_socket].get_read(), 0, _MAXLINE - 1);
-    int ret;
-    ret = recv(this->_cur_socket, _cli_request[_cur_socket].get_read(), _MAXLINE, 0);
+
+    char buf[_MAXLINE];
+    memset(buf, 0, _MAXLINE);
+
+    int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
+
     std::cout << "RECV RETURNED " << ret << std::endl;
     if (ret <= 0) {
 		close(this->_cur_socket);
@@ -336,6 +339,10 @@ void Cluster::parse_request() {
 			std::cout << "\rRead error, closing connection.\n" << std::endl;
 		return ;
 	}
+    //std::string s_tmp += std::string(buf);
+    //check if \r\n\r\n in tmp
+    //      yes >>> ok, check if body
+
     _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
     std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_read() << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
