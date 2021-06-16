@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 19:22:26 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 12:21:06 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,9 @@ void Cluster::set_error() {
 
 void Cluster::init_cluster(std::string &config) {
 
+    for( int i = 0; i < _MAXCLIENTS; ++i)
+        _cli_request.push_back(ClientRequest());
+    
     set_mime();
     set_error();
     //set all the tables we'll use for comparison here, we'll use them for the whole program (make them global)
@@ -318,11 +321,11 @@ void Cluster::parse_request() {
     ** 5) SEND AND RECEIVE MESSAGES
     ** The same read and write system calls that work on files also work on sockets.
     */
-    ClientRequest cli_request;
+
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
-    memset(cli_request.get_read(), 0, _MAXLINE - 1);
+    memset(_cli_request[_cur_socket].get_read(), 0, _MAXLINE - 1);
     int ret;
-    ret = recv(this->_cur_socket, cli_request.get_read(), _MAXLINE, 0);
+    ret = recv(this->_cur_socket, _cli_request[_cur_socket].get_read(), _MAXLINE, 0);
     std::cout << "RECV RETURNED " << ret << std::endl;
     if (ret <= 0) {
 		close(this->_cur_socket);
@@ -333,8 +336,8 @@ void Cluster::parse_request() {
 			std::cout << "\rRead error, closing connection.\n" << std::endl;
 		return ;
 	}
-    cli_request.parse_request(serv_response, this->_cur_socket);
-    std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << cli_request.get_read() << std::endl;
+    _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
+    std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_read() << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
     
         
@@ -342,6 +345,6 @@ void Cluster::parse_request() {
     // std::cout << "[CLIENT MSG] " << cli_request.get_read() << std::endl;
 
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
-    serv_response.build_response(cli_request.get_conf());
+    serv_response.build_response(_cli_request[_cur_socket].get_conf());
     this->send_response(serv_response.get_payload());
 };
