@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 17:31:21 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 18:07:33 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ int ServerResponse::build_error_response(int code) {
 	if (_method != "HEAD")
 	{
 		std::cout << "HERE" << std::endl;
-		_payload += _body + "\r\n";
+		_payload += _body;
 	}
 
 	std::cout << "[ERROR PAYLOAD:][" << _payload << "]" << std::endl;
