@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 12:26:27 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 14:48:10 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,14 @@ char	*ClientRequest::get_read()
 {
 	return _read;
 }
+
+void ClientRequest::set_read() {
+	memset(_read, 0, _MAXLINE);
+	for (size_t i = 0; i < _sread.size(); i++) {
+		_read[i] = _sread[i];
+	}
+}
+
 std::string &ClientRequest::get_sread()
 {
 	return _sread;
@@ -162,6 +170,7 @@ int	ClientRequest::save_header(std::string &str)
 // then if the size of the body is correct, we save it
 int		ClientRequest::parse_body(size_t i, int socket)
 {
+	(void) socket;
 	t_content_map::iterator	itc;
 
 	if (_conf.find("content-type") == _conf.end())
@@ -184,37 +193,38 @@ int		ClientRequest::parse_body(size_t i, int socket)
 // we read until body.size() > LIMIT or until chunk_size == 0
 int		ClientRequest::parse_body_chunked(std::string str, int socket)
 {
-	size_t					j = 0;
-	int						hex = 0;
-	std::string				body;
+	// size_t					j = 0;
+	// int						hex = 0;
+	// std::string				body;
 
-	while (42)
-	{
-		_vecChunked = split_chunked(str);
-		while (j < _vecChunked.size() && (hex = ft_stoi_hex(_vecChunked[j])) != 0)
-		{
-			if (hex < 0 || j == _vecChunked.size() - 1 || (size_t)hex > _vecChunked[j + 1].size())
-				return (400);
-			if (body.size() + hex < 4096)
-				body += _vecChunked[j + 1].substr(0, hex + 1);
-			else
-				return (400);
-			j += 2;
-		}
-		if (j >= _vecChunked.size() && hex != 0)
-		{
-			_vecChunked.clear();
-			memset(_read, 0, _MAXLINE);
-			if (recv(socket, _read, _MAXLINE - 1, 0) == -1)
-				return (400);
-			str = std::string(_read);
-			j = 0;
-			continue ;
-		}
-		else
-			break;
-	}
-	_conf["body"].push_back(body);
+	(void) socket;
+	// while (42)
+	// {
+	// 	_vecChunked = split_chunked(str);
+	// 	while (j < _vecChunked.size() && (hex = ft_stoi_hex(_vecChunked[j])) != 0)
+	// 	{
+	// 		if (hex < 0 || j == _vecChunked.size() - 1 || (size_t)hex > _vecChunked[j + 1].size())
+	// 			return (400);
+	// 		if (body.size() + hex < 4096)
+	// 			body += _vecChunked[j + 1].substr(0, hex + 1);
+	// 		else
+	// 			return (400);
+	// 		j += 2;
+	// 	}
+	// 	if (j >= _vecChunked.size() && hex != 0)
+	// 	{
+	// 		_vecChunked.clear();
+	// 		memset(_read, 0, _MAXLINE);
+	// 		if (recv(socket, _read, _MAXLINE - 1, 0) == -1)
+	// 			return (400);
+	// 		str = std::string(_read);
+	// 		j = 0;
+	// 		continue ;
+	// 	}
+	// 	else
+	// 		break;
+	// }
+	_conf["body"].push_back(str);
 	return (0);
 }
 

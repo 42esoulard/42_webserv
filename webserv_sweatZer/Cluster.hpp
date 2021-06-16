@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 14:16:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 13:37:55 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Cluster {
         // Server::t_conf *get_server_conf_by_name(std::string &searched_name);
         // Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
 
+        void save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk);
         void parse_request();
         void send_response(std::string &response);
         void handle_connection();
