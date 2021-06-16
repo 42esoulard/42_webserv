@@ -6,15 +6,16 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 14:48:10 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 15:25:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientRequest.hpp"
 
-ClientRequest::ClientRequest()
+ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 {
-	_read[0] = '\0';
+	memset(_read, 0, _MAXLINE);
+	_sread = std::string("");
 	_headers[0] = "host";
 	_headers[1] = "accept-charset";
 	_headers[2] = "accept-language";

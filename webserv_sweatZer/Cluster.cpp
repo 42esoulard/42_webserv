@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 15:00:31 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/16 15:54:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,12 +318,22 @@ void Cluster::send_response(std::string &response) {
 void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk) {
 
     //previous chunk not over
-    if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()) {
+    if ((*_vecChunk).size() > 1 && ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()
+        || ((*_vecChunk)[(*_vecChunk).size() - 2] == "0" && (*_vecChunk)[(*_vecChunk).size() - 1] == ""))) {
         (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
         return;
     }
-    (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
-    (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
+    if (chunk.find("\r\n") == std::string::npos) {
+        (*_vecChunk).push_back(chunk);
+        (*_vecChunk).push_back(std::string(""));
+    }
+    else {
+        (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
+        if (chunk.find("\r\n") + 2 < chunk.size())
+            (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
+        else
+            (*_vecChunk).push_back(std::string(""));   
+    }
 };
 
 void Cluster::parse_request() {
@@ -342,6 +352,7 @@ void Cluster::parse_request() {
     if (ret <= 0) {
 		close(this->_cur_socket);
         FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        _cli_request[_cur_socket] = ClientRequest();
 		if (ret == 0)
 			std::cout << "\rConnection was closed by client.\n" << std::endl;
 		else
@@ -367,7 +378,6 @@ void Cluster::parse_request() {
         
         _cli_request[this->_cur_socket].get_sread() += std::string(buf); 
         _cli_request[this->_cur_socket].set_read();
-        std::cout << "_sread contains [" << _cli_request[this->_cur_socket].get_sread() << "]" <<  std::endl;
     
         std::cout << "headers not over [" << *_sread_ptr << "]" <<  std::endl;
         return; //msg isnt over
@@ -393,6 +403,14 @@ void Cluster::parse_request() {
         else if (s_tmp.find("Transfer-Encoding: chunked") != std::string::npos) {
             std::cout << "IN CHUNKED" << std::endl;
             //save all chunks in a vector, size content
+            if ((s_tmp.find("\r\n\r\n") + 5) >= s_tmp.size()) {
+                if (_cli_request[this->_cur_socket].get_sread().size() < s_tmp.size()) {
+                    _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+                    _cli_request[this->_cur_socket].set_read();
+                }
+                std::cout << "------------------ " << std::endl << " crlf + 5 doesnt exist, returning with sread [" << *_sread_ptr << "]" << std::endl << " stmp [" << s_tmp << "]" << std::endl << "-----------------------" << std::endl;
+                return ;
+            }
             std::string chunk = s_tmp.substr(s_tmp.find("\r\n\r\n") + 4);
             if ((*_sread_ptr).find("\r\n\r\n") == std::string::npos) {
                 std::string sbuf(buf);
@@ -404,8 +422,8 @@ void Cluster::parse_request() {
             save_chunk(_vecChunked_ptr, chunk);
 
             int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
-            // std::cout << "IN CHUNKED 0 [" << _vecChunked[0] << "]" << std::endl;
-            
+
+            std::cout << "CHUNK LEN " << chunk_len << " | CONTENT [" << (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] << "]" << std::endl;            
             if (chunk_len == 0 && (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] == "\r\n") {
                 //HERE ADD ALL THE CHUNKS TOGETHER to _cli_request.s_read!
                 std::cout << "LAST CHUNK FOUND, ADDING CHUNKS TO REQUEST" << std::endl;
@@ -448,6 +466,8 @@ void Cluster::parse_request() {
     //I NEED TO DO TESTS WITH NGINX TO SEE WHAT MATTERS: ARE ERRORS BEYOND FIRST LINE IMPORTANT? ARE THEY TREATED BEFORE 1ST LINE PARSING?
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
     this->send_response(serv_response.get_payload());
-    _cli_request[_cur_socket].get_sread() = std::string("");
-    _cli_request[_cur_socket].set_read();
+    // _cli_request[_cur_socket].get_sread() = std::string("");
+    // _cli_request[_cur_socket].set_read();
+    _cli_request[_cur_socket] = ClientRequest();
+   
 };
