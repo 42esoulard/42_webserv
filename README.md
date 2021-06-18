@@ -82,8 +82,7 @@ content of that resource or an error message if unable to do so. The resource is
 - s_struct t_struct
 
 **ALLOWED TOOLS**:
-- **Functions**:
-    - Everything in C and C++ 98 but no external library.
+- Everything in C and C++ 98 but no external library.
 
 
 **RESOURCES ON SPECIFIC ISSUES**
