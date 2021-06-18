@@ -2,15 +2,14 @@
 42's webserv, team rturcey-esoulard! [04/2021] [Ubuntu18]
 
 **[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
-  - git branch my_branch
-  - git checkout my_branch
+  - git checkout -b my_branch
   - do your commits
-  - git checkout master
+  - git checkout main
   - git pull               # to update the state to the latest remote master state
   - git merge my_branch      # to bring changes to local master from your develop branch
   - git push origin main
 
-**GOAL**: write a HTTP server in C++ 98, compliant with rfc 7230 to 7235 (http 1.1)
+**GOAL**: write a HTTP server in C++ 98 (http 1.1)
 When in doubt, compare program behaviour with nginx.
 
 **LINKS**:
@@ -46,10 +45,9 @@ When in doubt, compare program behaviour with nginx.
 - [telnet](https://www.howtoforge.com/how-to-install-and-use-telnet-on-ubuntu-1804/): /!\ telnet is an unencrypted and therefore insecure protocol.
 - [nginx](http://nginx.org/en/docs/beginners_guide.html#proxy): nginx is said to be pretty secure but
 steps can be taken in its configuration to secure it further.
-Tried to install it on a school mac and had a : “The contents of the SDKs in your Command Line Tools (CLT) installation do not match the SDK folder names. A clean reinstall of Command Line Tools (CLT) should fix this.” which asks me to “sudo rm -rf /Library/Developer/CommandLineTools”. I need to try it again another day and contact IT if it still doesn't work. OR I should try it in the VM/in ubuntu.
 
 **KEY NOTIONS**:
-- *Hypertext Transfer Protocol (HTTP)* : an application protocol for distributed, collaborative, hypermedia information systems. Was developed to facilitate hypertext and the World Wide Web. Communication between client and server uses HTTP. HTTP also includes ways of receiving content from clients. This feature is used for submitting web forms, including uploading of files. 
+- *Hypertext Transfer Protocol (HTTP)* : an application protocol for distributed, collaborative, hypermedia information systems. Was developed to facilitate hypertext and the World Wide Web. Communication between client and server uses HTTP. HTTP also includes ways of receiving content from clients. This feature is used for submitting web forms, including uploading of files.
 - *HTTP session* : An HTTP session is a sequence of network request–response transactions. An HTTP client initiates a request by establishing a Transmission Control Protocol (TCP) connection to a particular port on a server (typically port 80, occasionally port 8080; see List of TCP and UDP port numbers). An HTTP server listening on that port waits for a client's request message. Upon receiving the request, the server sends back a status line, such as "HTTP/1.1 200 OK", and a message of its own. The body of this message is typically the requested resource, although an error message or other information may also be returned. With HTTP/1.1, a connection could be reused for more than one request. The body can contain data in any format that server and client both know how to handle: plain text, pictures, HTML, XML..
 - [*HTTP header*](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Message_format) : the format of the messages exchanged between client and server. See [HTTP_header_walkthrough.txt](https://github.com/42esoulard/42_webserv/blob/main/HTTP_header_walkthrough.txt)
 - *World Wide Web* : where hypertext documents include hyperlinks to other resources that the user can easily access.
@@ -84,26 +82,8 @@ content of that resource or an error message if unable to do so. The resource is
 - s_struct t_struct
 
 **ALLOWED TOOLS**:
-- **Functions**: 
-    - *allocation*: malloc, free
-    - *file/repo handling*: write, open, read, close, mkdir, rmdir
-    - *process handling*: unlink, fork, wait, waitpid, wait3, wait, signal, kill, exit, execve, dup, dup2, pipe
-    - *path handling*: getcwd, chdir, stat, lstat, fstat, lseek, opendir, readdir, closedir 
-    - *error handling*: strerror, errno
-    - *time stuff*: gettimeofday, strptime, strftime, usleep, 
-    - *fd/socket handling*: select, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
-- **C++ Magic! Everything in:**
-    - *iostream* 
-    - *string*
-    - *vector*
-    - *list*
-    - *queue*
-    - *stack*
-    - *map*
-    - *algorithm*
-    - *exception*
-    - *ctime*
-    - *cstring*
+- **Functions**:
+    - Everything in C and C++ 98 but no external library.
 
 
 **RESOURCES ON SPECIFIC ISSUES**

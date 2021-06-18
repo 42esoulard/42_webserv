@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 18:07:33 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/18 19:15:33 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,7 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 	t_content_map 						*ext_location = NULL;
 
 	while (i != std::string::npos) {
-		
+
 		// if (i > 0 && path[i] == '/')
 		// 	path = file.substr(0, i - 1);
 		if (i == 0 && path[i] == '/')
@@ -318,7 +318,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	// 1) save file extension in a string + extract potential query from url
 	std::string requested_path = *cli_conf["file"].begin();
 	_method = *(cli_conf["method"].begin());
-	
+
 	i = requested_path.find_first_of("?");
 	if ((size_t)i < requested_path.size()) {
 		_query = requested_path.substr(i + 1);
@@ -346,17 +346,17 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
-	
+
 	// 4) substitute requested path location alias with root path
 	//   check file existence and status (or uploads dir existence for PUT/POST)
 	int ir;
 	struct stat buf;
 	if ((*_location).find("root") != (*_location).end())
 		_resource_path = *(*_location)["root"].begin();
-	if ((_method == "PUT" || _method == "POST") && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end()) 
+	if ((_method == "PUT" || _method == "POST") && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
 		_resource_path += *(*_location)["up_dir"].begin();
 	if (i < requested_path.size())
-		_resource_path +=  requested_path.substr(i);		
+		_resource_path +=  requested_path.substr(i);
 
 	std::cout << "METHOD = " << _method << std::endl;
 
@@ -371,7 +371,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 		// if ((*_location).find("root") != (*_location).end())
 		// 	_resource_path = *(*_location)["root"].begin();
-		// if (*(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end()) 
+		// if (*(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
 		// 	_resource_path += *(*_location)["up_dir"].begin();
 		// if (requested_path != *(*_location)["path"].begin())
 		// 	_resource_path +=  "/" + requested_path.substr(i + 1);
@@ -379,7 +379,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << requested_path.substr(i + 1) << "]" << std::endl;
 		else
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << i << "]" << std::endl;
-			
+
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			_error = 201; //not an error, means file doesn't exist and will be created
 		if (_method == "DELETE" && ir < 0)
@@ -393,7 +393,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		_cli_body = (*cli_conf["body"].begin());
 	}
 	else {
-		
+
 
 		std::cout << "1RESOURCE PATH [" << _resource_path << "] substr [" << requested_path << "] loc [" << *(*_location)["path"].begin() << "]" << std::endl;
 

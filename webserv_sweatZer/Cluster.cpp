@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 17:41:26 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/18 19:15:13 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@ void Cluster::init_cluster(std::string &config) {
     //set all the tables we'll use for comparison here, we'll use them for the whole program
     for( int i = 0; i < _MAXCLIENTS; ++i)
         _cli_request.push_back(ClientRequest());
-    
+
     set_mime();
     set_error();
-    
+
     this->parse_config(config);
 
     FD_ZERO (&this->_active_fd_set);
@@ -309,10 +309,10 @@ void Cluster::parse_request() {
 
     std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
     std::string s_tmp = (*_sread_ptr) + std::string(buf);
-    
+
     if (s_tmp.find("\r\n\r\n") == std::string::npos) { //check if headers are over
-        
-        _cli_request[this->_cur_socket].get_sread() += std::string(buf); 
+
+        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
         _cli_request[this->_cur_socket].set_read();
         return; //headers not over
     }
@@ -325,7 +325,7 @@ void Cluster::parse_request() {
     _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
     std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_read() << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
-    
+
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
     this->send_response(serv_response.get_payload());
 
@@ -337,11 +337,11 @@ void Cluster::parse_request() {
 bool Cluster::check_body_end(std::string &s_tmp, std::string *_sread_ptr, ServerResponse &serv_response) {
 
  // if theres a content length, check if body size matches
-    if (s_tmp.find("Content-Length: ") != std::string::npos) { 
-        
+    if (s_tmp.find("Content-Length: ") != std::string::npos) {
+
         _cli_request[this->_cur_socket].get_sread() += std::string(buf);
         _cli_request[this->_cur_socket].set_read();
-        
+
         size_t cl_start = s_tmp.find("Content-Length: ") + 16;
         size_t cl_end = s_tmp.find("\r\n", cl_start);
         size_t len = ft_stoi(s_tmp.substr(cl_start, cl_end - cl_start));
@@ -351,7 +351,7 @@ bool Cluster::check_body_end(std::string &s_tmp, std::string *_sread_ptr, Server
         }
     }
     else if (s_tmp.find("Transfer-Encoding: chunked") != std::string::npos) {
-        
+
         return handle_chunk(s_tmp, _sread_ptr, serv_response);
     }
     else {
@@ -379,7 +379,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
         if (chunk.find("\r\n") + 2 < chunk.size())
             (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
         else
-            (*_vecChunk).push_back(std::string(""));   
+            (*_vecChunk).push_back(std::string(""));
     }
 };
 
@@ -395,7 +395,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     }
 
     std::string chunk = s_tmp.substr(s_tmp.find("\r\n\r\n") + 4);
-    
+
     //if the end of the header was just sent with the chunk, we update _sread with the end of the headers
     if ((*_sread_ptr).find("\r\n\r\n") == std::string::npos) {
         std::string sbuf(buf);
@@ -415,7 +415,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
                 break;
 
             size_t len = ft_stoi((*_vecChunked_ptr)[i]);
-            
+
             //bad chunk len || no chunk content || incomplete chunk || too big chunk ?!
             if (len < 0 || i == (*_vecChunked_ptr).size() - 1 || len > (*_vecChunked_ptr)[i + 1].size()
                 || len < (*_vecChunked_ptr)[i + 1].size())
@@ -428,7 +428,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     }
     else //not the last chunk, we saved it to our vector and will add it later
         return 0;
-        
+
     return 1;
 }
 

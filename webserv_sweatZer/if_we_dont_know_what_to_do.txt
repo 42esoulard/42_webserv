@@ -1,7 +1,5 @@
 Here's a pot pourri of ideas for those days when we got no idea what to do:
-        - handle authentication encoding/hashing, dehashing and checking
-(OK?)   - add fcntl(fd, F_SETFL, O_NONBLOCK) here and there to our fds before we handle them.
-            I also think we'll have to add select every fcking where before reads.
+        - nothing
 
 
 RFC REQUIREMENTS:
@@ -62,14 +60,14 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
     ****************
 
     Methods: HEAD, GET & POST
-        - All general-purpose servers MUST support the methods GET and HEAD. All other 
-            methods are OPTIONAL. (BUT 42 tester asks for POST and maybe others. We can still 
+        - All general-purpose servers MUST support the methods GET and HEAD. All other
+            methods are OPTIONAL. (BUT 42 tester asks for POST and maybe others. We can still
             start with these three and adjust after testing.)
         - If the request method is GET or HEAD and the response status code
             is 200 (OK), 204 (No Content), 206 (Partial Content), or 304 (Not
             Modified), the payload is a representation of the resource
-            identified by the effective request URI. (The HEAD method is identical to GET 
-            except that the server MUST NOT send a message body in the response (i.e., the 
+            identified by the effective request URI. (The HEAD method is identical to GET
+            except that the server MUST NOT send a message body in the response (i.e., the
             response terminates at the end of the header section)
         - If one or more resources has been created on the origin server as a
             result of successfully processing a POST request, the origin server
@@ -101,17 +99,17 @@ OK?     - HTTP/1.1 defaults to the use of "persistent connections", allowing mul
                 +---------+-------------------------------------------------+-------+
 
     Content-type header:
-OK      - If a Content-Type header field is not present, the recipient MAY either assume a 
+OK      - If a Content-Type header field is not present, the recipient MAY either assume a
             media type of "application/octet-stream"
-    
+
     About how we don't care about negociation:
-        - If no Content-Language is specified, the default is that the content is intended 
-            for all language audiences.  This might mean that the sender does not consider it 
-            to be specific to any natural language, or that the sender does not know for which 
+        - If no Content-Language is specified, the default is that the content is intended
+            for all language audiences.  This might mean that the sender does not consider it
+            to be specific to any natural language, or that the sender does not know for which
             language it is intended.
-        
+
     Error codes:
-        - List of error codes : RFC7231 p.48 
+        - List of error codes : RFC7231 p.48
 
     Security:
         - Reject ".." pathnames to avoid disclosure of files outside the server bounds
@@ -121,10 +119,10 @@ OK      - If a Content-Type header field is not present, the recipient MAY eithe
             HTTP-date is case sensitive.  A sender MUST NOT generate additional
             whitespace in an HTTP-date beyond that specifically included as SP in
             the grammar.
-    
+
     I DONT UNDERSTAND WHAT THIS MEANS NOR IF WE SHOULD CARE:
-        - a recipient MUST be able to parse, line breaks in text media that consist of 
-            CRLF, bare CR, or bare LF.  In addition, text media in HTTP is not limited to 
+        - a recipient MUST be able to parse, line breaks in text media that consist of
+            CRLF, bare CR, or bare LF.  In addition, text media in HTTP is not limited to
             charsets that use octets 13 and 10 for CR and LF, respectively.
 
     ****************
@@ -144,7 +142,7 @@ OK      - If a Content-Type header field is not present, the recipient MAY eithe
 ******* RFC 7233 *** >>> RANGE REQUESTS *******************************************************
     ****************
 
-    "Range requests are an OPTIONAL feature of HTTP." 
+    "Range requests are an OPTIONAL feature of HTTP."
     Bye-bye, range requests! We won't miss u!
 
     ****************
@@ -161,7 +159,7 @@ OK      - If a Content-Type header field is not present, the recipient MAY eithe
     ****************
 ******* RFC 7235 *** >>> AUTHENTICATION *******************************************************
     ****************
-    
+
     Auth Challenge rules:
     - a server challenges a client request, for the
         client provide authentication information
@@ -175,8 +173,8 @@ OK      - If a Content-Type header field is not present, the recipient MAY eithe
     - Authorization field value field contains the client's credentials for the
         realm of the resource being requested
     - If we receive a request for a protected ressource with bad or missing credentials,
-        we SHOULD send 401 (Unauthorized) response that contains a 
-        WWW-Authenticate header field with at least one (possibly new) challenge 
+        we SHOULD send 401 (Unauthorized) response that contains a
+        WWW-Authenticate header field with at least one (possibly new) challenge
         applicable to the requested resource.
     - A server that receives valid credentials that are not adequate to
         gain access ought to respond with the 403 (Forbidden) status code
@@ -185,6 +183,6 @@ OK      - If a Content-Type header field is not present, the recipient MAY eithe
     - Contains the challenge (? not sure what they mean nor its format)
         ex: WWW-Authenticate: Newauth realm="apps", type=1,
                        title="Login to \"apps\"", Basic realm="simple"
-    
+
     Header Authorization:
     - Is sent by the client. Contains credentials (username=password)
