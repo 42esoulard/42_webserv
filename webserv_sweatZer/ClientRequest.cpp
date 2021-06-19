@@ -82,8 +82,19 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 	_vecRead = split_crlf(toRead, &body);
 	if (_vecRead.empty())
 		return (serv_response.error(400));
-	if ((error = parse_method()) || (error = parse_headers(body, socket)))
+	if ((error = parse_method()))
+	{
+		parse_headers(body, socket);
+		if (parse_host())
+			return (serv_response.error(400));
 		return (serv_response.error(error));
+	}
+	if ((error = parse_headers(body, socket)))
+	{
+		if (parse_host())
+			return (serv_response.error(400));
+		return (serv_response.error(error));
+	}
 	if (parse_host())
 		return (serv_response.error(400));
 	parse_charset();
@@ -121,10 +132,15 @@ int		ClientRequest::parse_headers(size_t body, int socket)
 {
 	size_t					found;
 	int						error;
+	size_t					start = 1;
 
-	for (size_t i = 1 ; i < _vecRead.size() ; i++)
+	if (_vecRead[1].empty())
+		start = 0;
+	for (size_t i = start ; i < _vecRead.size() ; i++)
 	{
 		found = 0;
+		if (_vecRead[i].size() > _MAXHEADERSIZE)
+			return (413);
 		if (i != body - 1 && (found = _vecRead[i].find(':')) != std::string::npos && is_alpha(_vecRead[i][found - 1]))
 		{
 			if ((error = save_header(_vecRead[i])))
@@ -214,7 +230,9 @@ bool	ClientRequest::parse_host()
 	size_t	i = (*it).second.front().find(':');
 	if (i++ == std::string::npos)
 		_conf["port"].push_back(ft_itos(PORT));
-	else
+	while (i < (*it).second.front().size() && (*it).second.front()[i] == 32)
+		++i;
+	if (i != std::string::npos)
 	{
 		while (i < (*it).second.front().size() && (*it).second.front()[i] >= '0' 
 			&& (*it).second.front()[i] <= '9')
@@ -223,7 +241,7 @@ bool	ClientRequest::parse_host()
 			j++;
 		}
 		_conf["port"].push_back((*it).second.front().substr(i - j, j));
-		(*it).second.front() = (*it).second.front().substr(0, i - j - 1);
+		(*it).second.front() = (*it).second.front().substr(0, (*it).second.front().find(':'));
 	}
 	return (0);
 }

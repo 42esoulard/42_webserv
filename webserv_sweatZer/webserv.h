@@ -16,6 +16,7 @@
 #define _MAXLINE 655360
 #define _MAXFD 4096
 #define _MAXCLIENTS 250
+#define _MAXHEADERSIZE 8000
 #define PORT 8080 // default port
 
 // socket/IP stuff

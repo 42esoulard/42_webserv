@@ -186,8 +186,8 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 		   //check if path matches path
 		   	if (extension != "" && *(*it)["path"].begin() == "*")
 				ext_location = &(*it);
+			_location = &(*it);
 			if (*(*it)["path"].begin() == path) {
-				_location = &(*it);
 				if (ext_location) {
 					std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
 					while (st != (*ext_location)["accept_methods"].end()) {
@@ -314,7 +314,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	if ((i = identify_server(cli_conf)) != 200)
 		return error(i); //404, server not found
-
 	// 1) save file extension in a string + extract potential query from url
 	std::string requested_path = *cli_conf["file"].begin();
 	_method = *(cli_conf["method"].begin());
@@ -351,13 +350,14 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	//   check file existence and status (or uploads dir existence for PUT/POST)
 	int ir;
 	struct stat buf;
-	if ((*_location).find("root") != (*_location).end())
+
+	if ((*_location).find("root") != (*_location).end()){
 		_resource_path = *(*_location)["root"].begin();
+	}
 	if ((_method == "PUT" || _method == "POST") && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
 		_resource_path += *(*_location)["up_dir"].begin();
 	if (i < requested_path.size())
 		_resource_path +=  requested_path.substr(i);
-
 	std::cout << "METHOD = " << _method << std::endl;
 
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
