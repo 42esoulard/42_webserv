@@ -364,22 +364,90 @@ bool Cluster::check_body_end(std::string &s_tmp, std::string *_sread_ptr, Server
 
 void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk) {
 
-    //previous chunk not over
-    if ((*_vecChunk).size() > 1 && ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()
-        || ((*_vecChunk)[(*_vecChunk).size() - 2] == "0" && (*_vecChunk)[(*_vecChunk).size() - 1] == ""))) {
-        (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
-        return;
-    }
-    if (chunk.find("\r\n") == std::string::npos) {
-        (*_vecChunk).push_back(chunk);
-        (*_vecChunk).push_back(std::string(""));
-    }
-    else {
-        (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
-        if (chunk.find("\r\n") + 2 < chunk.size())
-            (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
-        else
+    // //previous chunk not over
+    // if ((*_vecChunk).size() > 1 && ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()
+    //     || ((*_vecChunk)[(*_vecChunk).size() - 2] == "0" && (*_vecChunk)[(*_vecChunk).size() - 1] == ""))) {
+    //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
+    //     return;
+    // }
+    // if (chunk.find("\r\n") == std::string::npos) {
+    //     (*_vecChunk).push_back(chunk);
+    //     (*_vecChunk).push_back(std::string(""));
+    // }
+    // else {
+    //     (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
+    //     if (chunk.find("\r\n") + 2 < chunk.size())
+    //         (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
+    //     else
+    //         (*_vecChunk).push_back(std::string(""));
+    // }
+    size_t index = 0;
+    size_t next_CRLF;
+    size_t missing_chars;
+    size_t chunk_left;
+
+    std::cout << "IN SAVE CHUNK [" <<  chunk << "]" << std::endl;
+
+    while (index < chunk.size() && index != std::string::npos) {
+        
+        std::cout << "IN SAVE CHUNK LOOP chunk [" << chunk << "]" << std::endl;
+
+        while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) 
+            index += 4;
+        if (index == std::string::npos || index >= chunk.size())
+            return;
+        
+        chunk = chunk.substr(index);
+        next_CRLF = chunk.find("\r\n");
+
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) < 0)
+            return; //bad hex value for next vector
+
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()) {
+            
+            missing_chars = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) - (*_vecChunk)[(*_vecChunk).size() - 1].size();
+            if (next_CRLF == std::string::npos)
+                chunk_left = chunk.size() - index;
+            else
+                chunk_left = next_CRLF - index;
+
+            if (missing_chars < chunk_left) {
+                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars); // or next_crlf -1 ?
+                index += missing_chars;
+            }
+            else if (missing_chars >= chunk_left) {
+                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
+                index = next_CRLF;
+            }
+            continue;
+            // if (next_CRLF == std::string::npos && missing_chars >= chunk_left) {
+            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index);
+            //     return;
+            // }
+            // if (next_CRLF == std::string::npos && missing_chars < chunk_left) {
+            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars);
+            //     index += missing_chars;
+            // }
+            // else if (missing_chars < chunk_left) {
+            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars); // or next_crlf -1 ?
+            //     index += missing_chars;
+            // }
+            // else if (missing_chars >= chunk_left) {
+            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
+            //     index = next_CRLF;
+            // }
+            // continue;
+        }
+        else if (next_CRLF == std::string::npos) {
+            (*_vecChunk).push_back(chunk);
             (*_vecChunk).push_back(std::string(""));
+            return;
+        }
+        else {
+            (*_vecChunk).push_back(chunk.substr(0, next_CRLF));
+            (*_vecChunk).push_back(std::string(""));
+            index = next_CRLF;
+        }
     }
 };
 
