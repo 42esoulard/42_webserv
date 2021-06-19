@@ -389,8 +389,6 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
     std::cout << "IN SAVE CHUNK [" <<  chunk << "]" << std::endl;
 
     while (index < chunk.size() && index != std::string::npos) {
-        
-        std::cout << "IN SAVE CHUNK LOOP chunk [" << chunk << "]" << std::endl;
 
         while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) 
             index += 4;
@@ -399,6 +397,8 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
         
         chunk = chunk.substr(index);
         next_CRLF = chunk.find("\r\n");
+
+        std::cout << "IN SAVE CHUNK LOOP chunk [" << chunk << "]" << std::endl;
 
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) < 0)
             return; //bad hex value for next vector
@@ -420,23 +420,6 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
                 index = next_CRLF;
             }
             continue;
-            // if (next_CRLF == std::string::npos && missing_chars >= chunk_left) {
-            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index);
-            //     return;
-            // }
-            // if (next_CRLF == std::string::npos && missing_chars < chunk_left) {
-            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars);
-            //     index += missing_chars;
-            // }
-            // else if (missing_chars < chunk_left) {
-            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars); // or next_crlf -1 ?
-            //     index += missing_chars;
-            // }
-            // else if (missing_chars >= chunk_left) {
-            //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
-            //     index = next_CRLF;
-            // }
-            // continue;
         }
         else if (next_CRLF == std::string::npos) {
             (*_vecChunk).push_back(chunk);
@@ -447,6 +430,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             (*_vecChunk).push_back(chunk.substr(0, next_CRLF));
             (*_vecChunk).push_back(std::string(""));
             index = next_CRLF;
+            std::cout << "IN LAST ELSE vec size " <<(*_vecChunk).size() << " [" << (*_vecChunk)[0] << "] [" << (*_vecChunk)[1] << "]" << std::endl;
         }
     }
 };
@@ -476,7 +460,9 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     save_chunk(_vecChunked_ptr, chunk);
     int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
 
-    if (chunk_len == 0 && (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] == "\r\n") {
+    // std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
+
+    if (chunk_len == 0) {
         // we got the last chunk, we can now add all the chunks together to _sread
         for (size_t i = 0; i < (*_vecChunked_ptr).size(); i++) {
             if ((*_vecChunked_ptr)[i] == "0")
