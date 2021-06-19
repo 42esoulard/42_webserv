@@ -390,22 +390,36 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
 
     while (index < chunk.size() && index != std::string::npos) {
 
-        while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) 
-            index += 4;
+        std::cout << "BEFORE PASSING CRLF index " << index << " chunk size "<< chunk.size() << std::endl;
+        while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) {
+            index += 2;
+            std::cout << "PASSING CRLF!" << std::endl;
+        }
         if (index == std::string::npos || index >= chunk.size())
             return;
-        
+        std::cout << "AFTER PASSING CRLF index " << index << " chunk size "<< chunk.size() << std::endl;
+
+        for (size_t i = 0; i < chunk.size(); i++) {
+            std::cout << "index [" << i << "][" << chunk[i] << "]" << std::endl;
+        }
+
+
         chunk = chunk.substr(index);
         next_CRLF = chunk.find("\r\n");
 
-        std::cout << "IN SAVE CHUNK LOOP chunk [" << chunk << "]" << std::endl;
+        std::cout << "IN SAVE CHUNK LOOP index " << index << " chunk    [" << chunk << "]" << std::endl;
 
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) < 0)
             return; //bad hex value for next vector
-
+        if ((*_vecChunk).size() > 1)
+            std::cout << (*_vecChunk).size() << " " << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << " " << (*_vecChunk)[(*_vecChunk).size() - 1].size() << std::endl;
+        else
+            std::cout << "too smal vecsize " <<(*_vecChunk).size() << std::endl;
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()) {
             
+            
             missing_chars = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) - (*_vecChunk)[(*_vecChunk).size() - 1].size();
+            std::cout << "CHUNK EXPECTED SIZE " << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "MISSING CHARS [" << missing_chars << "]" << std::endl;
             if (next_CRLF == std::string::npos)
                 chunk_left = chunk.size() - index;
             else
@@ -414,10 +428,15 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             if (missing_chars < chunk_left) {
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars); // or next_crlf -1 ?
                 index += missing_chars;
+                std::cout << "CHUNK smaller than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
+                    << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
             }
             else if (missing_chars >= chunk_left) {
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
                 index = next_CRLF;
+                std::cout << "MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
+                << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+
             }
             continue;
         }
@@ -460,7 +479,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     save_chunk(_vecChunked_ptr, chunk);
     int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
 
-    // std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
+    std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
 
     if (chunk_len == 0) {
         // we got the last chunk, we can now add all the chunks together to _sread
