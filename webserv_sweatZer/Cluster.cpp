@@ -364,22 +364,106 @@ bool Cluster::check_body_end(std::string &s_tmp, std::string *_sread_ptr, Server
 
 void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk) {
 
-    //previous chunk not over
-    if ((*_vecChunk).size() > 1 && ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()
-        || ((*_vecChunk)[(*_vecChunk).size() - 2] == "0" && (*_vecChunk)[(*_vecChunk).size() - 1] == ""))) {
-        (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
-        return;
-    }
-    if (chunk.find("\r\n") == std::string::npos) {
-        (*_vecChunk).push_back(chunk);
-        (*_vecChunk).push_back(std::string(""));
-    }
-    else {
-        (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
-        if (chunk.find("\r\n") + 2 < chunk.size())
-            (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
+    // //previous chunk not over
+    // if ((*_vecChunk).size() > 1 && ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()
+    //     || ((*_vecChunk)[(*_vecChunk).size() - 2] == "0" && (*_vecChunk)[(*_vecChunk).size() - 1] == ""))) {
+    //     (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
+    //     return;
+    // }
+    // if (chunk.find("\r\n") == std::string::npos) {
+    //     (*_vecChunk).push_back(chunk);
+    //     (*_vecChunk).push_back(std::string(""));
+    // }
+    // else {
+    //     (*_vecChunk).push_back(chunk.substr(0, chunk.find("\r\n")));
+    //     if (chunk.find("\r\n") + 2 < chunk.size())
+    //         (*_vecChunk).push_back(chunk.substr(chunk.find("\r\n") + 2));
+    //     else
+    //         (*_vecChunk).push_back(std::string(""));
+    // }
+    size_t index = 0;
+    size_t next_CRLF;
+    size_t missing_chars;
+    size_t chunk_left;
+
+    std::cout << "IN SAVE CHUNK [" <<  chunk << "]" << std::endl;
+
+    while (index < chunk.size() && index != std::string::npos) {
+
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) == 0) {
+            (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
+            return;
+        }
+
+        std::cout << "BEFORE PASSING CRLF index " << index << " chunk size "<< chunk.size() << std::endl;
+        while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) {
+            index += 2;
+            std::cout << "PASSING CRLF!" << std::endl;
+        }
+        if (index == std::string::npos || index >= chunk.size())
+            return;
+        std::cout << "AFTER PASSING CRLF index " << index << " chunk size "<< chunk.size() << std::endl;
+
+        for (size_t i = 0; i < chunk.size(); i++) {
+            std::cout << "index [" << i << "][" << chunk[i] << "]" << std::endl;
+        }
+
+        chunk = chunk.substr(index);
+        index = 0;
+        next_CRLF = chunk.find("\r\n");
+
+        std::cout << "IN SAVE CHUNK LOOP index " << index << " chunk    [" << chunk << "]" << std::endl;
+
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) < 0)
+            return; //bad hex value for next vector
+        if ((*_vecChunk).size() > 1)
+            std::cout << (*_vecChunk).size() << " " << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << " " << (*_vecChunk)[(*_vecChunk).size() - 1].size() << std::endl;
         else
+            std::cout << "too smal vecsize " <<(*_vecChunk).size() << std::endl;
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) > (*_vecChunk)[(*_vecChunk).size() - 1].size()) {
+            
+            
+            missing_chars = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) - (*_vecChunk)[(*_vecChunk).size() - 1].size();
+            std::cout << "CHUNK EXPECTED SIZE " << (*_vecChunk)[(*_vecChunk).size() - 2] << " hex[" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] MISSING CHARS [" << missing_chars << "]" << std::endl;
+            if (next_CRLF == std::string::npos)
+                chunk_left = chunk.size();
+            else
+                chunk_left = next_CRLF;
+
+            if (missing_chars < chunk_left) {
+                std::cout << "0 CHUNKLEFT bigger than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
+                    << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+                std::cout << "BEFORE the infamous fuckedup shit | CHUNK [" << chunk << "] CHUNK SIZE ["<< chunk.size() << " INDEX [" <<index << "MISSING CHARS [" << missing_chars << "]" << std::endl;
+                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(0, missing_chars); // or next_crlf -1 ?
+                std::cout << "AFTER the infamous fuckedup shit" << std::endl;
+                index = missing_chars;
+                std::cout << "1 CHUNKLEFT bigger than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
+                    << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+            }
+            else if (missing_chars >= chunk_left) {
+                std::cout << "0 MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
+                << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+
+                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
+                index = next_CRLF;
+
+                std::cout << "1 MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
+                << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+
+            }
+            continue;
+        }
+        else if (next_CRLF == std::string::npos) {
+            (*_vecChunk).push_back(chunk);
             (*_vecChunk).push_back(std::string(""));
+            return;
+        }
+        else {
+            (*_vecChunk).push_back(chunk.substr(0, next_CRLF));
+            (*_vecChunk).push_back(std::string(""));
+            index = next_CRLF;
+            std::cout << "IN LAST ELSE vec size " <<(*_vecChunk).size() << " [" << (*_vecChunk)[0] << "] [" << (*_vecChunk)[1] << "]" << std::endl;
+        }
     }
 };
 
@@ -408,7 +492,9 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     save_chunk(_vecChunked_ptr, chunk);
     int chunk_len = ft_stoi_hex((*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 2]);
 
-    if (chunk_len == 0 && (*_vecChunked_ptr)[(*_vecChunked_ptr).size() - 1] == "\r\n") {
+    std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
+
+    if (chunk_len == 0) {
         // we got the last chunk, we can now add all the chunks together to _sread
         for (size_t i = 0; i < (*_vecChunked_ptr).size(); i++) {
             if ((*_vecChunked_ptr)[i] == "0")
