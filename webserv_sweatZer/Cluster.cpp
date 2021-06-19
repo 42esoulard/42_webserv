@@ -390,6 +390,11 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
 
     while (index < chunk.size() && index != std::string::npos) {
 
+        if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) == 0) {
+            (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
+            return;
+        }
+
         std::cout << "BEFORE PASSING CRLF index " << index << " chunk size "<< chunk.size() << std::endl;
         while (index != std::string::npos && index == chunk.find("\r\n") && index < chunk.size()) {
             index += 2;
@@ -403,8 +408,8 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             std::cout << "index [" << i << "][" << chunk[i] << "]" << std::endl;
         }
 
-
         chunk = chunk.substr(index);
+        index = 0;
         next_CRLF = chunk.find("\r\n");
 
         std::cout << "IN SAVE CHUNK LOOP index " << index << " chunk    [" << chunk << "]" << std::endl;
@@ -419,22 +424,30 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             
             
             missing_chars = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) - (*_vecChunk)[(*_vecChunk).size() - 1].size();
-            std::cout << "CHUNK EXPECTED SIZE " << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "MISSING CHARS [" << missing_chars << "]" << std::endl;
+            std::cout << "CHUNK EXPECTED SIZE " << (*_vecChunk)[(*_vecChunk).size() - 2] << " hex[" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] MISSING CHARS [" << missing_chars << "]" << std::endl;
             if (next_CRLF == std::string::npos)
-                chunk_left = chunk.size() - index;
+                chunk_left = chunk.size();
             else
-                chunk_left = next_CRLF - index;
+                chunk_left = next_CRLF;
 
             if (missing_chars < chunk_left) {
-                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, missing_chars); // or next_crlf -1 ?
-                index += missing_chars;
-                std::cout << "CHUNK smaller than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
+                std::cout << "0 CHUNKLEFT bigger than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
+                    << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+                std::cout << "BEFORE the infamous fuckedup shit | CHUNK [" << chunk << "] CHUNK SIZE ["<< chunk.size() << " INDEX [" <<index << "MISSING CHARS [" << missing_chars << "]" << std::endl;
+                (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(0, missing_chars); // or next_crlf -1 ?
+                std::cout << "AFTER the infamous fuckedup shit" << std::endl;
+                index = missing_chars;
+                std::cout << "1 CHUNKLEFT bigger than missing chars was [" << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << "] now " 
                     << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
             }
             else if (missing_chars >= chunk_left) {
+                std::cout << "0 MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
+                << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
+
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(index, chunk_left); // or next_crlf -1 ?
                 index = next_CRLF;
-                std::cout << "MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
+
+                std::cout << "1 MISSING CHARS bigger than chunk [" << missing_chars << "] now " 
                 << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
 
             }
