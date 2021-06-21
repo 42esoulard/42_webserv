@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/18 19:15:33 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/21 22:02:24 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -533,7 +533,7 @@ void ServerResponse::method_put() {
 
 	if (!_cgi_on) {
 		int fd;
-		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
+		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) < 0) {
 			build_error_response(500);
 			return;
 		}
@@ -555,11 +555,12 @@ void ServerResponse::method_put() {
 
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 
-	if (_cgi_on) {
-		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
-		_payload += "\r\n" + _body;
-	}
-	_payload += "\r\n";
+	// if (_cgi_on) {
+		_payload += "Content-Length: " + ft_itos(_cli_body.size()) + "\r\n";
+		_payload += "\r\n" + _cli_body;
+	// }
+
+	//_payload += "\r\n";
 };
 
 void ServerResponse::method_post() {
