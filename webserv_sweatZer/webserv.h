@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 13:33:51 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 14:35:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #define _MAXFD 4096
 #define _MAXCLIENTS 250
 #define _MAXHEADERSIZE 65536
-#define	_MAXURI
+#define	_MAXURI 2000
 #define PORT 8080 // default port
 
 // socket/IP stuff
@@ -58,11 +58,10 @@
 //#include "ServerResponse.hpp"
 //#include "ClientRequest.hpp"
 
-
 #define DEFAULT_CONFIG_FILE "conf.d/webserv.conf"
 #define MIME_TYPES          "conf.d/mime.types"
 #define ERROR_CODES         "conf.d/error_codes"
-#define DEFAULT_MAX_BODY    "1000000"
+#define DEFAULT_MAX_BODY    1000000
 #define DEFAULT_UPLOAD_NAME "new.txt"
 #define ERROR_FOLDER        "html/"
 

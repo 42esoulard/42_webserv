@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/18 19:15:33 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 14:25:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,12 +338,28 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		return error(404); // location not found
 
 	std::cout << "----------------- SERVER + LOCATION FOUND!" << std::endl;
+
+
 	// 3) after we got our Server and Location info, we can check if we have a previous error
 	// IF ERROR != 200 || 201, RETURN BUILD_ERROR()
 	if (_error != 200 && _error != 201)
 		return build_error_response(_error);
 
 	std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
+
+	//check body size
+	
+	if ((*_location).find("client_max_body_size") != (*_location).end())
+		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
+	else if ((get_serv_info().find("default_error")) != get_serv_info().end())
+		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
+	else
+		_max_body = DEFAULT_MAX_BODY;
+		
+	if (cli_conf["body"].begin() != cli_conf["body"].end()) {	
+		if ((*cli_conf["body"].begin()).size() > _max_body)
+			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
+	}
 
 
 	// 4) substitute requested path location alias with root path
@@ -533,7 +549,7 @@ void ServerResponse::method_put() {
 
 	if (!_cgi_on) {
 		int fd;
-		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT)) < 0) {
+		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) < 0) {
 			build_error_response(500);
 			return;
 		}
@@ -555,11 +571,12 @@ void ServerResponse::method_put() {
 
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 
-	if (_cgi_on) {
-		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
-		_payload += "\r\n" + _body;
-	}
-	_payload += "\r\n";
+	// if (_cgi_on) {
+		_payload += "Content-Length: " + ft_itos(_cli_body.size()) + "\r\n";
+		_payload += "\r\n" + _cli_body;
+	// }
+
+	//_payload += "\r\n";
 };
 
 void ServerResponse::method_post() {
@@ -623,16 +640,16 @@ int ServerResponse::file_to_body(void) {
 	if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
 		return build_error_response(500);
 
-	std::string smax_body;
-	if (get_serv_info().find("client_max_body_size") == get_serv_info().end())
-		smax_body = DEFAULT_MAX_BODY;
-	else
-		smax_body = *get_serv_info()["client_max_body_size"].begin();
+	// std::string smax_body;
+	// if (get_serv_info().find("client_max_body_size") == get_serv_info().end())
+	// 	smax_body = DEFAULT_MAX_BODY;
+	// else
+	// 	smax_body = *get_serv_info()["client_max_body_size"].begin();
 
-	int max_body = ft_stoi(smax_body);
-	char buf[max_body + 1];
-	memset(buf, 0, max_body);
-	if ((size = read(fd, buf, max_body)) < 0)
+	// int max_body = ft_stoi(smax_body);
+	char buf[_max_body + 1];
+	memset(buf, 0, _max_body);
+	if ((size = read(fd, buf, _max_body)) < 0)
 		return build_error_response(500);
 	for (int i = 0 ; i < size ; ++i)
 	{

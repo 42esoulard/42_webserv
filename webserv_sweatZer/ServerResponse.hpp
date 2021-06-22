@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 17:31:50 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:02:58 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ class ServerResponse {
         int                 _error;
         std::string         _method;
         std::string         _cli_body;
+        size_t              _max_body;
         std::string         _body;
         std::string         _payload;
 

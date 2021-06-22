@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 17:45:04 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:17:15 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 {
-	memset(_read, 0, _MAXLINE);
+	// memset(_read, 0, _MAXLINE);
 	_sread = std::string("");
 	_headers[0] = "host";
 	_headers[1] = "accept-charset";
@@ -35,8 +35,15 @@ char	*ClientRequest::get_read()
 	return _read;
 }
 
+int ClientRequest::allocate_read(size_t max_body) {
+
+	if (!(_read = (char *)malloc(sizeof(char) * (_MAXHEADERSIZE + max_body + 1))))
+		return -1;
+	return 0;
+}
+
 void ClientRequest::set_read() {
-	memset(_read, 0, _MAXLINE);
+	//memset(_read, 0, sizeof(read));
 	for (size_t i = 0; i < _sread.size(); i++) {
 		_read[i] = _sread[i];
 	}
@@ -75,11 +82,11 @@ bool	   ClientRequest::is_method(std::string &str)
 // int body is telling us which element of _vecRead is the body
 int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 {
-	std::string				toRead(_read);
+	// std::string				toRead(_read);
 	int						error;
 	size_t					body = -1;
 
-	_vecRead = split_crlf(toRead, &body);
+	_vecRead = split_crlf(_sread, &body);
 	if (_vecRead.empty())
 		return (serv_response.error(400));
 	if ((error = parse_method()))
