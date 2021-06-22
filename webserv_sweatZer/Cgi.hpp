@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/06 16:27:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 17:23:29 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,12 @@ class Cgi {
 
         void build_env(ServerResponse &serv_resp, t_content_map &cli_conf);
         int launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf);
+		void	parse_content_type(ServerResponse &serv_resp);
 
     private:
 
        // char *file_path; // to send as first argument
-        
+
         char        *_env[17];
 
         std::string s_env[17];

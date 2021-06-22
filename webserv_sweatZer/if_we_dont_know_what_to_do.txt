@@ -4,6 +4,7 @@ Notes:
 Here's a pot pourri of ideas for those days when we got no idea what to do:
         - Timeout
         - Deal requests with no host (status code 200, no error)
+		- Faire des tests CGI avec Content-Type (cf fonction bourrine de cgi.cpp)
 
 
 RFC REQUIREMENTS:

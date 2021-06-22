@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:41:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 15:01:16 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ int		ClientRequest::parse_headers(size_t body, int socket)
 		start = 0;
 	for (size_t i = start ; i < _vecRead.size() ; i++)
 	{
-		if (_vecRead[i].size() > _MAXHEADERFIELD)
+		if (i > 0 && i < body - 1 && _vecRead[i].size() > _MAXHEADERFIELD)
 			return (413);
 		found = 0;
 		if (i != body - 1 && (found = _vecRead[i].find(':')) != std::string::npos && is_alpha(_vecRead[i][found - 1]))

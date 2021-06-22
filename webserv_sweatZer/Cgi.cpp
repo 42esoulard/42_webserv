@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:11:03 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 17:34:49 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,10 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     s_env[3] = std::string("GATEWAY_INTERFACE=CGI/1.1");
 
     //"PATH_INFO=",
-    s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i);
+	if (serv_resp.i >= (*cli_conf["file"].begin()).size())
+		s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin());
+	else
+		s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i);
 
     //"PATH_TRANSLATED=",
     s_env[5] = std::string("PATH_TRANSLATED=") + serv_resp._resource_path;
@@ -151,6 +154,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 			memset(buf, 0, _MAXLINE);
 			//PUT PRINTS HERE TO UNDRSTAND WHATS READ
 		}
+		parse_content_type(serv_resp);
         std::cout << "PARENT AFT READ" << std::endl;
 
         // if (serv_resp._error != 200 && serv_resp._error != 201 && serv_resp._error != 204) {
@@ -164,3 +168,49 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     }
     return 0;
 };
+
+void	Cgi::parse_content_type(ServerResponse &serv_resp)
+{
+	std::vector<std::string>	vec;
+	size_t						body = -1;
+	int							err = 0;
+	size_t						found;
+	size_t						start = 0;
+	size_t						k = 0;
+	size_t						j = 0;
+	size_t						l = 0;
+
+	if (serv_resp._body.find("\r\n") == std::string::npos)
+		return ;
+	vec = split_crlf(serv_resp._body, &body, &err);
+	if (err)
+		return ;
+	for (size_t i = start ; i < vec.size() ; i++)
+	{
+		if (i > 0 && i < body - 1 && vec[i].size() > _MAXHEADERFIELD)
+			return ;
+		found = 0;
+		if (i != body - 1 && (found = vec[i].find(':')) != std::string::npos && is_alpha(vec[i][found - 1]))
+		{
+			std::vector<std::string>	vec2 = split(vec[i], ':', 1);
+			if (vec2[0] == "Content-Type")
+			{
+				serv_resp._extension = vec2[1];
+				k = serv_resp._body.find("Content-Type:");
+				j = serv_resp._body.find("\r\n", k);
+				l = j;
+				j = serv_resp._body.find("\r\n\r\n", j);
+				if (j != l)
+					return ;
+				std::string		body1 = serv_resp._body.substr(0, k);
+				std::string		body2 = serv_resp._body.substr(j + 4);
+				serv_resp._body = body1 + body2;
+				return ;
+			}
+		}
+		else if (found && found != std::string::npos && is_space(vec[i][found - 1]))
+			return ;
+		else if (i == body - 1)
+			return ;
+	}
+}

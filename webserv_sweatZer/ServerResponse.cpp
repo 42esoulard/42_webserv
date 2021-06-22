@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:38:26 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 17:11:42 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,8 @@ int ServerResponse::build_error_response(int code) {
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
+	if (extension.find('/') != std::string::npos)
+		return (extension);
 	if (extension.size() > 1 && extension[0] == '.')
 		extension = extension.substr(1);
 	std::string *value =_mime_types.get_value(extension);
