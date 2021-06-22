@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:17:15 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:38:51 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,11 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 	// std::string				toRead(_read);
 	int						error;
 	size_t					body = -1;
+	int						err = 0;
 
-	_vecRead = split_crlf(_sread, &body);
+	_vecRead = split_crlf(toRead, &body, &err);
+	if (err)
+		return (serv_response.error(413));
 	if (_vecRead.empty())
 		return (serv_response.error(400));
 	if ((error = parse_method()))
@@ -116,13 +119,15 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 int		ClientRequest::parse_method()
 {
 	std::vector<std::string>	 vec = split_sp(_vecRead[0]);
-	
+
 	if (vec.size() != 3)
 		return (400);
 	else if (!is_method(vec[0]))
 		return (501);
-	else if (vec[1].size() > 2000)
+	else if (vec[1].size() > _MAXURI)
 		return (414);
+	if (vec[1].find('/') == std::string::npos)
+		return (400);
 	_conf["file"].push_back(vec[1]);
 	if (vec[2].substr(0, 5).compare("HTTP/"))
 		return (400);
@@ -145,9 +150,9 @@ int		ClientRequest::parse_headers(size_t body, int socket)
 		start = 0;
 	for (size_t i = start ; i < _vecRead.size() ; i++)
 	{
-		found = 0;
-		if (_vecRead[i].size() > _MAXHEADERSIZE)
+		if (_vecRead[i].size() > _MAXHEADERFIELD)
 			return (413);
+		found = 0;
 		if (i != body - 1 && (found = _vecRead[i].find(':')) != std::string::npos && is_alpha(_vecRead[i][found - 1]))
 		{
 			if ((error = save_header(_vecRead[i])))
@@ -218,7 +223,7 @@ int		ClientRequest::parse_body(size_t i, int socket)
 int		ClientRequest::parse_body_chunked(std::string str, int socket)
 {
 	(void) socket;
-	
+
 	_conf["body"].push_back(str);
 	return (0);
 }
@@ -231,7 +236,7 @@ bool	ClientRequest::parse_host()
 
 	if (it == _conf.end())
 		return (1);
-	
+
 	if ((*it).second.front().find('/') > -1)
 		return (1);
 	size_t	i = (*it).second.front().find(':');
@@ -241,7 +246,7 @@ bool	ClientRequest::parse_host()
 		++i;
 	if (i != std::string::npos)
 	{
-		while (i < (*it).second.front().size() && (*it).second.front()[i] >= '0' 
+		while (i < (*it).second.front().size() && (*it).second.front()[i] >= '0'
 			&& (*it).second.front()[i] <= '9')
 		{
 			i++;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:35:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:37:48 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #define _MAXFD 4096
 #define _MAXCLIENTS 250
 #define _MAXHEADERSIZE 65536
+#define _MAXHEADERFIELD 8000
 #define	_MAXURI 2000
 #define PORT 8080 // default port
 

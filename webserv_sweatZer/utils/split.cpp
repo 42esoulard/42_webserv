@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/15 12:08:27 by rturcey           #+#    #+#             */
-/*   Updated: 2021/05/22 16:05:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 13:44:17 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,10 @@ std::vector<std::string>     split(std::string &str, char c, int max)
     return (vec);
 }
 
-std::vector<std::string>     split_crlf(std::string &str, size_t *body)
+std::vector<std::string>     split_crlf(std::string &str, size_t *body, int *err)
 {
     std::vector<std::string>    vec;
+	size_t						size = 0;
     size_t                      i = -1;
 
     if (str.empty())
@@ -62,6 +63,15 @@ std::vector<std::string>     split_crlf(std::string &str, size_t *body)
     {
         if ((i = str.find("\r\n", i + 1)) == std::string::npos)
 			break ;
+		size += i - prev;
+		if (*body == (size_t)-1)
+		{
+			if (size > _MAXHEADERSIZE)
+			{
+				*err = 1;
+				return (vec);
+			}
+		}
         vec.push_back(str.substr(prev, i - prev));
 		if (vec.back().empty())
 		{

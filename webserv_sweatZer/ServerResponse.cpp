@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:25:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:38:26 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,15 +348,15 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
 	//check body size
-	
+
 	if ((*_location).find("client_max_body_size") != (*_location).end())
 		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
 	else if ((get_serv_info().find("default_error")) != get_serv_info().end())
 		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
 	else
 		_max_body = DEFAULT_MAX_BODY;
-		
-	if (cli_conf["body"].begin() != cli_conf["body"].end()) {	
+
+	if (cli_conf["body"].begin() != cli_conf["body"].end()) {
 		if ((*cli_conf["body"].begin()).size() > _max_body)
 			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
 	}
