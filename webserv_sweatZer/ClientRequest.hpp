@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 13:15:08 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 13:49:03 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ class	ClientRequest {
 		~ClientRequest();
 
 		int		parse_request(ServerResponse &serv_response, int socket);
+		int	 	allocate_read(size_t max_body);
 		char	*get_read(); //getter for _read
 		void 	set_read();
 		std::string	&get_sread(); //getter for _read
@@ -68,7 +69,7 @@ class	ClientRequest {
 		t_content_map &get_conf() { return _conf; };
 
 	private:
-		char						_read[_MAXLINE];
+		char						*_read;
 		std::string					_sread;
 		std::string					_headers[10];
 		std::vector<std::string>	_vecRead;
