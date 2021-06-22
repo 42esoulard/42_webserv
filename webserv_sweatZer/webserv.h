@@ -3,20 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/16 14:16:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 13:33:51 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 #define WEBSERV_H
 
-#define _MAXLINE 655360
+#define _MAXLINE 65536
 #define _MAXFD 4096
 #define _MAXCLIENTS 250
-#define _MAXHEADERSIZE 8000
+#define _MAXHEADERSIZE 65536
+#define	_MAXURI
 #define PORT 8080 // default port
 
 // socket/IP stuff
