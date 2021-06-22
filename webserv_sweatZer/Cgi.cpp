@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/09 19:30:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:11:03 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
 
-void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {    
+void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"AUTH_TYPE=Basic",
     // std::cout << s_env[0] << std::endl;
@@ -26,19 +26,19 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"CONTENT_TYPE=",
     s_env[2] = std::string("CONTENT_TYPE=") + serv_resp.get_mime_type(serv_resp._extension);
-  
+
     //"GATEWAY_INTERFACE=CGI/1.1",
     s_env[3] = std::string("GATEWAY_INTERFACE=CGI/1.1");
 
     //"PATH_INFO=",
-    s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i + 1);
-            
+    s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i);
+
     //"PATH_TRANSLATED=",
     s_env[5] = std::string("PATH_TRANSLATED=") + serv_resp._resource_path;
-            
+
     //"QUERY_STRING=",
     s_env[6] = std::string("QUERY_STRING=") + serv_resp._query;
-            
+
     //I don't believe we get these: (these are info about the client)
     //"REMOTE_ADDR=",
     //"REMOTE_IDENT=",
@@ -52,7 +52,7 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"SERVER_NAME=",
     s_env[9] = std::string("SERVER_NAME=") + (*serv_resp.get_serv_info()["server_name"].begin());
-            
+
     //"SERVER_PORT=",
     s_env[10] = std::string("SERVER_PORT=") + (*serv_resp.get_serv_info()["server_port"].begin());
 
@@ -62,11 +62,11 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     s_env[12] = std::string("SERVER_SOFTWARE=webserv/1.0");
 
     // DO s_env to env
-    for (int i = 0; i < 13; i++) 
+    for (int i = 0; i < 13; i++)
         _env[i] = const_cast<char*>(s_env[i].c_str());
     _env[13] = NULL;
 };
-        
+
 int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     std::cout << "IN CGI" << std::endl;
     build_env(serv_resp, cli_conf);
@@ -110,11 +110,11 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         char *args[3];
 
         if (getcwd(serv_resp._abs_resource_path, PATH_MAX)) {
-            
+
             std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
             std::string _cgi_abs_path(serv_resp._abs_resource_path);
             _cgi_abs_path += "/" + serv_resp._resource_path;
-            
+
             // if (!(args[0] = (char *)malloc(sizeof(char) * _cgi_abs_path.size() + 1)))
             //     return -1;
             args[0] = ft_strdup((*(*serv_resp._location)["cgi_bin"].begin()).c_str());
@@ -130,7 +130,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         // std::cout << serv_resp._payload << std::endl;
         exit(500);
 	}
-	else { 
+	else {
         std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(pid, &status, 0);
         // if (WIFEXITED(status))
@@ -145,14 +145,14 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		while (i > 0) {
             std::cout << "PARENT IN READ" << std::endl;
             i = read(_fd[1], buf, _MAXLINE);
-            std::cout << "[" << buf << "]" << std::endl;
+            //std::cout << "[" << buf << "]" << std::endl;
             for (int j = 0 ; j < i ; ++j)
                 serv_resp._body.push_back(buf[j]);
 			memset(buf, 0, _MAXLINE);
 			//PUT PRINTS HERE TO UNDRSTAND WHATS READ
 		}
         std::cout << "PARENT AFT READ" << std::endl;
-        
+
         // if (serv_resp._error != 200 && serv_resp._error != 201 && serv_resp._error != 204) {
         //     serv_resp._body
         //     return -1;

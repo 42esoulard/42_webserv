@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 13:33:51 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 13:53:46 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 #define _MAXFD 4096
 #define _MAXCLIENTS 250
 #define _MAXHEADERSIZE 65536
-#define	_MAXURI
+#define _MAXHEADERFIELD 8000
+#define	_MAXURI 2000
 #define PORT 8080 // default port
 
 // socket/IP stuff

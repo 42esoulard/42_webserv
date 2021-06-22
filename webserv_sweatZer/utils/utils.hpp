@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/03 15:52:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 13:43:38 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #endif
 
 #define BUFFER_SIZE 32
+#define _MAXHEADERSIZE 65536
 
 int		            	    get_next_line(int fd, char **line);
 char	            	    *give_it_back(char *str, char **line);
@@ -40,7 +41,7 @@ bool                        is_space(char a);
 char	                	*ft_itoa(int n);
 std::vector<std::string>     split_sp(std::string &str);
 std::vector<std::string>     split(std::string &str, char c);
-std::vector<std::string>     split_crlf(std::string &str, size_t *body);
+std::vector<std::string>     split_crlf(std::string &str, size_t *body, int *err);
 std::vector<std::string>     split_chunked(std::string &str);
 std::vector<std::string>     split(std::string &str, char c, int max);
 bool			             is_alpha(char c);
