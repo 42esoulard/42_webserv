@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:38:51 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/22 14:41:11 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,12 +82,11 @@ bool	   ClientRequest::is_method(std::string &str)
 // int body is telling us which element of _vecRead is the body
 int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 {
-	// std::string				toRead(_read);
 	int						error;
 	size_t					body = -1;
 	int						err = 0;
 
-	_vecRead = split_crlf(toRead, &body, &err);
+	_vecRead = split_crlf(_sread, &body, &err);
 	if (err)
 		return (serv_response.error(413));
 	if (_vecRead.empty())

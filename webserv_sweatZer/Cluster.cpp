@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:25:47 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/22 14:41:55 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -422,7 +422,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
                 return;
             }
-            
+
             (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(0, one_CRLF);
             (*_vecChunk).push_back(std::string(""));
 
@@ -435,10 +435,10 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
 
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) < 0)
             return; //bad hex value for next vector
-     
+
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) + 2 > (*_vecChunk)[(*_vecChunk).size() - 1].size()) {
-            
-            
+
+
             missing_chars = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) + 2 - (*_vecChunk)[(*_vecChunk).size() - 1].size();
             // std::cout << "1 Gonna complete incomplete content containing [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "] currently missing " << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
             std::cout << "1 Gonna complete incomplete content currently missing " << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
@@ -453,7 +453,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
                 index += missing_chars;
             }
             else if (missing_chars >= chunk_left) {
-            
+
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk.substr(0, chunk_left); // or next_crlf -1 ?
                 index = chunk_left;
 
@@ -476,7 +476,6 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             //std::cout << "Added complete size with an empty content" << std::endl;
             std::cout << "Added complete size [" << (*_vecChunk)[(*_vecChunk).size() - 2] << "] with an empty content" << std::endl;
             index += one_CRLF + 2;
-            getchar();
         }
     }
 };
