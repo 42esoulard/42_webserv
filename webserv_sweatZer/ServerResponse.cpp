@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 17:11:42 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/24 19:12:17 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -353,7 +353,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	if ((*_location).find("client_max_body_size") != (*_location).end())
 		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
-	else if ((get_serv_info().find("default_error")) != get_serv_info().end())
+	else if ((get_serv_info().find("client_max_body_size")) != get_serv_info().end())
 		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
 	else
 		_max_body = DEFAULT_MAX_BODY;
@@ -379,20 +379,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	std::cout << "METHOD = " << _method << std::endl;
 
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
-		// if ((*_location).find("up_dir") == (*_location).end()) {
-		// 	std::cout << "------HERE WTFFFFF" << std::endl;
-		// 	return build_error_response(500); //uploads path not configured
-		// }
-		// note: we also forbid a DELETE if an uploads path isn't configured.
-		// I figured it was wise to only allow DELETE in a directory where the user
-		// is already allowed to upload something. This is a personal security choice.
-
-		// if ((*_location).find("root") != (*_location).end())
-		// 	_resource_path = *(*_location)["root"].begin();
-		// if (*(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
-		// 	_resource_path += *(*_location)["up_dir"].begin();
-		// if (requested_path != *(*_location)["path"].begin())
-		// 	_resource_path +=  "/" + requested_path.substr(i + 1);
+		
 		if (i < requested_path.size())
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << requested_path.substr(i + 1) << "]" << std::endl;
 		else
