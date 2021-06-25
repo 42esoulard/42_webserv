@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/24 19:12:17 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/25 15:19:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,12 +193,15 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 				if (ext_location) {
 					std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
 					while (st != (*ext_location)["accept_methods"].end()) {
+						
 						(*_location)["accept_methods"].push_back(*st);
 						++st;
 					}
-					*(*_location)["cgi_bin"].begin() = *(*ext_location)["cgi_bin"].begin();
+					if (*(*_location)["cgi_bin"].begin() == *(*_location)["cgi_bin"].end())
+						(*_location)["cgi_bin"].push_back(*(*ext_location)["cgi_bin"].begin());
+					else
+						*(*_location)["cgi_bin"].begin() = *(*ext_location)["cgi_bin"].begin();
 				}
-				std::cout << "FOUND LOCATION [" << *(*it)["path"].begin() << "] i " << i << std::endl;
 				return i;
 			}
 		   ++it;

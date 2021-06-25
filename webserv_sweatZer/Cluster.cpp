@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/24 20:14:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/25 14:52:59 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -423,6 +423,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             if ((uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) == 0) {
                 if ((*_vecChunk)[(*_vecChunk).size() - 1].size() < 2)
                     (*_vecChunk)[(*_vecChunk).size() - 1] = tmp.substr(0, 2);
+                std::cout << "0 VECTOR 0 content [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
                 return;
             }
             std::cout << "0 Completed incomplete size now [" << (*_vecChunk)[(*_vecChunk).size() - 2] << "]" << std::endl;
@@ -439,7 +440,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
                 
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
                 // std::cout << "1 IN SAVE CHUNK 0 starting with  [" << (*_vecChunk)[(*_vecChunk).size() - 1][0] << "] size [" << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "]" << std::endl;
-                
+                std::cout << "1 VECTOR 0 content [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
                     
                 return;
         }
