@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 19:12:44 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/27 19:33:37 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,14 +213,20 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	size_t						j = 0;
 	size_t						l = 0;
 	int							lev[2];
+    std::string                 cpy_body = serv_resp._body;
+    size_t                      body_start;
 
 	lev[0] = 1;
 	lev[1] = 1;
-	if (serv_resp._body.find("\r\n") == std::string::npos)
+	if (cpy_body.find("\r\n") == std::string::npos)
 		return ;
 	vec = split_crlf(serv_resp._body, &body, &err);
 	if (err)
 		return ;
+
+    if ((body_start = serv_resp._body.find("\r\n\r\n")) != std::string::npos)
+        serv_resp._body = serv_resp._body.substr(body_start + 4);
+    
 	for (size_t i = start ; i < vec.size() ; i++)
 	{
 		if (i > 1 && i < body - 1 && vec[i].size() > _MAXHEADERFIELD)
@@ -232,28 +238,28 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 			if (vec2[0] == "Content-Type" && lev[0]--)
 			{
 				serv_resp._extension = vec2[1];
-				k = serv_resp._body.find("Content-Type:");
-				j = serv_resp._body.find("\r\n", k);
+				k = cpy_body.find("Content-Type:");
+				j = cpy_body.find("\r\n", k);
 				l = j;
-				j = serv_resp._body.find("\r\n\r\n", j);
+				j = cpy_body.find("\r\n\r\n", j);
 				if (j != l)
 					return ;
-				std::string		body1 = serv_resp._body.substr(0, k);
-				std::string		body2 = serv_resp._body.substr(j + 4);
-				serv_resp._body = body1 + body2;
+				std::string		body1 = cpy_body.substr(0, k);
+				std::string		body2 = cpy_body.substr(j + 4);
+				cpy_body = body1 + body2;
 			}
 			if (vec2[0] == "Status" && lev[1]--)
 			{
 				serv_resp._error = ft_stoi(vec2[1]);
-				k = serv_resp._body.find("Status:");
-				j = serv_resp._body.find("\r\n", k);
+				k = cpy_body.find("Status:");
+				j = cpy_body.find("\r\n", k);
 				l = j;
-				j = serv_resp._body.find("\r\n\r\n", j);
+				j = cpy_body.find("\r\n\r\n", j);
 				if (j != l)
 					return ;
-				std::string		body1 = serv_resp._body.substr(0, k);
-				std::string		body2 = serv_resp._body.substr(j + 4);
-				serv_resp._body = body1 + body2;
+				std::string		body1 = cpy_body.substr(0, k);
+				std::string		body2 = cpy_body.substr(j + 4);
+				cpy_body = body1 + body2;
 			}
 		}
 		else if (found && found != std::string::npos && is_space(vec[i][found - 1]))

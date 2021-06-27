@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 19:13:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/27 20:33:43 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -576,7 +576,22 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
 void Cluster::send_response(std::string &response) {
 
 	//std::cout << response.c_str() << std::endl;
-    write(this->_cur_socket , response.c_str() , response.size());
+    std::cout << "BEFORE WRITE [" << response.substr(0, 1000) << "]" << std::endl;
+    size_t i = 0;
+    // size_t pseudo_chunk = 100000;
+    std::string tmp;
+    // size_t total_write = 0;
+    while (i < response.size()) {
+        // std::cout << "chunk " << i << " to " << i + pseudo_chunk << "!" << std::endl;
+        tmp = response.substr(i, _MAXLINE);
+        // total_write += write(this->_cur_socket , tmp.c_str() , tmp.size());
+        // response = response.substr(0, _MAXLINE);
+        send(this->_cur_socket , tmp.c_str() , tmp.size(), 0);
+        i += _MAXLINE;
+        usleep(900);
+    }
+    // std::cout << "TOTAL WRITE [" << total_write << "]" << std::endl;
+    // getchar();
     //std::cout << "[--- MSG SENT ---]" << std::endl;
     // std::cout << "[" << response << "]" << std::endl << "SIZE{ " << response.size() << "}" << std::endl;
     //std::cout << "SIZE{ " << response.size() << "}" << std::endl;
