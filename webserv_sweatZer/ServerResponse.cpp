@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/25 15:19:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/27 18:59:46 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,7 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 				if (ext_location) {
 					std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
 					while (st != (*ext_location)["accept_methods"].end()) {
-						
+
 						(*_location)["accept_methods"].push_back(*st);
 						++st;
 					}
@@ -353,16 +353,16 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	std::cout << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
 	//check body size
-
 	if ((*_location).find("client_max_body_size") != (*_location).end())
 		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
 	else if ((get_serv_info().find("client_max_body_size")) != get_serv_info().end())
 		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
 	else
 		_max_body = DEFAULT_MAX_BODY;
-
 	if (cli_conf["body"].begin() != cli_conf["body"].end()) {
-		if ((*cli_conf["body"].begin()).size() > _max_body)
+		if ((*cli_conf["body"].begin()).size() > _max_body && _method == "POST" && _max_body != DEFAULT_MAX_BODY)
+			return (build_error_response(413));
+		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
 			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
 	}
 
@@ -382,7 +382,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	std::cout << "METHOD = " << _method << std::endl;
 
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
-		
+
 		if (i < requested_path.size())
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << requested_path.substr(i + 1) << "]" << std::endl;
 		else
@@ -462,7 +462,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 			if ((*_location).find("cgi_bin") != (*_location).end()) {
 				if (_cgi->launch_cgi(*this, cli_conf) != 0)
-					return build_error_response(500);
+					return build_error_response(_error);
 				_cgi_on = true;
 			}
 			else if (file_to_body() != 0) {
@@ -475,7 +475,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	}
 	else if ((*_location).find("cgi_bin") != (*_location).end() && (_method == "PUT" || _method == "POST" || _method == "DELETE")) {
 		if (_cgi->launch_cgi(*this, cli_conf) != 0)
-			return build_error_response(500);
+			return build_error_response(_error);
 		_cgi_on = true;
 	}
 
@@ -487,6 +487,9 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	std::cout << "*-*-*-*-*-*-*-*-*-RESPONSE-*-*-*-*-*-*-*-*-*-*-*--*" << std::endl;
 	std::cout << "PAYLOAD: [" << _payload << "]" << std::endl;
 	std::cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << std::endl;*/
+	if (_error != 200 && _error != 201)
+		return (build_error_response(_error));
+	std::cout << "BEFORE RET SR" << std::endl;
 	return (0);
 }
 
@@ -545,14 +548,13 @@ void ServerResponse::method_put() {
 			build_error_response(500);
 			return;
 		}
-		std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+		//std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
 		if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
 			build_error_response(500);
 			return;
 		}
 		close(fd);
 	}
-
 	std::string s_error = ft_itos(_error);
 	std::string *p_error_msg = _error_codes.get_value(s_error);
 	std::string s_error_msg = "";
@@ -579,14 +581,13 @@ void ServerResponse::method_post() {
 			build_error_response(500);
 			return;
 		}
-		std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
+		//std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
 		if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
 			build_error_response(500);
 			return;
 		}
 		close(fd);
 	}
-
 	std::string s_error = ft_itos(_error);
 	std::string *p_error_msg = _error_codes.get_value(s_error);
 	std::string s_error_msg = "";
@@ -598,6 +599,7 @@ void ServerResponse::method_post() {
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 
 	if (_cgi_on) {
+		_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 		_payload += "\r\n" + _body;
 	}

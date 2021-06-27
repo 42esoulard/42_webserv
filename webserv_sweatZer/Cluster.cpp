@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/25 14:52:59 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/27 19:13:11 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,10 +328,10 @@ void Cluster::parse_request() {
     else
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread().substr(0, 50000) << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
-
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
-    this->send_response(serv_response.get_payload());
-
+	std::cout << "COUCOU1" << std::endl;
+	this->send_response(serv_response.get_payload());
+	std::cout << "COUCOU2" << std::endl;
     _cli_request[_cur_socket] = ClientRequest(); //reinitializing client request for this socket
 };
 
@@ -381,7 +381,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
         chunk = chunk.substr(index);
         // std::cout << "after substr chunk is [" << chunk << "]" << std::endl;
         index = 0;
-           
+
         tmp = chunk;
         one_CRLF = tmp.find("\r\n");
         two_CRLF = std::string::npos;
@@ -398,13 +398,13 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             }
 
             two_CRLF = tmp.substr(one_CRLF + 2).find("\r\n");
-            
+
             if (one_CRLF == 0) {
                 // std::cout << "here 1" << std::endl;
                 len = two_CRLF;
                 if (two_CRLF != std::string::npos)
                     len = two_CRLF - one_CRLF + 2;
-                
+
                 (*_vecChunk)[(*_vecChunk).size() - 1] = tmp.substr(one_CRLF + 2, len);
                 chunk = tmp.substr(two_CRLF + 2);
             }
@@ -415,7 +415,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             }
             // std::cout << "here size [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
             (*_vecChunk).push_back(std::string(""));
- 
+
             tmp = (*_vecChunk)[(*_vecChunk).size() - 1] + chunk;
             one_CRLF = tmp.find("\r\n");
             two_CRLF = std::string::npos;
@@ -437,11 +437,11 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
         // HEX SIZE IS 0
         if ((*_vecChunk).size() > 1 && (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) == 0) {
                 // std::cout << "0 IN SAVE CHUNK 0 [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
-                
+
                 (*_vecChunk)[(*_vecChunk).size() - 1] += chunk;
                 // std::cout << "1 IN SAVE CHUNK 0 starting with  [" << (*_vecChunk)[(*_vecChunk).size() - 1][0] << "] size [" << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "]" << std::endl;
                 std::cout << "1 VECTOR 0 content [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
-                    
+
                 return;
         }
 
@@ -450,7 +450,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
 
             tmp = (*_vecChunk)[(*_vecChunk).size() - 1] + chunk;
             one_CRLF = tmp.find("\r\n");
-            
+
             expected_size = (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]);
 
             missing_chars = expected_size - (*_vecChunk)[(*_vecChunk).size() - 1].size();
@@ -491,7 +491,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
             if (one_CRLF != 0) {
                 (*_vecChunk).push_back(tmp.substr(0, one_CRLF));
                 (*_vecChunk).push_back(std::string(""));
-                
+
                 std::cout << "Added complete size [" << (*_vecChunk)[(*_vecChunk).size() - 2] << "] with an empty content" << std::endl;
             }
             //getchar();
@@ -503,7 +503,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
 bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerResponse &serv_response) {
 
     // std::cout << "0 IN HANDLE CHUNK s_tmp [" << s_tmp << "]" << std::endl;
-    
+
     //input stopped before chunk
     if ((s_tmp.find("\r\n\r\n") + 4) >= s_tmp.size()) {
         if (_cli_request[this->_cur_socket].get_sread().size() < s_tmp.size()) {
@@ -575,8 +575,9 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
 
 void Cluster::send_response(std::string &response) {
 
+	//std::cout << response.c_str() << std::endl;
     write(this->_cur_socket , response.c_str() , response.size());
-    std::cout << "[--- MSG SENT ---]" << std::endl;
+    //std::cout << "[--- MSG SENT ---]" << std::endl;
     // std::cout << "[" << response << "]" << std::endl << "SIZE{ " << response.size() << "}" << std::endl;
-    std::cout << "SIZE{ " << response.size() << "}" << std::endl;
+    //std::cout << "SIZE{ " << response.size() << "}" << std::endl;
 };
