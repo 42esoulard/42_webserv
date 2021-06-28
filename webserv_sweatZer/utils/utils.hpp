@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 13:43:38 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/28 11:58:41 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,8 @@ bool			  			is_alnum(char c);
 int							ft_atoi(const char *str);
 int							ft_stoi(std::string str);
 void						lower(std::string &str);
+void						upper(std::string &str);
+std::string					format_env(const std::string &strc);
 bool						is_num(std::string &str);
 int							ft_pow(int nb, int f, int power);
 int							ft_stoi_hex(std::string str);

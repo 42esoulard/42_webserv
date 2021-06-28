@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 20:33:43 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/28 10:36:04 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,15 +323,13 @@ void Cluster::parse_request() {
 	}
 
     _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
-    if (_cli_request[_cur_socket].get_sread().size() < 50000)
+    if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread() << std::endl;
     else
-        std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread().substr(0, 50000) << std::endl;
+        std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread().substr(0, 10000) << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
-	std::cout << "COUCOU1" << std::endl;
 	this->send_response(serv_response.get_payload());
-	std::cout << "COUCOU2" << std::endl;
     _cli_request[_cur_socket] = ClientRequest(); //reinitializing client request for this socket
 };
 
@@ -377,7 +375,7 @@ void Cluster::save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk
     // std::cout << "IN SAVE CHUNK [" <<  chunk << "]" << std::endl;
 
     while (index < chunk.size() && index != std::string::npos) {
-        std::cout << "-----------------save chunk loop, cur vector index " << (*_vecChunk).size() - 1 << "---------------------" << std::endl;
+        //std::cout << "-----------------save chunk loop, cur vector index " << (*_vecChunk).size() - 1 << "---------------------" << std::endl;
         chunk = chunk.substr(index);
         // std::cout << "after substr chunk is [" << chunk << "]" << std::endl;
         index = 0;
@@ -576,20 +574,37 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
 void Cluster::send_response(std::string &response) {
 
 	//std::cout << response.c_str() << std::endl;
-    std::cout << "BEFORE WRITE [" << response.substr(0, 1000) << "]" << std::endl;
-    size_t i = 0;
+	if (response.size() >= 10000)
+	{
+		std::cout << "BEFORE WRITE [" << response.substr(0, 10000) << "]" << std::endl;
+		std::cout << "AFTER WRITE [" << response.substr(response.size()-10000) << "]" << std::endl;
+	}
+	size_t		ret = 0;
+	size_t		res = 0;
+	std::string	tmp = response;
+	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) > 0 && (ret += res) <= response.size())
+	{
+		tmp.clear();
+		tmp = response.substr(ret);
+		usleep(900);
+	}
+    /*size_t i = 0;
     // size_t pseudo_chunk = 100000;
     std::string tmp;
     // size_t total_write = 0;
     while (i < response.size()) {
         // std::cout << "chunk " << i << " to " << i + pseudo_chunk << "!" << std::endl;
-        tmp = response.substr(i, _MAXLINE);
-        // total_write += write(this->_cur_socket , tmp.c_str() , tmp.size());
-        // response = response.substr(0, _MAXLINE);
+		tmp.clear();
+		if (i + _MAXLINE > response.size())
+			tmp = response.substr(i);
+		else
+			tmp = response.substr(i, _MAXLINE);
         send(this->_cur_socket , tmp.c_str() , tmp.size(), 0);
         i += _MAXLINE;
         usleep(900);
-    }
+    }*/
+	/*tmp = response.substr(i, _MAXLINE);
+    send(this->_cur_socket , tmp.c_str() , tmp.size(), 0);*/
     // std::cout << "TOTAL WRITE [" << total_write << "]" << std::endl;
     // getchar();
     //std::cout << "[--- MSG SENT ---]" << std::endl;

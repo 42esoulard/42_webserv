@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/24 13:19:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/28 11:22:45 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,6 @@ class	ClientRequest {
 	private:
 		char						*_read;
 		std::string					_sread;
-		std::string					_headers[10];
 		std::vector<std::string>	_vecRead;
 		std::vector<std::string>	_vecChunked;
 		t_content_map				_conf;

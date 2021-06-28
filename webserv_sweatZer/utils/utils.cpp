@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/22 16:04:01 by rturcey           #+#    #+#             */
-/*   Updated: 2021/06/06 13:53:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/28 12:00:01 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,25 @@ bool				is_num(std::string &str)
 			return (0);
 	}
 	return (1);
+}
+
+void				upper(std::string &str)
+{
+	for (size_t i = 0 ; i < str.size() ; i++)
+	{
+		if (str[i] >= 'a' && str[i] <= 'z')
+			str[i] -= 32;
+	}
+}
+
+std::string			format_env(const std::string &strc)
+{
+	std::string	str(strc);
+	upper(str);
+	size_t	found = 0;
+	while ((found = str.find('-')) != std::string::npos)
+		str[found] = '_';
+	return ("HTTP_" + str);
 }
 
 void				lower(std::string &str)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 20:19:15 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/28 10:20:36 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -600,19 +600,18 @@ void ServerResponse::method_post() {
 
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 
-	std::cout << "in method post cgi on = " << _cgi_on << std::endl;
+	/*std::cout << "in method post cgi on = " << _cgi_on << std::endl;
 	getchar();
 	std::cout << "in method post payload = [" << _payload << "]" << std::endl;
 	getchar();
 	std::cout << "in method post body = [" << _body.substr(0, 10) << "]" << std::endl;
-	getchar();
+	getchar();*/
 	if (_cgi_on) {
 		_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 		_payload += "\r\n" + _body;
 	}
 
-	_payload += "\r\n";
 	std::cout << "end of method post" << std::endl;
 };
 

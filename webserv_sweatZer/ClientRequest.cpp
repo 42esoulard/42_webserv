@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/24 13:20:13 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/28 11:22:54 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,16 +16,6 @@ ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 {
 	// memset(_read, 0, _MAXLINE);
 	_sread = std::string("");
-	_headers[0] = "host";
-	_headers[1] = "accept-charset";
-	_headers[2] = "accept-language";
-	_headers[3] = "authorization";
-	_headers[4] = "referer";
-	_headers[5] = "user-agent";
-	_headers[6] = "content-type";
-	_headers[7] = "content-length";
-	_headers[8] = "transfer-encoding";
-	_headers[9] = "";
 }
 
 ClientRequest::~ClientRequest() {};
@@ -173,22 +163,15 @@ int	ClientRequest::save_header(std::string &str)
 	std::vector<std::string>	vec = split(str, ':', 1);
 
 	lower(vec[0]);
-	for (size_t i = 0 ; _headers[i] != "" ; i++)
-	{
-		if (vec[0] == "host" && _conf.find("host") != _conf.end())
-			return (400);
-		if (vec[0] == "content-length" && (_conf.find("content-length") != _conf.end() || !is_num(vec[1])))
-			return (400);
-		if (vec[0] == "transfer-encoding" && vec[1].compare("chunked"))
-			return (501);
-		if (!vec[0].compare(_headers[i]))
-		{
-			_conf[vec[0]].push_back(vec[1]);
-			return (0);
-		}
-		if (is_space(vec[0][vec[0].size() - 1]))
-			return (400);
-	}
+	if (vec[0] == "host" && _conf.find("host") != _conf.end())
+		return (400);
+	if (vec[0] == "content-length" && (_conf.find("content-length") != _conf.end() || !is_num(vec[1])))
+		return (400);
+	if (vec[0] == "transfer-encoding" && vec[1].compare("chunked"))
+		return (501);
+	if (is_space(vec[0][vec[0].size() - 1]))
+		return (400);
+	_conf[vec[0]].push_back(vec[1]);
 	return (0);
 }
 

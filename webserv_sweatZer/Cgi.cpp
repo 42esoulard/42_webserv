@@ -3,44 +3,63 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 19:33:37 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/28 12:02:50 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
 
+Cgi::Cgi()
+{
+	_headers.push_back("host");
+	_headers.push_back("accept-charset");
+	_headers.push_back("accept-language");
+	_headers.push_back("authorization");
+	_headers.push_back("referer");
+	_headers.push_back("user-agent");
+	_headers.push_back("content-type");
+	_headers.push_back("content-length");
+	_headers.push_back("transfer-encoding");
+	_headers.push_back("port");
+	_headers.push_back("method");
+	_headers.push_back("protocol");
+	_headers.push_back("file");
+	_headers.push_back("body");
+}
+
 void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"AUTH_TYPE=Basic",
     // std::cout << s_env[0] << std::endl;
-    s_env[0] = "AUTH_TYPE=Basic";
+
+    s_env.push_back("AUTH_TYPE=Basic");
 
     //"CONTENT_LENGTH=",
     if (cli_conf.find("content-length") != cli_conf.end())
-        s_env[1] = std::string("CONTENT_LENGTH=") + (*cli_conf["content-length"].begin());
+        s_env.push_back(std::string("CONTENT_LENGTH=") + (*cli_conf["content-length"].begin()));
     else
-        s_env[1] = std::string("CONTENT_LENGTH=-1");
+        s_env.push_back(std::string("CONTENT_LENGTH=-1"));
 
     //"CONTENT_TYPE=",
-    s_env[2] = std::string("CONTENT_TYPE=") + serv_resp.get_mime_type(serv_resp._extension);
+    s_env.push_back(std::string("CONTENT_TYPE=") + serv_resp.get_mime_type(serv_resp._extension));
 
     //"GATEWAY_INTERFACE=CGI/1.1",
-    s_env[3] = std::string("GATEWAY_INTERFACE=CGI/1.1");
+    s_env.push_back(std::string("GATEWAY_INTERFACE=CGI/1.1"));
 
     //"PATH_INFO=",
 	if (serv_resp.i >= (*cli_conf["file"].begin()).size())
-		s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin());
+		s_env.push_back(std::string("PATH_INFO=") + (*cli_conf["file"].begin()));
 	else
-		s_env[4] = std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i);
+		s_env.push_back(std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i));
 
     //"PATH_TRANSLATED=",
-    s_env[5] = std::string("PATH_TRANSLATED=") + serv_resp._resource_path;
+    s_env.push_back(std::string("PATH_TRANSLATED=") + serv_resp._resource_path);
 
     //"QUERY_STRING=",
-    s_env[6] = std::string("QUERY_STRING=") + serv_resp._query;
+    s_env.push_back(std::string("QUERY_STRING=") + serv_resp._query);
 
     //I don't believe we get these: (these are info about the client)
     //"REMOTE_ADDR=",
@@ -48,24 +67,49 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     //"REMOTE_USER=",
 
     //"REQUEST_METHOD=",
-    s_env[7] = std::string("REQUEST_METHOD=") + (*cli_conf["method"].begin());
+    s_env.push_back(std::string("REQUEST_METHOD=") + (*cli_conf["method"].begin()));
 
     //"SCRIPT_NAME=",
-    s_env[8] = std::string("SERVER_SOFTWARE=webserv/1.0");
+    s_env.push_back(std::string("SERVER_SOFTWARE=webserv/1.0"));
     //"SERVER_NAME=",
-    s_env[9] = std::string("SERVER_NAME=") + (*serv_resp.get_serv_info()["server_name"].begin());
+    s_env.push_back(std::string("SERVER_NAME=") + (*serv_resp.get_serv_info()["server_name"].begin()));
 
     //"SERVER_PORT=",
-    s_env[10] = std::string("SERVER_PORT=") + (*serv_resp.get_serv_info()["server_port"].begin());
+    s_env.push_back(std::string("SERVER_PORT=") + (*serv_resp.get_serv_info()["server_port"].begin()));
 
     //"SERVER_PROTOCOL=HTTP/1.1",
-    s_env[11] = std::string("SERVER_PROTOCOL=HTTP/1.1");
+    s_env.push_back(std::string("SERVER_PROTOCOL=HTTP/1.1"));
     //"SERVER_SOFTWARE=webserv/1.0";
+	std::string		topush;
+	int				lev;
+	for(t_content_map::iterator it = cli_conf.begin() ; it != cli_conf.end() ; ++it)
+	{
+		lev = 0;
+		for (size_t j = 0 ; j < _headers.size() ; ++j)
+		{
+			if (_headers[j] == (*it).first)
+				lev = 1;
+		}
+		if (lev == 0)
+		{
+			topush = format_env((*it).first);
+			std::cout << "FIRST = " << (*it).first << std::endl;
+			topush += "=";
+			topush += *(*it).second.begin();
+			std::cout << "SCD = " << *(*it).second.begin() << std::endl;
+			s_env.push_back(topush);
+		}
+	}
 
-    // DO s_env to env
-    for (int i = 0; i < 13; i++)
-        _env[i] = const_cast<char*>(s_env[i].c_str());
-    _env[12] = NULL;
+    // _env[100] est une methode bourrin il faudrait allouer dynamiquement
+	size_t	count = 0;
+    for (; count < s_env.size(); ++count)
+	{
+        _env[count] = const_cast<char*>(s_env[count].c_str());
+		if (count + 1 == 99)
+			break ;
+	}
+    _env[count] = NULL;
 };
 
 int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
@@ -143,22 +187,22 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         exit(500);
 	}
 	else {
-        std::cout << "PARENT BEFORE WAIT" << std::endl;
+        //std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(pid, &status, 0);
         // if (WIFEXITED(status))
 		// 	serv_resp._error = WEXITSTATUS(status);
         //if error, return serv_resp._error
-        std::cout << "PARENT AFTER WAIT" << std::endl;
+        //std::cout << "PARENT AFTER WAIT" << std::endl;
         char buf[_MAXLINE] = {0};
 		std::string	str;
         lseek(_fd[1], 0, SEEK_SET);
-        std::cout << "PARENT BEF READ" << std::endl;
+        //std::cout << "PARENT BEF READ" << std::endl;
 
         int i = 1;
 		//int	lev = 1;
 		serv_resp._body.clear();
 		while (i > 0) {
-            std::cout << "PARENT IN READ" << std::endl;
+            //std::cout << "PARENT IN READ" << std::endl;
 			memset(buf, 0, _MAXLINE);
             i = read(_fd[1], buf, _MAXLINE - 1);
             //std::cout << "[" << buf << "]" << std::endl;
@@ -182,7 +226,6 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             //std::cout << "serv_resp in cgi [" << serv_resp._body << "]" << std::endl;
             //PUT PRINTS HERE TO UNDRSTAND WHATS READ
         }
-		std::cout << "AFTER WHILE IN PARENT" << std::endl;
 		parse_content_type(serv_resp);
 		/*if (serv_resp._body.size() && serv_resp._body.substr(0, 11) != "Status: 200") {
             fclose(_file[0]);
@@ -207,11 +250,8 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	std::vector<std::string>	vec;
 	size_t						body = -1;
 	int							err = 0;
-	size_t						found;
 	size_t						start = 0;
-	size_t						k = 0;
-	size_t						j = 0;
-	size_t						l = 0;
+	size_t						found = 0;
 	int							lev[2];
     std::string                 cpy_body = serv_resp._body;
     size_t                      body_start;
@@ -224,47 +264,20 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	if (err)
 		return ;
 
-    if ((body_start = serv_resp._body.find("\r\n\r\n")) != std::string::npos)
-        serv_resp._body = serv_resp._body.substr(body_start + 4);
-    
-	for (size_t i = start ; i < vec.size() ; i++)
+	if ((body_start = serv_resp._body.find("\r\n\r\n")) != std::string::npos)
 	{
-		if (i > 1 && i < body - 1 && vec[i].size() > _MAXHEADERFIELD)
-			return ;
-		found = 0;
+		std::cout << "BODY START [" << serv_resp._body.substr(0, body_start) << "]" << std::endl;
+		serv_resp._body = serv_resp._body.substr(body_start + 4);
+	}
+	for (size_t i = start ; i < 2 ; i++)
+	{
 		if (i != body - 1 && (found = vec[i].find(':')) != std::string::npos && is_alpha(vec[i][found - 1]))
 		{
 			std::vector<std::string>	vec2 = split(vec[i], ':', 1);
 			if (vec2[0] == "Content-Type" && lev[0]--)
-			{
 				serv_resp._extension = vec2[1];
-				k = cpy_body.find("Content-Type:");
-				j = cpy_body.find("\r\n", k);
-				l = j;
-				j = cpy_body.find("\r\n\r\n", j);
-				if (j != l)
-					return ;
-				std::string		body1 = cpy_body.substr(0, k);
-				std::string		body2 = cpy_body.substr(j + 4);
-				cpy_body = body1 + body2;
-			}
 			if (vec2[0] == "Status" && lev[1]--)
-			{
 				serv_resp._error = ft_stoi(vec2[1]);
-				k = cpy_body.find("Status:");
-				j = cpy_body.find("\r\n", k);
-				l = j;
-				j = cpy_body.find("\r\n\r\n", j);
-				if (j != l)
-					return ;
-				std::string		body1 = cpy_body.substr(0, k);
-				std::string		body2 = cpy_body.substr(j + 4);
-				cpy_body = body1 + body2;
-			}
 		}
-		else if (found && found != std::string::npos && is_space(vec[i][found - 1]))
-			return ;
-		else if (i == body - 1)
-			return ;
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/27 18:29:30 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/28 11:40:10 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ class ServerResponse;
 class Cgi {
 
     public:
-        Cgi() {};
+		Cgi();
         ~Cgi() {};
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
@@ -32,9 +32,9 @@ class Cgi {
 
        // char *file_path; // to send as first argument
 
-        char        *_env[17];
-
-        std::string s_env[17];
+        char        *_env[100];
+		std::vector<std::string>	_headers;
+        std::vector<std::string>	s_env;
         FILE        *_file[2];
         int         _fd[2];
         std::string _cgi_body;
