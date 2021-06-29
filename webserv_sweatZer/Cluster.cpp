@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 10:36:04 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/29 17:40:33 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -574,20 +574,24 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
 void Cluster::send_response(std::string &response) {
 
 	//std::cout << response.c_str() << std::endl;
-	if (response.size() >= 10000)
-	{
-		std::cout << "BEFORE WRITE [" << response.substr(0, 10000) << "]" << std::endl;
-		std::cout << "AFTER WRITE [" << response.substr(response.size()-10000) << "]" << std::endl;
-	}
-	size_t		ret = 0;
-	size_t		res = 0;
+	// if (response.size() >= 10000)
+	// {
+	// 	std::cout << "BEFORE WRITE [" << response.substr(0, 10000) << "]" << std::endl;
+	// 	std::cout << "AFTER WRITE [" << response.substr(response.size()-10000) << "]" << std::endl;
+	// }
+	size_t	ret = 0;
+	ssize_t	res = 0;
 	std::string	tmp = response;
-	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) > 0 && (ret += res) <= response.size())
+	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) != 0 && ret <= response.size())
 	{
+        // std::cout << "res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
 		tmp.clear();
+        if (res != -1)
+            ret += res;
 		tmp = response.substr(ret);
-		usleep(900);
+		//usleep(900);
 	}
+    std::cout << "res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
     /*size_t i = 0;
     // size_t pseudo_chunk = 100000;
     std::string tmp;
