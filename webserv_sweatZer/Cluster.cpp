@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/29 17:40:33 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/29 19:42:58 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,9 +254,11 @@ void Cluster::handle_connection(){
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
 
     this->_read_fd_set = this->_active_fd_set;
-
-    if (select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL) < 0)
-        throw Exception("select error");
+    int ret = 0;
+    while (ret == 0) {
+        if ((ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL)) < 0)
+            throw Exception("select error");
+    }
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
@@ -270,7 +272,7 @@ void Cluster::handle_connection(){
                         throw Exception("accept error");
                     }
 
-                    std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << std::endl;
+                    std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     return ;
@@ -293,17 +295,25 @@ void Cluster::parse_request() {
     memset(buf, 0, _MAXLINE);
 
     int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
+    // if (ret <= 0) {
     if (ret <= 0) {
-		close(this->_cur_socket);
-        FD_CLR (this->_cur_socket, &this->_active_fd_set);
+		
         _cli_request[_cur_socket] = ClientRequest(); //reinit client request for this socket
 
-		if (ret == 0)
-			std::cout << "\rConnection was closed by client.\n" << std::endl;
-		else
-			std::cout << "\rRead error, closing connection.\n" << std::endl;
+        // std::cout << "closing connection [" << _cur_socket << "] ret " << ret << std::endl;
+		// if (ret == 0)
+		// 	std::cout << "\rConnection was closed by client.\n" << std::endl;
+		// else {
+        if (ret < 0) {
+            close(this->_cur_socket);
+            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        	std::cout << "\rRead error, closing connection.\n" << std::endl;
+        }
+        else
+            FD_CLR (this->_cur_socket, &this->_active_fd_set);
 		return ;
 	}
+    // usleep(500);
 
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
 

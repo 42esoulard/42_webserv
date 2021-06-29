@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:51:46 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/23 13:23:43 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/29 19:42:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void Server::init_server() {
     ** backlog: maximum number of pending connections that can be queued up before connections are refused
     */
 
-    if (listen(this->_server_fd, 3) < 0) // backlog 3? 10?
+    if (listen(this->_server_fd, 128) < 0) // backlog 3? 10?
         throw Exception("listen error");
     /*
     ** Initialize the set of active sockets.
