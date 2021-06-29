@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 10:20:36 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/29 18:00:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -575,10 +575,10 @@ void ServerResponse::method_put() {
 
 void ServerResponse::method_post() {
 
-	std::cout << "in method post" << std::endl;
+	std::cout << "in method post resource_path [" << _resource_path << "]" << std::endl;
 	if (!_cgi_on) {
 		int fd;
-		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT | O_APPEND)) < 0) {
+		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) < 0) {
 			build_error_response(500);
 			return;
 		}
@@ -595,7 +595,7 @@ void ServerResponse::method_post() {
 	std::string sp = " ";
 	if (p_error_msg)
 		s_error_msg = *p_error_msg;
-	std::cout << "s_error_msg [" << s_error_msg << "]" << std::endl;
+	// std::cout << "s_error_msg [" << s_error_msg << "]" << std::endl;
 	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
 
 	_payload += "Content-Location: " + _resource_path + "\r\n";
@@ -606,11 +606,11 @@ void ServerResponse::method_post() {
 	getchar();
 	std::cout << "in method post body = [" << _body.substr(0, 10) << "]" << std::endl;
 	getchar();*/
-	if (_cgi_on) {
+	// if (_cgi_on) {
 		_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 		_payload += "\r\n" + _body;
-	}
+	// }
 
 	std::cout << "end of method post" << std::endl;
 };
