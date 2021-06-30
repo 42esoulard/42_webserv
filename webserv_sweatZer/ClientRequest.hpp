@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 11:22:45 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/30 20:34:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ class	ClientRequest {
 	public:
 		ClientRequest();
 		~ClientRequest();
+		ClientRequest(int index);
 
 		int		parse_request(ServerResponse &serv_response, int socket);
 		int	 	allocate_read(size_t max_body);
@@ -68,7 +69,12 @@ class	ClientRequest {
 
 		t_content_map &get_conf() { return _conf; };
 
+		bool check_timeout();
+		void set_timeout();
+		int sock_nb;
+
 	private:
+		time_t 						_last_request;
 		char						*_read;
 		std::string					_sread;
 		std::vector<std::string>	_vecRead;

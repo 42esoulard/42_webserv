@@ -3,18 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 11:22:54 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/30 21:11:33 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientRequest.hpp"
 
+ClientRequest::ClientRequest(int index): _vecRead(), _vecChunked(), _conf()
+{
+	// memset(_read, 0, _MAXLINE);
+	sock_nb = index;
+	set_timeout();
+	_sread = std::string("");
+}
+
 ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 {
 	// memset(_read, 0, _MAXLINE);
+	set_timeout();
 	_sread = std::string("");
 }
 
@@ -351,3 +360,33 @@ bool	ClientRequest::parse_charset()
 	}
 	return (0);
 };
+
+bool ClientRequest::check_timeout() {
+
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	time_t cur_time = tv.tv_sec;
+	time_t diff = cur_time - _last_request;
+	
+	// std::cout << "wat sock [" << sock_nb << "]" << std::endl;
+	// std::cout << "cur time [" << cur_time << "]" << std::endl;
+	// std::cout << "last req [" << _last_request << "]" << std::endl;
+	std::cout << "TO diff [" << diff << "/" << _TIMEOUT << "]" << std::endl;
+	//getchar();
+	if (diff >= _TIMEOUT) {
+		std::cout << "true" << std::endl;
+		return true;
+	}
+	std::cout << "false" << std::endl;
+	return false;
+}
+
+void ClientRequest::set_timeout() {
+
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	
+	_last_request = tv.tv_sec;
+}

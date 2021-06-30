@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 12:35:36 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/30 21:15:51 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,10 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
-    for( int i = 0; i < _MAXCLIENTS; ++i)
-        _cli_request.push_back(ClientRequest());
+    for( int i = 0; i < _MAXCLIENTS; i++) {
+        _cli_request.push_back(ClientRequest(i));
+
+    }
 
     set_mime();
     set_error();
@@ -262,6 +264,7 @@ void Cluster::handle_connection(){
     }
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
+
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
 
             std::list<Server>::iterator server_it = server_list.begin();
@@ -284,6 +287,14 @@ void Cluster::handle_connection(){
             /* Data arriving on an already-connected socket. */
             this->parse_request();
         }
+        if (FD_ISSET (this->_cur_socket, &this->_active_fd_set) 
+            && this->_cli_request[_cur_socket].check_timeout()) {
+            std::cout << "HERE FUCK" << std::endl;
+            //getchar();
+            // close(this->_cur_socket);
+            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            //this->_cur_socket = 0;
+        }
     }
 };
 
@@ -295,7 +306,8 @@ void Cluster::parse_request() {
     */
 
     memset(buf, 0, _MAXLINE);
-
+    
+    _cli_request[_cur_socket].set_timeout();
     int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
     // if (ret <= 0) {
     if (ret <= 0) {
