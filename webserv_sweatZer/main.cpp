@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 11:28:30 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 10:46:04 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/30 12:25:10 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 int main(int ac, char **av) {
 
+    signal(SIGPIPE, sighandler);
     try {
 
         if (ac > 2)

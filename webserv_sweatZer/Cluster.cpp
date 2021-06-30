@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/29 19:42:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/30 12:35:36 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,9 +255,10 @@ void Cluster::handle_connection(){
 
     this->_read_fd_set = this->_active_fd_set;
     int ret = 0;
-    while (ret == 0) {
+    while (ret <= 0) {
         if ((ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL)) < 0)
-            throw Exception("select error");
+            std::cout << "select fail but we're ok" << std::endl;
+            //throw Exception("select error");
     }
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
@@ -269,7 +270,8 @@ void Cluster::handle_connection(){
                     /* Connection request on original socket. */
                     if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&(server_it->get_address()), &server_it->get_address_sz())) < 0) {
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
-                        throw Exception("accept error");
+                        return;
+                        //throw Exception("accept error");
                     }
 
                     std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
@@ -581,6 +583,19 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     return 1;
 }
 
+int g_socket = -1;
+fd_set *g_active_fd_set = NULL;
+
+void		sighandler(int num)
+{
+    std::cout << "in sighandler" << std::endl;
+    if (num == SIGPIPE || num == SIGINT) {
+        std::cout << "in sighandler sigint" << std::endl;
+        close(g_socket);
+        FD_CLR (g_socket, g_active_fd_set);
+    }
+}
+
 void Cluster::send_response(std::string &response) {
 
 	//std::cout << response.c_str() << std::endl;
@@ -592,16 +607,22 @@ void Cluster::send_response(std::string &response) {
 	size_t	ret = 0;
 	ssize_t	res = 0;
 	std::string	tmp = response;
-	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) != 0 && ret <= response.size())
+    g_socket = _cur_socket;
+    g_active_fd_set = &this->_active_fd_set;
+    
+    std::cout << "RIGHT BEFORE SEND" << std::endl;
+    
+	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) > 0 && ret <= response.size())
 	{
-        // std::cout << "res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
+        std::cout << "send loop top res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
 		tmp.clear();
         if (res != -1)
             ret += res;
 		tmp = response.substr(ret);
 		//usleep(900);
+        std::cout << "send loop bottom" << std::endl;
 	}
-    std::cout << "res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
+    std::cout << " after res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
     /*size_t i = 0;
     // size_t pseudo_chunk = 100000;
     std::string tmp;

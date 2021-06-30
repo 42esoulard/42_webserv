@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:37:48 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/06/30 12:26:59 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,5 +65,7 @@
 #define DEFAULT_MAX_BODY    1000000
 #define DEFAULT_UPLOAD_NAME "new.txt"
 #define ERROR_FOLDER        "html/"
+
+void		sighandler(int num);
 
 #endif
