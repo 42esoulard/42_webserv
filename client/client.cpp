@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/29 18:16:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/30 10:37:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,8 @@ int main()
     // char hello9[] = "\n0\r\n";
     // char hello10[] = "\r\n";
 
-    char hello[] = "GET /directory/nop HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\n\r\n";
-
+    //char hello[] = "GET /directory/nop HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\n\r\n";
+    char hello[] = "POST /directory/youpi.bla HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\nContent-Type: test/file\r\nAccept-Encoding: gzip\r\n\r\na\r\n1234567890\r\na\r\n1234567890\r\n0\r\n\r\n";
     char buffer[_MAXLINE] = {0};
 
     // client opens his socket

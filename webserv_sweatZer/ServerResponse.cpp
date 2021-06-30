@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/29 18:00:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/06/30 11:26:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,8 @@ int ServerResponse::identify_server(t_content_map &cli_conf) {
 // find which location in the server is requested by the client and save its conf in *_location
 unsigned long ServerResponse::identify_location(std::string &file, std::string &extension) {
 
+	if (file == "")
+		return i;
 	unsigned long i = file.find_last_of("/");
 	if (i == std::string::npos || i == 0)
 		i = file.size();
@@ -160,7 +162,7 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 			path = file.substr(0, 1);
 		else
 			path = file.substr(0, i);
-		std::cout << "i = " << i << " path " << path << std::endl;
+		// std::cout << "i = " << i << " path " << path << std::endl;
 		// getchar();
 		// else
 		// 	path = file;
@@ -169,38 +171,46 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 		while(it != get_locations().end()) {
 
 			//check if extension fits extension listed in location conf
-			if (extension == "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) {
-				++it;
-				continue;
-			}
-			if (extension != "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) { //first check extension
-				ext_it = (*it)["extensions"].begin();
-				while (ext_it != (*it)["extensions"].end()) {
-					if (extension == *ext_it)
-						break;
-					ext_it++;
-				}
-				if (ext_it == (*it)["extensions"].end()) {
+			if ((*it).find("extensions") != (*it).end()) {
+				if (extension == "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) {
 					++it;
 					continue;
 				}
+				if (extension != "" && (*it)["extensions"].begin() != (*it)["extensions"].end()) { //first check extension
+					ext_it = (*it)["extensions"].begin();
+					while (ext_it != (*it)["extensions"].end()) {
+						if (extension == *ext_it) {
+							break;
+						}
+						ext_it++;
+					}
+					if (ext_it == (*it)["extensions"].end()) {
+						++it;
+						continue;
+					}
+				}
 			}
 		   //check if path matches path
+		   //ext_location = NULL;
 		   	if (extension != "" && *(*it)["path"].begin() == "*")
 				ext_location = &(*it);
 			_location = &(*it);
 			if (*(*it)["path"].begin() == path) {
 				if (ext_location) {
-					std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
-					while (st != (*ext_location)["accept_methods"].end()) {
+					if ((*ext_location).find("accept_methods") != (*ext_location).end()) {
+						std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
+						while (st != (*ext_location)["accept_methods"].end()) {
 
-						(*_location)["accept_methods"].push_back(*st);
-						++st;
+							(*_location)["accept_methods"].push_back(*st);
+							++st;
+						}
 					}
-					if (*(*_location)["cgi_bin"].begin() == *(*_location)["cgi_bin"].end())
-						(*_location)["cgi_bin"].push_back(*(*ext_location)["cgi_bin"].begin());
-					else
-						*(*_location)["cgi_bin"].begin() = *(*ext_location)["cgi_bin"].begin();
+					if ((*ext_location).find("cgi_bin") != (*ext_location).end()) {
+						if ((*_location).find("cgi_bin") == (*_location).end())
+							(*_location)["cgi_bin"].push_back(*(*ext_location)["cgi_bin"].begin());
+						else
+							*(*_location)["cgi_bin"].begin() = *(*ext_location)["cgi_bin"].begin();
+					}
 				}
 				return i;
 			}
@@ -359,7 +369,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
 	else
 		_max_body = DEFAULT_MAX_BODY;
-	if (cli_conf["body"].begin() != cli_conf["body"].end()) {
+	if (cli_conf.find("body") != cli_conf.end() && cli_conf["body"].begin() != cli_conf["body"].end()) {
 		if ((*cli_conf["body"].begin()).size() > _max_body && _method == "POST" && _max_body != DEFAULT_MAX_BODY)
 			return (build_error_response(413));
 		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
@@ -375,7 +385,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if ((*_location).find("root") != (*_location).end()){
 		_resource_path = *(*_location)["root"].begin();
 	}
-	if ((_method == "PUT" || _method == "POST") && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
+	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end() && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
 		_resource_path += *(*_location)["up_dir"].begin();
 	if (i < requested_path.size())
 		_resource_path +=  requested_path.substr(i);
@@ -398,7 +408,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 			_error = 201; //not an error, means no file name was provided, will be created
 			_resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
 		}
-		_cli_body = (*cli_conf["body"].begin());
+		if (cli_conf.find("body") != cli_conf.end())
+			_cli_body = (*cli_conf["body"].begin());
 	}
 	else {
 
@@ -428,7 +439,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	//  else Unknown auth method error. Second, decode base64 and check against against
 	//  location root's .auth file)
 
-	if (*(*_location)["auth"].begin() == "on") {
+	if ((*_location).find("auth") != (*_location).end() && *(*_location)["auth"].begin() == "on") {
 		size_t j = 0;
 		if (cli_conf.find("authorization") == cli_conf.end())
 			return build_error_response(401); // unauthorized (missing credentials)
@@ -446,7 +457,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	//  return an autoindexing of website tree.
 	//  if IS_DIR && we have an index, use index as requested file
 	if (_method == "GET" || _method == "HEAD" || (_error != 200 && _error != 201)) {
-		if (!S_ISREG(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
+		if (!S_ISREG(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && (*_location).find("autoindex") != (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
 			if ((i = make_index()) != 0)
 				return build_error_response(500);
 		}
