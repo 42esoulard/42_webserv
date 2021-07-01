@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 11:47:52 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/01 10:44:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Cluster {
 
         fd_set      _active_fd_set;
         fd_set      _read_fd_set;
+        fd_set      _clients_fd_set;
 
         int         _new_socket;
         int         _cur_socket;

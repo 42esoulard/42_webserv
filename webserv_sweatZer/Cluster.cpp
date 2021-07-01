@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 21:15:51 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/01 10:49:55 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,8 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
-    for( int i = 0; i < _MAXCLIENTS; i++) {
-        _cli_request.push_back(ClientRequest(i));
-
-    }
+    for( int i = 0; i < _MAXCLIENTS; ++i)
+        _cli_request.push_back(ClientRequest());
 
     set_mime();
     set_error();
@@ -26,6 +24,7 @@ void Cluster::init_cluster(std::string &config) {
     this->parse_config(config);
 
     FD_ZERO (&this->_active_fd_set);
+    FD_ZERO (&this->_clients_fd_set);
 
     std::list<Server>::iterator it;
 
@@ -264,7 +263,6 @@ void Cluster::handle_connection(){
     }
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
-
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
 
             std::list<Server>::iterator server_it = server_list.begin();
@@ -280,6 +278,7 @@ void Cluster::handle_connection(){
                     std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
+                    FD_SET (this->_new_socket, &this->_clients_fd_set);
                     return ;
                 }
                 ++server_it;
@@ -287,13 +286,14 @@ void Cluster::handle_connection(){
             /* Data arriving on an already-connected socket. */
             this->parse_request();
         }
-        if (FD_ISSET (this->_cur_socket, &this->_active_fd_set) 
+        if (FD_ISSET (this->_cur_socket, &this->_clients_fd_set) 
             && this->_cli_request[_cur_socket].check_timeout()) {
-            std::cout << "HERE FUCK" << std::endl;
-            //getchar();
-            // close(this->_cur_socket);
-            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
-            //this->_cur_socket = 0;
+            std::cout << "-------------------------TIMEOUT sock ["<< _cur_socket <<"]---------------------------" << std::endl;
+            getchar();
+            close(this->_cur_socket);
+            FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+            FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            this->_cur_socket = 0;
         }
     }
 };
@@ -306,8 +306,9 @@ void Cluster::parse_request() {
     */
 
     memset(buf, 0, _MAXLINE);
-    
+
     _cli_request[_cur_socket].set_timeout();
+    
     int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
     // if (ret <= 0) {
     if (ret <= 0) {
@@ -320,11 +321,14 @@ void Cluster::parse_request() {
 		// else {
         if (ret < 0) {
             close(this->_cur_socket);
-            // FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+            FD_CLR (this->_cur_socket, &this->_active_fd_set);
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
         }
-        else
+        else {
+            FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        }
 		return ;
 	}
     // usleep(500);
@@ -597,14 +601,19 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
 
 int g_socket = -1;
 fd_set *g_active_fd_set = NULL;
+fd_set *g_clients_fd_set = NULL;
+bool g_sigint = false;
 
 void		sighandler(int num)
 {
     std::cout << "in sighandler" << std::endl;
     if (num == SIGPIPE || num == SIGINT) {
         std::cout << "in sighandler sigint" << std::endl;
+        getchar();
         close(g_socket);
         FD_CLR (g_socket, g_active_fd_set);
+        FD_CLR (g_socket, g_clients_fd_set);
+        g_sigint = true;
     }
 }
 
@@ -621,10 +630,11 @@ void Cluster::send_response(std::string &response) {
 	std::string	tmp = response;
     g_socket = _cur_socket;
     g_active_fd_set = &this->_active_fd_set;
+    g_clients_fd_set = &this->_clients_fd_set;
     
     std::cout << "RIGHT BEFORE SEND" << std::endl;
     
-	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) > 0 && ret <= response.size())
+	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) != 0 && ret <= response.size())
 	{
         std::cout << "send loop top res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
 		tmp.clear();
@@ -632,6 +642,8 @@ void Cluster::send_response(std::string &response) {
             ret += res;
 		tmp = response.substr(ret);
 		//usleep(900);
+        if (g_sigint)
+            break;
         std::cout << "send loop bottom" << std::endl;
 	}
     std::cout << " after res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
