@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/01 10:49:55 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/11 20:40:43 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,11 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
-    for( int i = 0; i < _MAXCLIENTS; ++i)
+    for( int i = 0; i < __FD_SETSIZE; ++i)
         _cli_request.push_back(ClientRequest());
 
+    _nb_clients = 0;
+    
     set_mime();
     set_error();
 
@@ -32,6 +34,8 @@ void Cluster::init_cluster(std::string &config) {
         it->init_server();
         FD_SET (it->get_server_fd(), &this->_active_fd_set);
     }
+
+    _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
 };
 
 void Cluster::set_mime() {
@@ -250,6 +254,24 @@ void    Cluster::check_conf(std::string &config) {
     }
 };
 
+int g_socket = -1;
+fd_set *g_active_fd_set = NULL;
+fd_set *g_clients_fd_set = NULL;
+bool g_sigpipe = false;
+
+void		sighandler(int num)
+{
+    std::cout << "in sighandler" << std::endl;
+    if (num == SIGPIPE) {
+        std::cout << "in sighandler sigpipe" << std::endl;
+        getchar();
+        close(g_socket);
+        FD_CLR (g_socket, g_active_fd_set);
+        FD_CLR (g_socket, g_clients_fd_set);
+        g_sigpipe = true;
+    }
+}
+
 void Cluster::handle_connection(){
 
     std::cout << std::endl << "[--- WAITING FOR NEW CONNECTION ---]" << std::endl;
@@ -260,6 +282,17 @@ void Cluster::handle_connection(){
         if ((ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL)) < 0)
             std::cout << "select fail but we're ok" << std::endl;
             //throw Exception("select error");
+        for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
+            if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set) 
+                && this->_cli_request[_cur_socket].check_timeout()) {
+                std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
+                getchar();
+                close(this->_cur_socket);
+                FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+                FD_CLR (this->_cur_socket, &this->_active_fd_set);
+                --_nb_clients;
+            }
+        }
     }
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
@@ -269,32 +302,48 @@ void Cluster::handle_connection(){
             while (server_it != server_list.end()) {
                 if (this->_cur_socket == server_it->get_server_fd()) {
                     /* Connection request on original socket. */
+
+                    if (_nb_clients >= _MAXCLIENTS) {
+                        std::cout << "socket " << this->_new_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
+                        this->send_response(_error_serv_unavailable);
+                        return;
+                    }
                     if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&(server_it->get_address()), &server_it->get_address_sz())) < 0) {
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
                         return;
                         //throw Exception("accept error");
                     }
+                    ++_nb_clients;
+                    this->_cli_request[_cur_socket].set_timeout();
 
                     std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     FD_SET (this->_new_socket, &this->_clients_fd_set);
+                    // if (this->_new_socket >= _MAXCLIENTS) {
+                    //     std::cout << "socket " << this->_new_socket << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
+                    //     this->send_response(_error_serv_unavailable);
+                    // }
                     return ;
                 }
                 ++server_it;
             }
             /* Data arriving on an already-connected socket. */
+            g_socket = _cur_socket;
+            g_active_fd_set = &this->_active_fd_set;
+            g_clients_fd_set = &this->_clients_fd_set;
             this->parse_request();
         }
-        if (FD_ISSET (this->_cur_socket, &this->_clients_fd_set) 
-            && this->_cli_request[_cur_socket].check_timeout()) {
-            std::cout << "-------------------------TIMEOUT sock ["<< _cur_socket <<"]---------------------------" << std::endl;
-            getchar();
-            close(this->_cur_socket);
-            FD_CLR (this->_cur_socket, &this->_clients_fd_set);
-            FD_CLR (this->_cur_socket, &this->_active_fd_set);
-            this->_cur_socket = 0;
-        }
+        //MOVE THIS TO SELECT LOOP?
+        // if (FD_ISSET (this->_cur_socket, &this->_clients_fd_set) 
+        //     && this->_cli_request[_cur_socket].check_timeout()) {
+        //     std::cout << "-------------------------TIMEOUT sock ["<< _cur_socket <<"]---------------------------" << std::endl;
+        //     getchar();
+        //     close(this->_cur_socket);
+        //     FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+        //     FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        //     this->_cur_socket = 0;
+        // }
     }
 };
 
@@ -323,6 +372,7 @@ void Cluster::parse_request() {
             close(this->_cur_socket);
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            --_nb_clients;
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
         }
         else {
@@ -599,23 +649,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerRe
     return 1;
 }
 
-int g_socket = -1;
-fd_set *g_active_fd_set = NULL;
-fd_set *g_clients_fd_set = NULL;
-bool g_sigint = false;
 
-void		sighandler(int num)
-{
-    std::cout << "in sighandler" << std::endl;
-    if (num == SIGPIPE || num == SIGINT) {
-        std::cout << "in sighandler sigint" << std::endl;
-        getchar();
-        close(g_socket);
-        FD_CLR (g_socket, g_active_fd_set);
-        FD_CLR (g_socket, g_clients_fd_set);
-        g_sigint = true;
-    }
-}
 
 void Cluster::send_response(std::string &response) {
 
@@ -642,8 +676,10 @@ void Cluster::send_response(std::string &response) {
             ret += res;
 		tmp = response.substr(ret);
 		//usleep(900);
-        if (g_sigint)
+        if (g_sigpipe) {
+            --_nb_clients;
             break;
+        }
         std::cout << "send loop bottom" << std::endl;
 	}
     std::cout << " after res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;

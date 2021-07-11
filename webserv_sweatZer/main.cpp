@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 11:28:30 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 12:25:10 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/11 18:18:11 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 int main(int ac, char **av) {
 
-    signal(SIGPIPE, sighandler);
     try {
 
         if (ac > 2)
@@ -27,6 +26,7 @@ int main(int ac, char **av) {
 
         Cluster ws(config);
 
+        signal(SIGPIPE, sighandler);
         while (1)
             ws.handle_connection();
 		/*
