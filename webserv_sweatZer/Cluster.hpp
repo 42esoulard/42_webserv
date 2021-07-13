@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/11 19:35:09 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/13 15:47:08 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,9 @@ class Cluster {
         // Request reception :
         void handle_connection();
         void parse_request();
-        void save_chunk(std::vector<std::string> *_vecChunk, std::string &chunk);
-        bool check_body_end(std::string &s_tmp, std::string *s_read_ptr, ServerResponse &serv_response);
-        bool handle_chunk(std::string &s_tmp, std::string *_sread_ptr, ServerResponse &serv_response);
+        void save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk);
+        bool check_body_end(std::string &s_tmp, ServerResponse &serv_response);
+        bool handle_chunk(std::string &s_tmp, ServerResponse &serv_response);
         
         void send_response(std::string &response);
 

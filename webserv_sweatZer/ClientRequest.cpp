@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 21:11:33 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/13 16:31:58 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,24 +29,24 @@ ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 
 ClientRequest::~ClientRequest() {};
 
-char	*ClientRequest::get_read()
-{
-	return _read;
-}
+// char	*ClientRequest::get_read()
+// {
+// 	return _read;
+// }
 
-int ClientRequest::allocate_read(size_t max_body) {
+// int ClientRequest::allocate_read(size_t max_body) {
 
-	if (!(_read = (char *)malloc(sizeof(char) * (_MAXHEADERSIZE + max_body + 1))))
-		return -1;
-	return 0;
-}
+// 	if (!(_read = (char *)malloc(sizeof(char) * (_MAXHEADERSIZE + max_body + 1))))
+// 		return -1;
+// 	return 0;
+// }
 
-void ClientRequest::set_read() {
-	//memset(_read, 0, sizeof(read));
-	for (size_t i = 0; i < _sread.size(); i++) {
-		_read[i] = _sread[i];
-	}
-}
+// void ClientRequest::set_read() {
+// 	//memset(_read, 0, sizeof(read));
+// 	for (size_t i = 0; i < _sread.size(); i++) {
+// 		_read[i] = _sread[i];
+// 	}
+// }
 
 std::string &ClientRequest::get_sread()
 {
