@@ -6,14 +6,15 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 11:37:37 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 13:27:11 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 #define WEBSERV_H
 
-#define _TIMEOUT 600 //in seconds
+#define _TIMEOUT 60 //in seconds
+#define _SELECT_TIMEOUT 5
 #define _MAXLINE 65536
 #define _MAXFD 4096
 #define _MAXCLIENTS 250

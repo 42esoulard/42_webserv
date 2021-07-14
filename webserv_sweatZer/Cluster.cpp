@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 11:34:11 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 13:28:43 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,8 +278,13 @@ void Cluster::handle_connection(){
 
     this->_read_fd_set = this->_active_fd_set;
     int ret = 0;
-    while (ret <= 0) {
-        if ((ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, NULL)) < 0)
+    
+    // while (ret <= 0) {
+    //     if (
+    _timeout.tv_sec  = _SELECT_TIMEOUT;
+	_timeout.tv_usec = 0;
+    ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, &_timeout);
+        if (ret == -1)
             std::cout << "select fail but we're ok" << std::endl;
             //throw Exception("select error");
         for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
@@ -294,7 +299,7 @@ void Cluster::handle_connection(){
                 --_nb_clients;
             }
         }
-    }
+    //}
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
