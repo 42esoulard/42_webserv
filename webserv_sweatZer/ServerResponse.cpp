@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 15:50:49 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/14 16:15:00 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -479,8 +479,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			return build_error_response(404); // file not found
 	}
-	if ((buf.st_mode & S_IFREG) && (buf.st_mode & S_IROTH) == 0)
+	if (!(_method == "PUT" || _method == "POST") && (buf.st_mode & S_IROTH) == 0){
+		std::cout << "KIKOUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU" << std::endl;
 		return build_error_response(403);
+	}
+
 
 	std::cout << "----------------- FILE OK!" << std::endl;
 
