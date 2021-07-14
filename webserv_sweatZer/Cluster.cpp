@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 13:28:43 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 13:54:55 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,7 +291,7 @@ void Cluster::handle_connection(){
             if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set) 
                 && this->_cli_request[_cur_socket].check_timeout()) {
                 std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
-                getchar();
+                //getchar();
                 _cli_request[_cur_socket] = ClientRequest();
                 close(this->_cur_socket);
                 FD_CLR (this->_cur_socket, &this->_clients_fd_set);
