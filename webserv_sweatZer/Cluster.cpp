@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 13:54:55 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 18:03:06 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,7 +292,7 @@ void Cluster::handle_connection(){
                 && this->_cli_request[_cur_socket].check_timeout()) {
                 std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
                 //getchar();
-                _cli_request[_cur_socket] = ClientRequest();
+                _cli_request[_cur_socket].reinit_cli();
                 close(this->_cur_socket);
                 FD_CLR (this->_cur_socket, &this->_clients_fd_set);
                 FD_CLR (this->_cur_socket, &this->_active_fd_set);
@@ -368,7 +368,7 @@ void Cluster::parse_request() {
     // if (ret <= 0) {
     if (ret <= 0) {
 		
-        _cli_request[_cur_socket] = ClientRequest(); //reinit client request for this socket
+        _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
 
         // std::cout << "closing connection [" << _cur_socket << "] ret " << ret << std::endl;
 		// if (ret == 0)
@@ -414,7 +414,7 @@ void Cluster::parse_request() {
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
 	this->send_response(serv_response.get_payload());
-    _cli_request[_cur_socket] = ClientRequest(); //reinitializing client request for this socket
+    _cli_request[_cur_socket].reinit_cli(); //reinitializing client request for this socket
 };
 
 // 0 to return and take another recv to complete the request
@@ -703,7 +703,7 @@ void Cluster::send_response(std::string &response) {
 	}
     if (g_sigpipe) {
         --_nb_clients;
-        _cli_request[_cur_socket] = ClientRequest();
+        _cli_request[_cur_socket].reinit_cli();
         g_sigpipe = false;
     
     }
