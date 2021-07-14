@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 11:51:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 15:53:01 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class ServerResponse {
     public:
 
         ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list);
-        
+
         ~ServerResponse();
 
         std::string &get_payload() { return _payload; }
@@ -73,7 +73,7 @@ class ServerResponse {
         };
 
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
-        
+
         typedef void (ServerResponse::*method_func)();
         method_func get_method(std::string &method) {
             return _methods[method];
@@ -86,8 +86,9 @@ class ServerResponse {
 
         Server::t_conf *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
-        int identify_server(t_content_map &cli_conf); 
+        int identify_server(t_content_map &cli_conf);
         unsigned long identify_location(std::string &file, std::string &extension);
+		bool			check_path_lvl(std::string &path);
 
         int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
