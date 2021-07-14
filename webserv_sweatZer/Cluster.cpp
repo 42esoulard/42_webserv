@@ -6,11 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2021/07/14 18:03:06 by esoulard         ###   ########.fr       */
-=======
-/*   Updated: 2021/07/14 19:18:12 by rturcey          ###   ########.fr       */
->>>>>>> rturcey
+/*   Updated: 2021/07/14 22:03:11 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,13 +376,8 @@ void Cluster::parse_request() {
 
     // if (ret <= 0) {
     if (ret <= 0) {
-<<<<<<< HEAD
-		
-        _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
-=======
 
-        _cli_request[_cur_socket] = ClientRequest(); //reinit client request for this socket
->>>>>>> rturcey
+        _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
 
         // std::cout << "closing connection [" << _cur_socket << "] ret " << ret << std::endl;
 		// if (ret == 0)
