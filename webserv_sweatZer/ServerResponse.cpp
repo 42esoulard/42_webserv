@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 16:15:00 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/14 16:37:02 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -480,7 +480,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 			return build_error_response(404); // file not found
 	}
 	if (!(_method == "PUT" || _method == "POST") && (buf.st_mode & S_IROTH) == 0){
-		std::cout << "KIKOUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU" << std::endl;
 		return build_error_response(403);
 	}
 
