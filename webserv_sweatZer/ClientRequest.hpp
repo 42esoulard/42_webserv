@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/13 16:31:38 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 17:52:50 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ class	ClientRequest {
 		ClientRequest();
 		~ClientRequest();
 		ClientRequest(int index);
+		
+		void reinit_cli();
 
 		int		parse_request(ServerResponse &serv_response, int socket);
 		int	 	allocate_read(size_t max_body);

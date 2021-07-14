@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 12:03:28 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 18:03:08 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,15 @@ ClientRequest::ClientRequest(): _vecRead(), _vecChunked(), _conf()
 	// memset(_read, 0, _MAXLINE);
 	set_timeout();
 	_sread = std::string("");
+}
+
+void ClientRequest::reinit_cli() {
+	// memset(_read, 0, _MAXLINE);
+	set_timeout();
+	_sread.clear();
+	_vecRead.clear();
+	_vecChunked.clear();
+	_conf.clear();
 }
 
 ClientRequest::~ClientRequest() {};
