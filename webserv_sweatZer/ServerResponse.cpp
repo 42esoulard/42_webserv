@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 11:26:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 15:47:53 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,12 +102,13 @@ int ServerResponse::build_error_response(int code) {
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
 
+	std::string ret = "application/octet-stream";
+
 	if (extension.find('/') != std::string::npos)
-		return (extension);
+		return (ret);
 	if (extension.size() > 1 && extension[0] == '.')
 		extension = extension.substr(1);
 	std::string *value =_mime_types.get_value(extension);
-	std::string ret = "application/octet-stream";
 	//unknown extension defaults to application/octet-stream type
 
 	if (value)
@@ -323,6 +324,34 @@ int ServerResponse::check_auth(std::string &tmp) {
 	return -1;
 }
 
+bool	ServerResponse::check_path_lvl(std::string &path)
+{
+	int		lvl = 1;
+	size_t	i = 0;
+
+	if (path.empty())
+		return (false);
+	if (path[0] == '/')
+		i++;
+	if (path.size() >= (2 + i) && path.substr(i, 2) == "..")
+		return (true);
+	if (path.size() >= 1 + i && path[i] == '.')
+		lvl--;
+	while ((i = path.find('/', i)) != std::string::npos)
+	{
+		if (path.size() == i)
+			break ;
+		if (path[i + 1] != '.')
+			lvl++;
+		else if (path.size() >= i + 2 && path.substr(i + 1, 2) == "..")
+			lvl--;
+		if (lvl < 0)
+			return (true);
+		i++;
+	}
+	return (false);
+}
+
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// 0) find which server is the request addressed to
@@ -379,8 +408,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// 4) substitute requested path location alias with root path
 	//   check file existence and status (or uploads dir existence for PUT/POST)
-	int ir;
-	struct stat buf;
+
 
 	if ((*_location).find("root") != (*_location).end()){
 		_resource_path = *(*_location)["root"].begin();
@@ -391,6 +419,13 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		_resource_path +=  requested_path.substr(i);
 	std::cout << "METHOD = " << _method << std::endl;
 
+	if (check_path_lvl(requested_path))
+		return build_error_response(403); // forbidden, security
+	struct stat buf;
+	int ir;
+
+	if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
+			_error = 201; //not an error, means file doesn't exist and will be created
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
 
 		if (i < requested_path.size())
@@ -398,8 +433,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		else
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << i << "]" << std::endl;
 
-		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
-			_error = 201; //not an error, means file doesn't exist and will be created
 		if (_method == "DELETE" && ir < 0)
 			return build_error_response(404); // file not found
 		else if (_method == "DELETE" && S_ISDIR(buf.st_mode))
@@ -419,6 +452,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			return build_error_response(404); // file not found
 	}
+	if ((buf.st_mode & S_IFREG) && (buf.st_mode & S_IROTH) == 0)
+		return build_error_response(403);
 
 	std::cout << "----------------- FILE OK!" << std::endl;
 
