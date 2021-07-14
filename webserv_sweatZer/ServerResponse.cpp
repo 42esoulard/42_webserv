@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 16:58:09 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/14 19:17:52 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -639,15 +639,9 @@ void ServerResponse::method_put() {
 	if (p_error_msg)
 		s_error_msg = *p_error_msg;
 	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
-
 	_payload += "Content-Location: " + _resource_path + "\r\n";
+	_payload += "Content-Length: 0\r\n\r\n";
 
-	// if (_cgi_on) {
-		_payload += "Content-Length: " + ft_itos(_cli_body.size()) + "\r\n";
-		_payload += "\r\n" + _cli_body;
-	// }
-
-	//_payload += "\r\n";
 };
 
 void ServerResponse::method_post() {

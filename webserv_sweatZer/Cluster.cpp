@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2021/07/14 18:03:06 by esoulard         ###   ########.fr       */
+=======
+/*   Updated: 2021/07/14 19:18:12 by rturcey          ###   ########.fr       */
+>>>>>>> rturcey
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +23,7 @@ void Cluster::init_cluster(std::string &config) {
         _cli_request.push_back(ClientRequest());
 
     _nb_clients = 0;
-    
+
     set_mime();
     set_error();
 
@@ -278,7 +282,7 @@ void Cluster::handle_connection(){
 
     this->_read_fd_set = this->_active_fd_set;
     int ret = 0;
-    
+
     // while (ret <= 0) {
     //     if (
     _timeout.tv_sec  = _SELECT_TIMEOUT;
@@ -288,7 +292,7 @@ void Cluster::handle_connection(){
             std::cout << "select fail but we're ok" << std::endl;
             //throw Exception("select error");
         for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
-            if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set) 
+            if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set)
                 && this->_cli_request[_cur_socket].check_timeout()) {
                 std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
                 //getchar();
@@ -341,7 +345,7 @@ void Cluster::handle_connection(){
             this->parse_request();
         }
         //MOVE THIS TO SELECT LOOP?
-        // if (FD_ISSET (this->_cur_socket, &this->_clients_fd_set) 
+        // if (FD_ISSET (this->_cur_socket, &this->_clients_fd_set)
         //     && this->_cli_request[_cur_socket].check_timeout()) {
         //     std::cout << "-------------------------TIMEOUT sock ["<< _cur_socket <<"]---------------------------" << std::endl;
         //     getchar();
@@ -360,15 +364,29 @@ void Cluster::parse_request() {
     ** The same read and write system calls that work on files also work on sockets.
     */
 
-    memset(buf, 0, _MAXLINE);
+	unsigned char		buf2[_MAXLINE];
+    memset(buf2, 0, _MAXLINE);
+	buf.clear();
 
     _cli_request[_cur_socket].set_timeout();
-    
-    int ret = recv(this->_cur_socket, buf, _MAXLINE - 1, 0);
+
+    int ret = recv(this->_cur_socket, buf2, _MAXLINE - 1, 0);
+
+	if (ret > 0)
+	{
+		for (int ct = 0 ; ct < ret ; ++ct)
+			buf.push_back(buf2[ct]);
+	}
+
     // if (ret <= 0) {
     if (ret <= 0) {
+<<<<<<< HEAD
 		
         _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
+=======
+
+        _cli_request[_cur_socket] = ClientRequest(); //reinit client request for this socket
+>>>>>>> rturcey
 
         // std::cout << "closing connection [" << _cur_socket << "] ret " << ret << std::endl;
 		// if (ret == 0)
@@ -392,26 +410,25 @@ void Cluster::parse_request() {
     ServerResponse serv_response(_mime_types, _error_codes, server_list);
 
     std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
-    std::string s_tmp = (*_sread_ptr) + std::string(buf);
+    std::string s_tmp = (*_sread_ptr) + buf;
     // std::cout << "after rescv buf [" << buf << "]" <<std::endl;
-
     if (s_tmp.find("\r\n\r\n") == std::string::npos) { //check if headers are over
 
-        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+        _cli_request[this->_cur_socket].get_sread() += buf;
         return; //headers not over
     }
 	else { //check if body is over
 
         if (!check_body_end(s_tmp, serv_response)) //body not over
-            return ;
+			return ;
 	}
 
     _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
-    if (_cli_request[_cur_socket].get_sread().size() < 10000)
+    /*if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread() << std::endl;
     else
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread().substr(0, 10000) << std::endl;
-    std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;*/
     serv_response.build_response(_cli_request[_cur_socket].get_conf());
 	this->send_response(serv_response.get_payload());
     _cli_request[_cur_socket].reinit_cli(); //reinitializing client request for this socket
@@ -425,7 +442,7 @@ bool Cluster::check_body_end(std::string &s_tmp, ServerResponse &serv_response) 
     // std::cout << "IN CHECK BODY END s_tmp [" << s_tmp << "]" << std::endl << "_sread_ptr [" << *_sread_ptr << "]" << std::endl;
     if (s_tmp.find("Content-Length: ") != std::string::npos) {
 
-        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+        _cli_request[this->_cur_socket].get_sread() += buf;
 
         size_t cl_start = s_tmp.find("Content-Length: ") + 16;
         size_t cl_end = s_tmp.find("\r\n", cl_start);
@@ -440,7 +457,7 @@ bool Cluster::check_body_end(std::string &s_tmp, ServerResponse &serv_response) 
         return handle_chunk(s_tmp, serv_response);
     }
     else {
-        _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+        _cli_request[this->_cur_socket].get_sread() += buf;
     }
 
     return 1;
@@ -484,7 +501,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
             two_CRLF = tmp.substr(one_CRLF + 2).find("\r\n");
             if (two_CRLF != std::string::npos)
                 two_CRLF += one_CRLF + 2;
-                
+
             if (one_CRLF == 0) {
                 // std::cout << "here 1" << std::endl;
                 len = two_CRLF;
@@ -523,7 +540,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
             }
             // std::cout << "0 Completed incomplete size now [" << (*_vecChunk)[(*_vecChunk).size() - 2] << "]" << std::endl;
             // std::cout << "0 Chunk now [" << chunk << "] tmp [" << tmp << "]" << std::endl;
-            
+
         }
 
         // HEX SIZE IS SHIT
@@ -605,7 +622,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
     //input stopped before chunk
     if ((s_tmp.find("\r\n\r\n") + 4) >= s_tmp.size()) {
         if (_cli_request[this->_cur_socket].get_sread().size() < s_tmp.size()) {
-            _cli_request[this->_cur_socket].get_sread() += std::string(buf);
+            _cli_request[this->_cur_socket].get_sread() += buf;
         }
         // std::cout << "a IN HANDLE CHUNK _sread [" << _cli_request[this->_cur_socket].get_sread() << "]" << std::endl;
         // getchar();
@@ -687,9 +704,9 @@ void Cluster::send_response(std::string &response) {
     g_socket = _cur_socket;
     g_active_fd_set = &this->_active_fd_set;
     g_clients_fd_set = &this->_clients_fd_set;
-    
+
     std::cout << "RIGHT BEFORE SEND" << std::endl;
-    
+
 	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) != 0 && ret <= response.size() && !g_sigpipe)
 	{
         std::cout << "send loop top res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
@@ -698,14 +715,14 @@ void Cluster::send_response(std::string &response) {
             ret += res;
 		tmp = response.substr(ret);
 		//usleep(900);
-        
+
         std::cout << "send loop bottom" << std::endl;
 	}
     if (g_sigpipe) {
         --_nb_clients;
         _cli_request[_cur_socket].reinit_cli();
         g_sigpipe = false;
-    
+
     }
     std::cout << " after res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
     /*size_t i = 0;

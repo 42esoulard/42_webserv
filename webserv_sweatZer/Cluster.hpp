@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 13:15:17 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 18:42:30 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,13 +45,13 @@ class Cluster {
         void save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk);
         bool check_body_end(std::string &s_tmp, ServerResponse &serv_response);
         bool handle_chunk(std::string &s_tmp, ServerResponse &serv_response);
-        
+
         void send_response(std::string &response);
 
     private:
 
         std::vector<ClientRequest> _cli_request;
-        
+
         // socket handling
         std::string _config_file;
         int         _config_fd;
@@ -67,7 +67,7 @@ class Cluster {
         int         _new_socket;
         int         _cur_socket;
 
-        char        buf[_MAXLINE];
+       std::string		buf;
 
         // config parsing utils
         char    *_line;
@@ -81,7 +81,7 @@ class Cluster {
         // reference hashtables
         SimpleHashTable _mime_types;
         SimpleHashTable _error_codes;
-        
+
 };
 
 #endif
