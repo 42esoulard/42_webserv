@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 16:37:02 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/14 16:58:09 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -426,7 +426,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	else
 		_max_body = DEFAULT_MAX_BODY;
 	if (cli_conf.find("body") != cli_conf.end() && cli_conf["body"].begin() != cli_conf["body"].end()) {
-		if ((*cli_conf["body"].begin()).size() > _max_body && _method == "POST" && _max_body != DEFAULT_MAX_BODY)
+		if ((*cli_conf["body"].begin()).size() > _max_body && (_method == "POST" || _method == "PUT") && _max_body != DEFAULT_MAX_BODY)
 			return (build_error_response(413));
 		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
 			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
@@ -621,12 +621,14 @@ void ServerResponse::method_put() {
 		int fd;
 		if ((fd = open(_resource_path.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) < 0) {
 			build_error_response(500);
-			return;
+			return ;
 		}
 		//std::cout << "GONNA WRITE [" << _cli_body.c_str() << "] size [" << _cli_body.size() << "]" << std::endl;
-		if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0) {
+		if (write(fd, _cli_body.c_str(), _cli_body.size()) < 0)
+		{
+			close(fd);
 			build_error_response(500);
-			return;
+			return ;
 		}
 		close(fd);
 	}
