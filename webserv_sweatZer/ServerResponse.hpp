@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/22 14:02:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 11:51:46 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ class ServerResponse {
 
         int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
+        int no_host_response();
        // int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
         int check_auth(std::string &tmp);

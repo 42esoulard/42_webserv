@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/13 16:31:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 12:03:28 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,18 +93,24 @@ int		ClientRequest::parse_request(ServerResponse &serv_response, int socket)
 	if ((error = parse_method()))
 	{
 		parse_headers(body, socket);
-		if (parse_host())
-			return (serv_response.error(400));
+		if (parse_host()) {
+			std::cout << "0 666" << std::endl;
+			return (serv_response.error(666));
+		}
 		return (serv_response.error(error));
 	}
 	if ((error = parse_headers(body, socket)))
 	{
-		if (parse_host())
-			return (serv_response.error(400));
+		if (parse_host()) {
+			std::cout << "1 666" << std::endl;
+			return (serv_response.error(666));
+		}
 		return (serv_response.error(error));
 	}
-	if (parse_host())
-		return (serv_response.error(400));
+	if (parse_host()) {
+		std::cout << "2 666" << std::endl;
+		return (serv_response.error(666));
+	}
 	parse_charset();
 	parse_language();
 	print_map(_conf);

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/30 11:26:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 12:04:30 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,15 +323,41 @@ int ServerResponse::check_auth(std::string &tmp) {
 	return -1;
 }
 
+int ServerResponse::no_host_response() {
+	
+	int 	fd;
+	char	buf[4096];
+
+	_error = 200;
+	if (_method != "GET")
+		return build_error_response(400);
+	if ((fd = open(WELCOME2WEBSERV, O_RDONLY)) == -1) {
+			return build_error_response(400);
+	}
+	else {
+		//should we change 4096 ?
+		memset(buf, 0, 4096);
+		if (read(fd, buf, 4096) == -1)
+			return build_error_response(400);
+		else
+			_body = std::string(buf);
+		close(fd);
+	}
+	method_get();
+	return 0;
+}
+
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// 0) find which server is the request addressed to
-
+	_method = *(cli_conf["method"].begin());
+	if (_error == 666) //no host
+		return no_host_response();
 	if ((i = identify_server(cli_conf)) != 200)
 		return error(i); //404, server not found
 	// 1) save file extension in a string + extract potential query from url
 	std::string requested_path = *cli_conf["file"].begin();
-	_method = *(cli_conf["method"].begin());
+	
 
 	i = requested_path.find_first_of("?");
 	if ((size_t)i < requested_path.size()) {

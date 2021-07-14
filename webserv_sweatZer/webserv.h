@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/01 11:17:51 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/14 11:37:37 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@
 #define DEFAULT_MAX_BODY    1000000
 #define DEFAULT_UPLOAD_NAME "new.txt"
 #define ERROR_FOLDER        "html/"
+#define WELCOME2WEBSERV     "html/webserv_TM.html"
 
 void		sighandler(int num);
 
