@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:22:16 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 23:24:07 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,11 +76,17 @@ class Cluster {
        std::string		buf;
 
         // config parsing utils
+
+        std::string _sline;
         char    *_line;
+        std::string field;
         int     _index;
         bool    _in_location;
         bool    _in_server;
         int     _line_nb;
+        std::string _tmp;
+
+        std::list<Server>::iterator _serv_it;
 
         std::string _error_serv_unavailable;
 

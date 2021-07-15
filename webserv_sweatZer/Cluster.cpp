@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:07:05 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 23:32:11 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,9 @@ void Cluster::init_cluster(std::string &config) {
     FD_ZERO (&this->_active_fd_set);
     FD_ZERO (&this->_clients_fd_set);
 
-    std::list<Server>::iterator it;
-
-    for (it = server_list.begin(); it != server_list.end(); it++) {
-        it->init_server();
-        FD_SET (it->get_server_fd(), &this->_active_fd_set);
+    for (_serv_it = server_list.begin(); _serv_it != server_list.end(); _serv_it++) {
+        _serv_it->init_server();
+        FD_SET (_serv_it->get_server_fd(), &this->_active_fd_set);
     }    
 
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
@@ -45,15 +43,15 @@ void Cluster::set_mime() {
     if ((mime_fd = open(MIME_TYPES, O_RDONLY)) < 0)
         throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
 
-    char *line;
-    std::string sline;
+    _line = NULL;
+    _sline.clear();
 
-    while (get_next_line(mime_fd, &line) > 0) {
-        sline = std::string(line);
-        _mime_types.add_entry(sline);
-        free (line);
+    while (get_next_line(mime_fd, &_line) > 0) {
+        _sline = std::string(_line);
+        _mime_types.add_entry(_sline);
+        free (_line);
     }
-    free(line);
+    free(_line);
     close (mime_fd);
 
     // //TEST
@@ -99,15 +97,15 @@ void Cluster::set_error() {
     if ((err_fd = open(ERROR_CODES, O_RDONLY)) < 0)
         throw Exception("Couldn't open error codes file " + std::string(ERROR_CODES));
 
-    char *line;
-    std::string sline;
+    _line = NULL;
+    _sline.clear();
 
-    while (get_next_line(err_fd, &line) > 0) {
-        sline = std::string(line);
-        _error_codes.add_entry_w_spaces(sline);
-        free (line);
+    while (get_next_line(err_fd, &_line) > 0) {
+        _sline = std::string(_line);
+        _error_codes.add_entry_w_spaces(_sline);
+        free (_line);
     }
-    free(line);
+    free(_line);
     close (err_fd);
 };
 
@@ -119,7 +117,7 @@ void Cluster::parse_config(std::string &config) {
     _in_location = false;
     _in_server = false;
     _line_nb = 0;
-    std::string field;
+    
     while (get_next_line(_config_fd, &_line) > 0) {
 
         ++_line_nb;
@@ -140,17 +138,17 @@ void Cluster::parse_config(std::string &config) {
 void Cluster::print_config() {
 
     std::cout << "----CONFIG----"<< std::endl;
-    std::list<Server>::iterator it = server_list.begin();
+    _serv_it = server_list.begin();
     int index = 0;
 
-    while (it != server_list.end()) {
+    while (_serv_it != server_list.end()) {
         std::cout << "------------------------SERVER " << index++ << "------------------------" << std::endl;
         //printing server content
-        it->print_server_info();
+        _serv_it->print_server_info();
 
         //printing locations content
-        it->print_server_locations();
-        ++it;
+        _serv_it->print_server_locations();
+        ++_serv_it;
     }
     std::cout << "-----------------------" << std::endl;
 }
@@ -181,17 +179,17 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         server_list.back().get_locations().push_back(new_loc);
         _in_location = true;
 
-        std::string tmp;
-        if ((tmp = get_conf_token(_line, _index)) == "" || tmp == "{") {
+        // std::string tmp;
+        if ((_tmp = get_conf_token(_line, _index)) == "" || _tmp == "{") {
             free(_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + "location needs a path");
         }
-        if (tmp.size() > 1 && (tmp[tmp.size() - 1] == '*' || tmp[tmp.size() - 1] == '/'))
-            tmp = tmp.substr(0, tmp.find_last_of('/'));
-        server_list.back().get_locations().back()["path"].push_back(tmp);
-        while ((tmp = get_conf_token(_line, _index)) != "{" && tmp != "")
-            server_list.back().get_locations().back()["extensions"].push_back(tmp);
-        if (tmp != "{" || get_conf_token(_line, _index) != "") {
+        if (_tmp.size() > 1 && (_tmp[_tmp.size() - 1] == '*' || _tmp[_tmp.size() - 1] == '/'))
+            _tmp = _tmp.substr(0, _tmp.find_last_of('/'));
+        server_list.back().get_locations().back()["path"].push_back(_tmp);
+        while ((_tmp = get_conf_token(_line, _index)) != "{" && _tmp != "")
+            server_list.back().get_locations().back()["extensions"].push_back(_tmp);
+        if (_tmp != "{" || get_conf_token(_line, _index) != "") {
             free(_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
         }
@@ -244,16 +242,16 @@ void Cluster::parse_values(std::string &field, std::string &config) {
 
 void    Cluster::check_conf(std::string &config) {
 
-    std::list<Server>::iterator                 server_it = server_list.begin();
+    _serv_it = server_list.begin();
     std::list<Server::t_content_map>::iterator  locations_it;
 
     Server::t_content_map::iterator             serv_info_it;
     Server::t_content_map::iterator             loc_info_it;
 
-    while (server_it != server_list.end()) { //iterate on each server block
+    while (_serv_it != server_list.end()) { //iterate on each server block
 
-        serv_info_it = (*server_it).get_serv_info().begin();
-        while (serv_info_it != (*server_it).get_serv_info().end()) {
+        serv_info_it = (*_serv_it).get_serv_info().begin();
+        while (serv_info_it != (*_serv_it).get_serv_info().end()) {
             // check that except in the case of server_name, we don't accept more than 1 param
             // MAYBE SEVERAL PORTS ARE OK, NOT SURE. IN THIS CASE, ADD ANOTHER EXCEPTION FOR server_port
             if (serv_info_it->second.size() != 1 && serv_info_it->first != "server_name")
@@ -261,8 +259,8 @@ void    Cluster::check_conf(std::string &config) {
             ++serv_info_it;
         }
 
-        locations_it = (*server_it).get_locations().begin();
-        while (locations_it != (*server_it).get_locations().end()) {
+        locations_it = (*_serv_it).get_locations().begin();
+        while (locations_it != (*_serv_it).get_locations().end()) {
             loc_info_it = (*locations_it).begin();
             while (loc_info_it != (*locations_it).end()) {
                 if (loc_info_it->second.size() != 1 && loc_info_it->first != "accept_methods")
@@ -271,7 +269,7 @@ void    Cluster::check_conf(std::string &config) {
             }
             ++locations_it;
         }
-        ++server_it;
+        ++_serv_it;
     }
 };
 
@@ -325,9 +323,9 @@ void Cluster::handle_connection(){
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
 
-            std::list<Server>::iterator server_it = server_list.begin();
-            while (server_it != server_list.end()) {
-                if (this->_cur_socket == server_it->get_server_fd()) {
+            _serv_it = server_list.begin();
+            while (_serv_it != server_list.end()) {
+                if (this->_cur_socket == _serv_it->get_server_fd()) {
                     /* Connection request on original socket. */
 
                     if (_nb_clients >= _MAXCLIENTS) {
@@ -335,7 +333,7 @@ void Cluster::handle_connection(){
                         this->send_response(_error_serv_unavailable);
                         return;
                     }
-                    if ((this->_new_socket = accept(server_it->get_server_fd(), (struct sockaddr *)&(server_it->get_address()), &server_it->get_address_sz())) < 0) {
+                    if ((this->_new_socket = accept(_serv_it->get_server_fd(), (struct sockaddr *)&(_serv_it->get_address()), &_serv_it->get_address_sz())) < 0) {
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
                         return;
                         //throw Exception("accept error");
@@ -343,7 +341,7 @@ void Cluster::handle_connection(){
                     ++_nb_clients;
                     this->_cli_request[_cur_socket].set_timeout();
 
-                    std::cerr << "Server: connect from host " << inet_ntoa (server_it->get_address().sin_addr) << ", port " <<  ntohs (server_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
+                    std::cerr << "Server: connect from host " << inet_ntoa (_serv_it->get_address().sin_addr) << ", port " <<  ntohs (_serv_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     FD_SET (this->_new_socket, &this->_clients_fd_set);
@@ -353,7 +351,7 @@ void Cluster::handle_connection(){
                     // }
                     return ;
                 }
-                ++server_it;
+                ++_serv_it;
             }
             /* Data arriving on an already-connected socket. */
             g_socket = _cur_socket;
@@ -422,17 +420,16 @@ void Cluster::parse_request() {
     // ServerResponse serv_response(_mime_types, _error_codes, server_list);
     (*_serv_response).reinit_serv_response();
 
-    std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
-    std::string s_tmp = (*_sread_ptr) + buf;
+    _tmp = (_cli_request[this->_cur_socket].get_sread()) + buf;
     // std::cout << "after rescv buf [" << buf << "]" <<std::endl;
-    if (s_tmp.find("\r\n\r\n") == std::string::npos) { //check if headers are over
+    if (_tmp.find("\r\n\r\n") == std::string::npos) { //check if headers are over
 
         _cli_request[this->_cur_socket].get_sread() += buf;
         return; //headers not over
     }
 	else { //check if body is over
 
-        if (!check_body_end(s_tmp, *_serv_response)) //body not over
+        if (!check_body_end(_tmp, *_serv_response)) //body not over
 			return ;
 	}
 
@@ -484,7 +481,6 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
     size_t expected_size;
     size_t missing_chars;
     size_t end_of_tmp_chunk;
-    std::string tmp;
     size_t len;
 
     // std::cout << "IN SAVE CHUNK [" <<  chunk << "] size "<< chunk.size() << std::endl;
@@ -495,23 +491,23 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
         // std::cout << "after substr chunk is [" << chunk << "]" << std::endl;
         index = 0;
 
-        tmp = chunk;
-        one_CRLF = tmp.find("\r\n");
+        _tmp = chunk;
+        one_CRLF = _tmp.find("\r\n");
         two_CRLF = std::string::npos;
 
         // SIZE IS INCOMPLETE
         if (_vecChunk.size() % 2 != 0) {
             std::cout << "0 Gonna complete incomplete size [" << _vecChunk[_vecChunk.size() - 1] << "]" << std::endl;
-            tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
-            one_CRLF = tmp.find("\r\n");
+            _tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
+            one_CRLF = _tmp.find("\r\n");
 
-            if (one_CRLF == std::string::npos || one_CRLF + 2 >= tmp.size()) {
+            if (one_CRLF == std::string::npos || one_CRLF + 2 >= _tmp.size()) {
                 _vecChunk[_vecChunk.size() - 1] += chunk;
                 return;
             }
 
             // std::cout << "gonna look for two crlf in substr [" << tmp.substr(one_CRLF + 2) << "] from str [" << tmp << "]" << std::endl;
-            two_CRLF = tmp.substr(one_CRLF + 2).find("\r\n");
+            two_CRLF = _tmp.substr(one_CRLF + 2).find("\r\n");
             if (two_CRLF != std::string::npos)
                 two_CRLF += one_CRLF + 2;
 
@@ -523,31 +519,31 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
                     len = two_CRLF - (one_CRLF + 2);
                 }
                 // std::cout << "GONNA SUBSTR from " << one_CRLF + 2 << " for len " << len << std::endl;
-                _vecChunk[_vecChunk.size() - 1] = tmp.substr(one_CRLF + 2, len);
+                _vecChunk[_vecChunk.size() - 1] = _tmp.substr(one_CRLF + 2, len);
                 // std::cout << "now vec with size contains [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "] len [" << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "]" << std::endl;
                 if (two_CRLF == std::string::npos) {
                     // std::cout << "size still not over!!!" << std::endl;
                     return;
                 }
                 else
-                    chunk = tmp.substr(two_CRLF + 2);
+                    chunk = _tmp.substr(two_CRLF + 2);
                 // std::cout << "now chunk = [" << chunk << "] size " << chunk.size() << std::endl;
             }
             else {
                 // std::cout << "here 2" << std::endl;
-                _vecChunk[_vecChunk.size() - 1] = tmp.substr(0, one_CRLF);
-                chunk = tmp.substr(one_CRLF + 2);
+                _vecChunk[_vecChunk.size() - 1] = _tmp.substr(0, one_CRLF);
+                chunk = _tmp.substr(one_CRLF + 2);
             }
             // std::cout << "here size [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
             _vecChunk.push_back(std::string(""));
 
-            tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
-            one_CRLF = tmp.find("\r\n");
+            _tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
+            one_CRLF = _tmp.find("\r\n");
             two_CRLF = std::string::npos;
 
             if ((uint)ft_stoi_hex(_vecChunk[_vecChunk.size() - 2]) == 0) {
                 if (_vecChunk[_vecChunk.size() - 1].size() < 2)
-                    _vecChunk[_vecChunk.size() - 1] = tmp.substr(0, 2);
+                    _vecChunk[_vecChunk.size() - 1] = _tmp.substr(0, 2);
                 // std::cout << "0 VECTOR 0 content [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "]" << std::endl;
                 return;
             }
@@ -574,8 +570,8 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
         // CONTENT IS INCOMPLETE
         if (_vecChunk.size() > 1 && (uint)ft_stoi_hex(_vecChunk[_vecChunk.size() - 2]) > _vecChunk[_vecChunk.size() - 1].size()) {
 
-            tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
-            one_CRLF = tmp.find("\r\n");
+            _tmp = _vecChunk[_vecChunk.size() - 1] + chunk;
+            one_CRLF = _tmp.find("\r\n");
 
             expected_size = (uint)ft_stoi_hex(_vecChunk[_vecChunk.size() - 2]);
 
@@ -584,7 +580,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
             // std::cout << "1 Gonna complete incomplete content currently missing " << missing_chars << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
 
             if (one_CRLF == std::string::npos)
-                end_of_tmp_chunk = tmp.size();
+                end_of_tmp_chunk = _tmp.size();
             else
                 end_of_tmp_chunk = one_CRLF;
 
@@ -592,7 +588,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
             if (expected_size < end_of_tmp_chunk) {
                 // std::cout << "expected size " << expected_size << "< end of chunk " << end_of_tmp_chunk << std::endl;
                 index += missing_chars;
-                _vecChunk[_vecChunk.size() - 1] = tmp.substr(0, expected_size); // or next_crlf -1 ?
+                _vecChunk[_vecChunk.size() - 1] = _tmp.substr(0, expected_size); // or next_crlf -1 ?
                 // std::cout << "vecchunk now [" << (*_vecChunk)[(*_vecChunk).size() - 1] << "] index [" << index << "]" << std::endl;
             }
             else if (expected_size >= end_of_tmp_chunk) {
@@ -600,7 +596,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
                 index = end_of_tmp_chunk - _vecChunk[_vecChunk.size() - 1].size();
                 if (end_of_tmp_chunk == one_CRLF)
                     index += 2;
-                _vecChunk[_vecChunk.size() - 1] = tmp.substr(0, end_of_tmp_chunk); // or next_crlf -1 ?
+                _vecChunk[_vecChunk.size() - 1] = _tmp.substr(0, end_of_tmp_chunk); // or next_crlf -1 ?
 
             }
         //     std::cout << "1 Completed incomplete content, now starting with  [" << (*_vecChunk)[(*_vecChunk).size() - 1][0] << "] size " << (*_vecChunk)[(*_vecChunk).size() - 1].size() << "/" << (uint)ft_stoi_hex((*_vecChunk)[(*_vecChunk).size() - 2]) << std::endl;
@@ -608,7 +604,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
             continue;
         }
         else if (one_CRLF == std::string::npos) {
-            _vecChunk.push_back(tmp);
+            _vecChunk.push_back(_tmp);
             std::cout << "Added incomplete size [" << _vecChunk[_vecChunk.size() - 1] << "]" << std::endl;
             // getchar();
             return;
@@ -616,7 +612,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
         else {
             if (one_CRLF != 0) {
                 std::cout << "bef crash" << std::endl;
-                _vecChunk.push_back(tmp.substr(0, one_CRLF));
+                _vecChunk.push_back(_tmp.substr(0, one_CRLF));
                 _vecChunk.push_back(std::string(""));
                 std::cout << "aft crash" << std::endl;
 
@@ -713,20 +709,20 @@ void Cluster::send_response(std::string &response) {
 	// }
 	size_t	ret = 0;
 	ssize_t	res = 0;
-	std::string	tmp = response;
+	_tmp = response;
     g_socket = _cur_socket;
     g_active_fd_set = &this->_active_fd_set;
     g_clients_fd_set = &this->_clients_fd_set;
 
     std::cout << "RIGHT BEFORE SEND" << std::endl;
 
-	while ((res = send(this->_cur_socket , tmp.c_str() , tmp.size(), 0)) != 0 && ret <= response.size() && !g_sigpipe)
+	while ((res = send(this->_cur_socket , _tmp.c_str() , _tmp.size(), 0)) != 0 && ret <= response.size() && !g_sigpipe)
 	{
         std::cout << "send loop top res " << res << " ret " << ret << " res + ret " << ret + res << std::endl;
-		tmp.clear();
+		_tmp.clear();
         if (res != -1)
             ret += res;
-		tmp = response.substr(ret);
+		_tmp = response.substr(ret);
 		//usleep(900);
 
         std::cout << "send loop bottom" << std::endl;

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:23:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 23:39:45 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,9 @@ int			ServerResponse::error(int code)
 
 int ServerResponse::build_error_response(int code) {
 	std::string	 path(ERROR_FOLDER);
-	char			buf[4096];
 	int			 fd;
 
+	memset(_buf, 0, 4096);
 	// try to open error matching path
 	// if it doesnt work, try to open default path
 	// if it doesn't work, give default string to body
@@ -87,11 +87,10 @@ int ServerResponse::build_error_response(int code) {
 	}
 	else {
 		//should we change 4096 ?
-		memset(buf, 0, 4096);
-		if (read(fd, buf, 4096) == -1)
+		if (read(fd, _buf, 4096) == -1)
 			_body = "<!DOCTYPE html>\n<title>Error1</title>\n";
 		else
-			_body = std::string(buf);
+			_body = std::string(_buf);
 		close(fd);
 	}
 
@@ -347,8 +346,8 @@ int ServerResponse::no_host_response()
 {
 
 	int 	fd;
-	char	buf[4096];
 
+	memset(_buf, 0, 4096);
 	_error = 200;
 	if (_method != "GET")
 		return build_error_response(400);
@@ -357,11 +356,11 @@ int ServerResponse::no_host_response()
 	}
 	else {
 		//should we change 4096 ?
-		memset(buf, 0, 4096);
-		if (read(fd, buf, 4096) == -1)
+		
+		if (read(fd, _buf, 4096) == -1)
 			return build_error_response(400);
 		else
-			_body = std::string(buf);
+			_body = std::string(_buf);
 		close(fd);
 	}
 	method_get();
@@ -592,13 +591,14 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 void ServerResponse::method_get() {
 
-	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
-	std::string s_error_msg = "";
-	std::string sp = " ";
-	if (p_error_msg)
-		s_error_msg = *p_error_msg;
-	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_s_error = ft_itos(_error);
+	_p_error_msg = _error_codes.get_value(_s_error);
+	_s_error_msg = "";
+	_sp = " ";
+	if (_p_error_msg)
+		_s_error_msg = *_p_error_msg;
+
+	_payload += "HTTP/1.1" + _sp + _s_error + _sp + _s_error_msg + "\r\n";
 
 	_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 
@@ -610,13 +610,14 @@ void ServerResponse::method_get() {
 
 void ServerResponse::method_head() {
 
-	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
-	std::string s_error_msg = "";
-	std::string sp = " ";
-	if (p_error_msg)
-		s_error_msg = *p_error_msg;
-	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_s_error = ft_itos(_error);
+	_p_error_msg = _error_codes.get_value(_s_error);
+	_s_error_msg = "";
+	_sp = " ";
+	if (_p_error_msg)
+		_s_error_msg = *_p_error_msg;
+
+	_payload += "HTTP/1.1" + _sp + _s_error + _sp + _s_error_msg + "\r\n";
 
 	_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
 
@@ -654,13 +655,14 @@ void ServerResponse::method_put() {
 		}
 		close(fd);
 	}
-	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
-	std::string s_error_msg = "";
-	std::string sp = " ";
-	if (p_error_msg)
-		s_error_msg = *p_error_msg;
-	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_s_error = ft_itos(_error);
+	_p_error_msg = _error_codes.get_value(_s_error);
+	_s_error_msg = "";
+	_sp = " ";
+	if (_p_error_msg)
+		_s_error_msg = *_p_error_msg;
+
+	_payload += "HTTP/1.1" + _sp + _s_error + _sp + _s_error_msg + "\r\n";
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 	_payload += "Content-Length: 0\r\n\r\n";
 
@@ -682,14 +684,14 @@ void ServerResponse::method_post() {
 		}
 		close(fd);
 	}
-	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
-	std::string s_error_msg = "";
-	std::string sp = " ";
-	if (p_error_msg)
-		s_error_msg = *p_error_msg;
-	// std::cout << "s_error_msg [" << s_error_msg << "]" << std::endl;
-	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_s_error = ft_itos(_error);
+	_p_error_msg = _error_codes.get_value(_s_error);
+	_s_error_msg = "";
+	_sp = " ";
+	if (_p_error_msg)
+		_s_error_msg = *_p_error_msg;
+
+	_payload += "HTTP/1.1" + _sp + _s_error + _sp + _s_error_msg + "\r\n";
 
 	_payload += "Content-Location: " + _resource_path + "\r\n";
 
@@ -714,13 +716,13 @@ void ServerResponse::method_delete() {
 		remove(_resource_path.c_str());
 	_error = 204;
 
-	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
-	std::string s_error_msg = "";
-	std::string sp = " ";
-	if (p_error_msg)
-		s_error_msg = *p_error_msg;
-	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_s_error = ft_itos(_error);
+	_p_error_msg = _error_codes.get_value(_s_error);
+	_s_error_msg = "";
+	_sp = " ";
+	if (_p_error_msg)
+		_s_error_msg = *_p_error_msg;
+	_payload += "HTTP/1.1" + _sp + _s_error + _sp + _s_error_msg + "\r\n";
 	if (_cgi_on) {
 		_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
 		_payload += "\r\n" + _body;
