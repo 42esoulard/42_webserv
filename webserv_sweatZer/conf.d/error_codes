@@ -31,7 +31,8 @@
  414   URI Too Long                   
  415   Unsupported Media Type         
  416   Range Not Satisfiable          
- 417   Expectation Failed             
+ 417   Expectation Failed    
+ 418   I'm a Teapot         
  426   Upgrade Required               
  500   Internal Server Error          
  501   Not Implemented                

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/13 13:05:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 12:14:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,14 +56,16 @@ int main()
     // char hello10[] = "\r\n";
 
     //char hello[] = "GET /directory/nop HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\n\r\n";
-    char hello[] = "POST /directory/youpi.bla HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\nContent-Type: test/file\r\nAccept-Encoding: gzip\r\n\r";
-    char hello1[] = "\na\r\n1234567890\r";
-    char hello2[] = "\na\r\n123456789";
-    char hello3[] = "0\r";
-    char hello4[] = "\n0\r";
-    char hello5[] = "\n\r\n";
+    // char hello[] = "POST /directory/youpi.bla HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\nContent-Type: test/file\r\nAccept-Encoding: gzip\r\n\r";
+    // char hello1[] = "\na\r\n1234567890\r";
+    // char hello2[] = "\na\r\n123456789";
+    // char hello3[] = "0\r";
+    // char hello4[] = "\n0\r";
+    // char hello5[] = "\n\r\n";
     // char hello6[] = "\r";
     // char hello7[] = "\n";
+
+    char hello[] = "GET /meta/webserv HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Go-http-client/1.1\r\n\r\n";
     char buffer[_MAXLINE] = {0};
 
     // client opens his socket
@@ -92,15 +94,15 @@ int main()
     // initiate transmission of a message from the specified socket to its peer.
     send(sock , hello, strlen(hello)  , 0 );
     sleep(2);
-    send(sock , hello1, strlen(hello)  , 0 );
-    sleep(2);
-    send(sock , hello2, strlen(hello2)  , 0 );
-    sleep(2);
-    send(sock , hello3, strlen(hello3)  , 0 );
-    sleep(2);
-    send(sock , hello4, strlen(hello4)  , 0 );
-    sleep(2);
-    send(sock , hello5, strlen(hello4)  , 0 );
+    // send(sock , hello1, strlen(hello)  , 0 );
+    // sleep(2);
+    // send(sock , hello2, strlen(hello2)  , 0 );
+    // sleep(2);
+    // send(sock , hello3, strlen(hello3)  , 0 );
+    // sleep(2);
+    // send(sock , hello4, strlen(hello4)  , 0 );
+    // sleep(2);
+    // send(sock , hello5, strlen(hello4)  , 0 );
     // sleep(2);
     // send(sock , hello6, strlen(hello4)  , 0 );
     // sleep(2);

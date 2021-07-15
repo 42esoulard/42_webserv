@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 10:13:18 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 12:07:15 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -535,6 +535,10 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 			}
 
 			if ((*_location).find("cgi_bin") != (*_location).end()) {
+				if ((i = requested_path.find_last_of("/")) == std::string::npos)
+					i = -1;
+				if (requested_path.substr(i + 1) == "webserv")
+					return build_error_response(418);
 				if (_cgi->launch_cgi(*this, cli_conf) != 0)
 					return build_error_response(_error);
 				_cgi_on = true;
