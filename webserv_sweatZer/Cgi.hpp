@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:04:20 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:49:57 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,16 @@ class Cgi {
         std::vector<std::string>	s_env;
         FILE        *_file[2];
         int         _fd[2];
+        int         _save[2];
         std::string _cgi_body;
+        int _pid;
+        int _status;
+        char *_args[3];
+        char _buf[_MAXLINE];
+        std::string _tmp;
+
+        std::vector<std::string>	_vec;
+        std::vector<std::string>	_vec2;
         /* CONTENT OF THE ENV SHOULD BE THE FOLLOWING, IN A FORMAT
            such as "key=value" : */
         /*

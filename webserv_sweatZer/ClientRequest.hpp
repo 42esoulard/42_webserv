@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 17:52:50 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 23:11:42 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,10 @@ class	ClientRequest {
 	public:
 		ClientRequest();
 		~ClientRequest();
-		ClientRequest(int index);
 		
 		void reinit_cli();
 
-		int		parse_request(ServerResponse &serv_response, int socket);
+		int		parse_request(ServerResponse &serv_response);
 		int	 	allocate_read(size_t max_body);
 		char	*get_read(); //getter for _read
 		void 	set_read();
@@ -59,10 +58,10 @@ class	ClientRequest {
 		std::vector<std::string>	&get_vecChunked() { return _vecChunked; };
 		bool	is_method(std::string &str);
 		int		parse_method();
-		int		parse_headers(size_t body, int socket);
+		int		parse_headers(size_t body);
 		int		save_header(std::string &str);
-		int		parse_body(size_t i, int socket);
-		int		parse_body_chunked(std::string str, int socket);
+		int		parse_body(size_t i);
+		int		parse_body_chunked(std::string str);
 		bool	parse_host();
 		bool	parse_language();
 		bool	parse_charset();
@@ -82,6 +81,18 @@ class	ClientRequest {
 		std::vector<std::string>	_vecRead;
 		std::vector<std::string>	_vecChunked;
 		t_content_map				_conf;
+
+		std::vector<std::string>	 _vec;
+		t_content_map::iterator 	_map_it;
+		std::string _tmpa;
+		std::string _tmpb;
+		std::vector<float>							ft;
+		std::list<std::pair<float, std::string> >	_charset;		
+		std::list<std::pair<float, std::string> >	_language;
+
+		struct timeval _tv;
+		time_t _cur_time;
+		time_t _diff;
 
 		// In our map, we got :
 		// accept-language

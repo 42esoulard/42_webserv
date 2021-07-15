@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:21:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 23:07:05 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -436,7 +436,7 @@ void Cluster::parse_request() {
 			return ;
 	}
 
-    _cli_request[_cur_socket].parse_request(*_serv_response, this->_cur_socket);
+    _cli_request[_cur_socket].parse_request(*_serv_response);
     /*if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread() << std::endl;
     else

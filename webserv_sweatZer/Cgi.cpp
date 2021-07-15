@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:24:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:50:00 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,11 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     s_env.push_back(std::string("GATEWAY_INTERFACE=CGI/1.1"));
 
     //"PATH_INFO=",
-	if (serv_resp.i >= (*cli_conf["file"].begin()).size())
-		s_env.push_back(std::string("PATH_INFO=") + (*cli_conf["file"].begin()));
+    _tmp = *cli_conf["file"].begin();
+	if (serv_resp.i >= _tmp.size())
+		s_env.push_back(std::string("PATH_INFO=") + _tmp);
 	else
-		s_env.push_back(std::string("PATH_INFO=") + (*cli_conf["file"].begin()).substr(serv_resp.i));
+		s_env.push_back(std::string("PATH_INFO=") + _tmp.substr(serv_resp.i));
 
     //"PATH_TRANSLATED=",
     s_env.push_back(std::string("PATH_TRANSLATED=") + serv_resp._resource_path);
@@ -103,10 +104,10 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		if (lev == 0)
 		{
 			topush = format_env((*it).first);
-			std::cout << "FIRST = " << (*it).first << std::endl;
+			// std::cout << "FIRST = " << (*it).first << std::endl;
 			topush += "=";
 			topush += *(*it).second.begin();
-			std::cout << "SCD = " << *(*it).second.begin() << std::endl;
+			// std::cout << "SCD = " << *(*it).second.begin() << std::endl;
 			s_env.push_back(topush);
 		}
 	}
@@ -129,31 +130,30 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     // for (int i = 0; i < 13; i++)
     //     std::cout << _env[i] << std::endl;
 
-	int	saveIn = dup(STDIN_FILENO);
-	int	saveOut = dup(STDOUT_FILENO);
+	_save[0] = dup(STDIN_FILENO);
+	_save[1] = dup(STDOUT_FILENO);
     _file[0] = tmpfile();
     _file[1] = tmpfile();
     _fd[0] = fileno(_file[0]);
     _fd[1] = fileno(_file[1]);
 
-    int pid;
-    int status = 0;
+    _status = 0;
 
 	write(_fd[0], serv_resp._cli_body.c_str(), serv_resp._cli_body.size());
 	lseek(_fd[0], 0, SEEK_SET);
-    if ((pid = fork()) < 0)
+    if ((_pid = fork()) < 0)
 	{
-		dup2(saveIn, STDIN_FILENO);
-		dup2(saveOut, STDOUT_FILENO);
+		dup2(_save[0], STDIN_FILENO);
+		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
         close(_fd[0]);
         close(_fd[1]);
 		return (serv_resp.build_error_response(500));
 	}
-	else if (pid == 0)
+	else if (_pid == 0)
 	{
-        std::cout << "IN CHILD" << std::endl;
+        // std::cout << "IN CHILD" << std::endl;
 		// if (sh->obj->prev && sh->obj->prev->pip == IS_PIPE)
         // {
         //     if (dup2(sh->obj->prev->tube[0], 0) == -1)
@@ -163,7 +163,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
         // }
         // if (sh->obj->pip == IS_PIPE)
         // {
-        std::cout << "CHILD BEF DUP2" << std::endl;
+        // std::cout << "CHILD BEF DUP2" << std::endl;
         if (dup2(_fd[0], 0) == -1 || dup2(_fd[1], 1) == -1) {
             std::cerr << "CHILD DUP2 FAIL" << std::endl;
             std::cerr << strerror(errno) << std::endl;
@@ -172,24 +172,24 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             // std::cout << serv_resp._payload << std::endl;
             exit(500);
         }
-        std::cerr << "CHILD AFT DUP2" << std::endl;
+        // std::cerr << "CHILD AFT DUP2" << std::endl;
         //close(_pipe[0]);
-        char *args[3];
+        
         if (getcwd(serv_resp._abs_resource_path, PATH_MAX)) {
 
-            std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
+            // std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
             std::string _cgi_abs_path(serv_resp._abs_resource_path);
             _cgi_abs_path += "/" + serv_resp._resource_path;
 
             // if (!(args[0] = (char *)malloc(sizeof(char) * _cgi_abs_path.size() + 1)))
             //     return -1;
-            args[0] = ft_strdup((*(*serv_resp._location)["cgi_bin"].begin()).c_str());
-            args[1] = ft_strdup(_cgi_abs_path.c_str());
-            args[2] = NULL;
-            std::cerr << "Gonna exec [" << args[0] << "with file " << args[1] << "]" << std::endl;
-            execve(args[0], args, _env);
-            free(args[0]);
-            free(args[1]);
+            _args[0] = ft_strdup((*(*serv_resp._location)["cgi_bin"].begin()).c_str());
+            _args[1] = ft_strdup(_cgi_abs_path.c_str());
+            _args[2] = NULL;
+            std::cerr << "Gonna exec [" << _args[0] << "with file " << _args[1] << "]" << std::endl;
+            execve(_args[0], _args, _env);
+            free(_args[0]);
+            free(_args[1]);
         }
         std::cerr << "CHILD AFTER EXECVE errno[" << strerror(errno) << "]" << std::endl;
 		// serv_resp.build_error_response(500);
@@ -198,13 +198,13 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 	}
 	else {
         //std::cout << "PARENT BEFORE WAIT" << std::endl;
-		waitpid(pid, &status, 0);
+		waitpid(_pid, &_status, 0);
         // if (WIFEXITED(status))
 		// 	serv_resp._error = WEXITSTATUS(status);
         //if error, return serv_resp._error
         //std::cout << "PARENT AFTER WAIT" << std::endl;
-        char buf[_MAXLINE] = {0};
-		std::string	str;
+        memset(_buf, 0, _MAXLINE);
+		
         lseek(_fd[1], 0, SEEK_SET);
         //std::cout << "PARENT BEF READ" << std::endl;
 
@@ -213,8 +213,8 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		serv_resp._body.clear();
 		while (i > 0) {
             //std::cout << "PARENT IN READ" << std::endl;
-			memset(buf, 0, _MAXLINE);
-            i = read(_fd[1], buf, _MAXLINE - 1);
+			memset(_buf, 0, _MAXLINE);
+            i = read(_fd[1], _buf, _MAXLINE - 1);
             //std::cout << "[" << buf << "]" << std::endl;
 			/*if (lev-- == 1 && i > 0)
 			{
@@ -231,7 +231,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 			}*/
             for (int j = 0 ; j < i ; ++j)
 			{
-                serv_resp._body.push_back(buf[j]);
+                serv_resp._body.push_back(_buf[j]);
 			}
             //std::cout << "serv_resp in cgi [" << serv_resp._body << "]" << std::endl;
             //PUT PRINTS HERE TO UNDRSTAND WHATS READ
@@ -244,20 +244,20 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             close(_fd[1]);
             return (serv_resp.build_error_response(ft_stoi(serv_resp._body.substr(8, 3))));
         }*/
-		dup2(saveIn, STDIN_FILENO);
-		dup2(saveOut, STDOUT_FILENO);
+		dup2(_save[0], STDIN_FILENO);
+		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
         close(_fd[0]);
         close(_fd[1]);
     }
-	std::cout << "BEFORE RETURN IN PARENT" << std::endl;
+	// std::cout << "BEFORE RETURN IN PARENT" << std::endl;
     return 0;
 };
 
 void	Cgi::parse_content_type(ServerResponse &serv_resp)
 {
-	std::vector<std::string>	vec;
+	
 	size_t						body = -1;
 	int							err = 0;
 	size_t						start = 0;
@@ -270,7 +270,8 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	lev[1] = 1;
 	if (cpy_body.find("\r\n") == std::string::npos)
 		return ;
-	vec = split_crlf(serv_resp._body, &body, &err);
+    _vec.clear();
+	_vec = split_crlf(serv_resp._body, &body, &err);
 	if (err)
 		return ;
 
@@ -281,13 +282,14 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	}
 	for (size_t i = start ; i < 2 ; i++)
 	{
-		if (i != body - 1 && (found = vec[i].find(':')) != std::string::npos && is_alpha(vec[i][found - 1]))
+		if (i != body - 1 && (found = _vec[i].find(':')) != std::string::npos && is_alpha(_vec[i][found - 1]))
 		{
-			std::vector<std::string>	vec2 = split(vec[i], ':', 1);
-			if (vec2[0] == "Content-Type" && lev[0]--)
-				serv_resp._extension = vec2[1];
-			if (vec2[0] == "Status" && lev[1]--)
-				serv_resp._error = ft_stoi(vec2[1]);
+            _vec2.clear();
+			_vec2 = split(_vec[i], ':', 1);
+			if (_vec2[0] == "Content-Type" && lev[0]--)
+				serv_resp._extension = _vec2[1];
+			if (_vec2[0] == "Status" && lev[1]--)
+				serv_resp._error = ft_stoi(_vec2[1]);
 		}
 	}
 }
