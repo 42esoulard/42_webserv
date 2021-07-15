@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/09 10:41:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 13:23:58 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:04:23 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ class SimpleHashTable {
             _bucket_list = new std::list<Pair>[_size]();
         };// constructor
 
+        SimpleHashTable() {};
         ~SimpleHashTable() { delete[] _bucket_list; };
 
         long int hashFunction(std::string &key) const {

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 13:19:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:06:40 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
+    
     for( int i = 0; i < __FD_SETSIZE; ++i)
         _cli_request.push_back(ClientRequest());
 
@@ -35,7 +36,10 @@ void Cluster::init_cluster(std::string &config) {
         FD_SET (it->get_server_fd(), &this->_active_fd_set);
     }
 
+    
+
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
+    std::cout << "exiting init cluster" << std::endl;
 };
 
 void Cluster::set_mime() {
@@ -418,7 +422,8 @@ void Cluster::parse_request() {
 	}
     // usleep(500);
 
-    ServerResponse serv_response(_mime_types, _error_codes, server_list);
+    // ServerResponse serv_response(_mime_types, _error_codes, server_list);
+    (*_serv_response).reinit_serv_response();
 
     std::string *_sread_ptr = &(_cli_request[this->_cur_socket].get_sread());
     std::string s_tmp = (*_sread_ptr) + buf;
@@ -430,18 +435,18 @@ void Cluster::parse_request() {
     }
 	else { //check if body is over
 
-        if (!check_body_end(s_tmp, serv_response)) //body not over
+        if (!check_body_end(s_tmp, *_serv_response)) //body not over
 			return ;
 	}
 
-    _cli_request[_cur_socket].parse_request(serv_response, this->_cur_socket);
+    _cli_request[_cur_socket].parse_request(*_serv_response, this->_cur_socket);
     /*if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread() << std::endl;
     else
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread().substr(0, 10000) << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++ COCO L'ASTICOBIS ++++++++++++++++++++++++++++++++++++++" << std::endl;*/
-    serv_response.build_response(_cli_request[_cur_socket].get_conf());
-	this->send_response(serv_response.get_payload());
+    (*_serv_response).build_response(_cli_request[_cur_socket].get_conf());
+	this->send_response((*_serv_response).get_payload());
     _cli_request[_cur_socket].reinit_cli(); //reinitializing client request for this socket
 };
 

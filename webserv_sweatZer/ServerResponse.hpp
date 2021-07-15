@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 15:53:01 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 22:04:18 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,12 @@ class ServerResponse {
     public:
 
         ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list);
-
+        //ServerResponse();
         ~ServerResponse();
 
         std::string &get_payload() { return _payload; }
 
+        void reinit_serv_response();
         void set_conf(std::string &key, std::string &val) { _conf[key] = val; };
 
     //put all our method functions in a map, this way we can just parse

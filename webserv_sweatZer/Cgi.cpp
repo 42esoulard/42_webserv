@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 12:02:50 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 22:04:22 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,27 @@ Cgi::Cgi()
 	_headers.push_back("protocol");
 	_headers.push_back("file");
 	_headers.push_back("body");
+}
+
+void Cgi::reinit_cgi() {
+    // int i = 0;
+    // for (; i < 100; i++) {
+    //     std::cout << "in reinit cgi i " << i << std::endl;
+    //     //_env[i] = NULL;
+    // }
+    std::cout << "-2" << std::endl;
+  //  *_env[0] = NULL;
+    std::cout << "1" << std::endl;
+
+    s_env.clear();
+    std::cout << "0" << std::endl;
+    _file[0] = NULL;
+    _file[1] = NULL;
+    std::cout << "1" << std::endl;
+    _fd[0] = -1;
+    _fd[1] = -1;
+    std::cout << "2" << std::endl;
+    _cgi_body.clear();
 }
 
 void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {

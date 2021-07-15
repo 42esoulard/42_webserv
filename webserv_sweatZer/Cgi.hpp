@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 11:40:10 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 22:04:20 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ class Cgi {
     public:
 		Cgi();
         ~Cgi() {};
+
+        void reinit_cgi();
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
         void build_env(ServerResponse &serv_resp, t_content_map &cli_conf);

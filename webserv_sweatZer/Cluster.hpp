@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 18:42:30 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 22:06:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,13 @@ class Cluster {
 
     public:
 
-        Cluster(std::string &config): _mime_types(SimpleHashTable(65)), _error_codes(SimpleHashTable(42)) { init_cluster(config); };
-        ~Cluster() {};
+        Cluster(std::string &config): _mime_types(SimpleHashTable(65)), _error_codes(SimpleHashTable(42)) { init_cluster(config); 
+        _serv_response = new ServerResponse(_mime_types, _error_codes, server_list);
+     std::cout << "IN CLUSTER CONSTR before test reinit cgi" << std::endl;
+    (*_serv_response).reinit_serv_response();
+    std::cout << "IN CLUSTER CONSTR after test reinit cgi" << std::endl;
+    std::cout << "IN CLUSTER CONSTR after init cluster" << std::endl; };
+        ~Cluster() { delete _serv_response; };
 
         void init_cluster(std::string &config);
 
@@ -50,7 +55,8 @@ class Cluster {
 
     private:
 
-        std::vector<ClientRequest> _cli_request;
+        std::vector<ClientRequest>  _cli_request;
+        ServerResponse              *_serv_response;
 
         // socket handling
         std::string _config_file;
