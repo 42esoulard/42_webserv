@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:06:40 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:21:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,9 @@ void Cluster::init_cluster(std::string &config) {
     for (it = server_list.begin(); it != server_list.end(); it++) {
         it->init_server();
         FD_SET (it->get_server_fd(), &this->_active_fd_set);
-    }
-
-    
+    }    
 
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
-    std::cout << "exiting init cluster" << std::endl;
 };
 
 void Cluster::set_mime() {

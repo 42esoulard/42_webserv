@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:04:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 22:23:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,9 @@
 
 ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _error(200), _body(""), _payload(""), _cgi_on(false) {
 	_cgi = new Cgi();
-	std::cout << "IN SERVRESP 0 NEW CGI" << std::endl;
 
 	init_methods_list();
 };
-
-// ServerResponse::ServerResponse() {
-// 	// _cgi = new Cgi();
-// 	// std::cout << "IN SERVRESP 1 NEW CGI" << std::endl;
-// 	std::cout << "IN SERVRESP 1 NO NEW CGI" << std::endl;
-// };
 
 void ServerResponse::reinit_serv_response() {
 	
@@ -40,14 +33,11 @@ void ServerResponse::reinit_serv_response() {
     _body.clear();
     _payload.clear();
 	i = -1;
-	std::cout << "bef reinit cgi in reinit serv resp" << std::endl;
     (*_cgi).reinit_cgi();
-	std::cout << "aft reinit cgi in reinit serv resp" << std::endl;
     _cgi_on = false;
 }
 
-ServerResponse::~ServerResponse() { std::cout << "IN ~SERVRESP DELETING CGI" << std::endl;
-delete _cgi; };
+ServerResponse::~ServerResponse() { delete _cgi; };
 
 // simply parses spaces and returns the next non space character sequence
 std::string ServerResponse::get_next_token(std::string &line, size_t &index) {
@@ -502,7 +492,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	else {
 
 
-		std::cout << "1RESOURCE PATH [" << _resource_path << "] substr [" << requested_path << "] loc [" << *(*_location)["path"].begin() << "]" << std::endl;
+		// std::cout << "1RESOURCE PATH [" << _resource_path << "] substr [" << requested_path << "] loc [" << *(*_location)["path"].begin() << "]" << std::endl;
 
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 			return build_error_response(404); // file not found
