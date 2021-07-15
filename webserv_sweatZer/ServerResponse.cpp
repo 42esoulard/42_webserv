@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 19:17:52 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 10:13:18 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -452,9 +452,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	int ir;
 
 	if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
-			_error = 201; //not an error, means file doesn't exist and will be created
+		_error = 201; //not an error, means file doesn't exist and will be created
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
-
 		if (i < requested_path.size())
 			std::cout << "0RESOURCE PATH [" << _resource_path << "] substr [" << requested_path.substr(i + 1) << "]" << std::endl;
 		else
@@ -464,7 +463,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 			return build_error_response(404); // file not found
 		else if (_method == "DELETE" && S_ISDIR(buf.st_mode))
 			return build_error_response(405);//trying to delete a folder is forbidden
-		else if (S_ISDIR(buf.st_mode)) {
+		else if (ir != -1 && S_ISDIR(buf.st_mode)) {
 			_error = 201; //not an error, means no file name was provided, will be created
 			_resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
 		}
