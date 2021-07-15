@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/09 10:41:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/25 18:17:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/15 13:23:58 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ class SimpleHashTable {
             _bucket_list = new std::list<Pair>[_size]();
         };// constructor
 
-        ~SimpleHashTable() {};
+        ~SimpleHashTable() { delete[] _bucket_list; };
 
         long int hashFunction(std::string &key) const {
             
@@ -92,32 +92,32 @@ class SimpleHashTable {
             return false;
         }
 
-        int pass_spaces(char *line, int &index) {
+        size_t pass_spaces(std::string &line, size_t &index) {
             
-            if (!line)
+            if (line == "")
                 return index;
-            while (line && line[index] && is_space(line[index]))
+            while (index < line.size() && is_space(line[index]))
                 index++;
             return index;
         }
 
         // simply parses spaces and returns the next non space character sequence
-        std::string get_next_token(char *line, int &index) {
+        std::string get_next_token(std::string &line, size_t &index) {
 
             pass_spaces(line, index);
-            if (!line || !line[index])
+            if (line == "" || index >= line.size())
                 return "";
 
             int start = index;
-            while (line && line[index] && !is_space(line[index]))// && line[index] != ';')
+            while (index < line.size() && !is_space(line[index]))// && line[index] != ';')
                 ++index;
 
-            return std::string(&line[start], index - start);
+            return line.substr(start, index - start);
         }
 
-        void add_entry(char *input) {
+        void add_entry(std::string &input) {
 
-            int i = 0;
+            size_t i = 0;
             std::string key = get_next_token(input, i);
             long int    index = hashFunction(key);
 
@@ -133,22 +133,22 @@ class SimpleHashTable {
 
         }
 
-        std::string get_next_token_w_spaces(char *line, int &index) {
+        std::string get_next_token_w_spaces(std::string &line, size_t &index) {
 
             pass_spaces(line, index);
-            if (!line || !line[index])
+            if (line == "" || index >= line.size())
                 return "";
 
             int start = index;
-            while (line && line[index])// && line[index] != ';')
+            while (index < line.size())// && line[index] != ';')
                 ++index;
 
-            return std::string(&line[start], index - start);
+            return line.substr(start, index - start);
         }
 
-        void add_entry_w_spaces(char *input) {
+        void add_entry_w_spaces(std::string &input) {
 
-            int i = 0;
+            size_t i = 0;
             std::string key = get_next_token(input, i);
             long int    index = hashFunction(key);
             

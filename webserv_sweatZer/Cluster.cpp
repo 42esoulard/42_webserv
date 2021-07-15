@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/14 22:03:11 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/15 13:19:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,11 @@ void Cluster::set_mime() {
         throw Exception("Couldn't open mime types file " + std::string(MIME_TYPES));
 
     char *line;
+    std::string sline;
 
     while (get_next_line(mime_fd, &line) > 0) {
-        _mime_types.add_entry(line);
+        sline = std::string(line);
+        _mime_types.add_entry(sline);
         free (line);
     }
     free(line);
@@ -97,9 +99,11 @@ void Cluster::set_error() {
         throw Exception("Couldn't open error codes file " + std::string(ERROR_CODES));
 
     char *line;
+    std::string sline;
 
     while (get_next_line(err_fd, &line) > 0) {
-        _error_codes.add_entry_w_spaces(line);
+        sline = std::string(line);
+        _error_codes.add_entry_w_spaces(sline);
         free (line);
     }
     free(line);
@@ -153,33 +157,43 @@ void Cluster::print_config() {
 void Cluster::parse_field(std::string &field, std::string &config) {
     if (field == "server") {
 
-            if (get_conf_token(_line, _index) != "{" || get_conf_token(_line, _index) != "")
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
-            if (_in_server)
-                throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": already in a server context!");
+            if (get_conf_token(_line, _index) != "{" || get_conf_token(_line, _index) != "") {
+                free(_line);
+                throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+            }
+            if (_in_server) {
+                free(_line);
+                throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a server context!");
+            }
             Server new_server;
             server_list.push_back(new_server);
             _in_server = true;
     }
     else if (field == "location") {
 
-        if (_in_location)
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": already in a location context!");
+        if (_in_location) {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a location context!");
+        }
 
         Server::t_content_map new_loc;
         server_list.back().get_locations().push_back(new_loc);
         _in_location = true;
 
         std::string tmp;
-        if ((tmp = get_conf_token(_line, _index)) == "" || tmp == "{")
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + "location needs a path");
+        if ((tmp = get_conf_token(_line, _index)) == "" || tmp == "{") {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + "location needs a path");
+        }
         if (tmp.size() > 1 && (tmp[tmp.size() - 1] == '*' || tmp[tmp.size() - 1] == '/'))
             tmp = tmp.substr(0, tmp.find_last_of('/'));
         server_list.back().get_locations().back()["path"].push_back(tmp);
         while ((tmp = get_conf_token(_line, _index)) != "{" && tmp != "")
             server_list.back().get_locations().back()["extensions"].push_back(tmp);
-        if (tmp != "{" || get_conf_token(_line, _index) != "")
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+        if (tmp != "{" || get_conf_token(_line, _index) != "") {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+        }
     }
     else if (field == "}") {
 
@@ -187,8 +201,10 @@ void Cluster::parse_field(std::string &field, std::string &config) {
             _in_location = false;
         else if (_in_server)
             _in_server = false;
-        if (get_conf_token(_line, _index) != "")
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+        if (get_conf_token(_line, _index) != "") {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+        }
     }
 }
 
@@ -214,10 +230,14 @@ void Cluster::parse_values(std::string &field, std::string &config) {
             server_list.back().get_locations().back()[field].push_back(get_conf_token(_line, _index));
         else if (_in_server)
             server_list.back().get_serv_info()[field].push_back(get_conf_token(_line, _index));
-        else
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb) + ": fields must be in a context");
-        if (_line[_index] == ';' && get_conf_token(_line, _index) != "")
-            throw Exception("Config file " + config + " parsing error near line " + ft_itoa(_line_nb));
+        else {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": fields must be in a context");
+        }
+        if (_line[_index] == ';' && get_conf_token(_line, _index) != "") {
+            free(_line);
+            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+        }
     }
 }
 
