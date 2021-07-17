@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:39:45 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/16 10:34:38 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &err
 };
 
 void ServerResponse::reinit_serv_response() {
-	
+
 	_server_conf = NULL;
     _location = NULL;
 	_resource_path.clear();
@@ -356,7 +356,7 @@ int ServerResponse::no_host_response()
 	}
 	else {
 		//should we change 4096 ?
-		
+
 		if (read(fd, _buf, 4096) == -1)
 			return build_error_response(400);
 		else
@@ -543,8 +543,11 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 				return build_error_response(500);
 		}
 		else {
+			std::cout << "RESOUUUUUUUUUUUUUUUUUURCE = " << _resource_path << std::endl;
 			if (!S_ISREG(buf.st_mode)) {
-				_resource_path += "/" + *(*_location)["if_dir"].begin();
+				if (_resource_path[_resource_path.size() - 1] != '/')
+					_resource_path += "/";
+				_resource_path += *(*_location)["if_dir"].begin();
 				if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 					return build_error_response(404); // file not found
 				if (_resource_path.find_last_of(".") < _resource_path.size())

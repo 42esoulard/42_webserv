@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cluster.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:32:11 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/16 09:31:42 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
-    
+
     for( int i = 0; i < __FD_SETSIZE; ++i)
         _cli_request.push_back(ClientRequest());
 
@@ -32,7 +32,7 @@ void Cluster::init_cluster(std::string &config) {
     for (_serv_it = server_list.begin(); _serv_it != server_list.end(); _serv_it++) {
         _serv_it->init_server();
         FD_SET (_serv_it->get_server_fd(), &this->_active_fd_set);
-    }    
+    }
 
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
 };
@@ -117,7 +117,7 @@ void Cluster::parse_config(std::string &config) {
     _in_location = false;
     _in_server = false;
     _line_nb = 0;
-    
+
     while (get_next_line(_config_fd, &_line) > 0) {
 
         ++_line_nb;
@@ -283,7 +283,7 @@ void		sighandler(int num)
     std::cout << "in sighandler" << std::endl;
     if (num == SIGPIPE) {
         std::cout << "in sighandler sigpipe" << std::endl;
-        getchar();
+        //getchar();
         close(g_socket);
         FD_CLR (g_socket, g_active_fd_set);
         FD_CLR (g_socket, g_clients_fd_set);
