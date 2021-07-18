@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 14:10:31 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 18:16:22 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ class Cluster {
 
         std::string _error_serv_unavailable;
         std::string _error_req_timeout;
+        std::string _error_req_timeout_sl;
 
         // reference hashtables
         SimpleHashTable _mime_types;

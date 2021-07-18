@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 16:13:15 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 17:59:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #define _MAXHEADERSIZE 65536
 #define _MAXHEADERFIELD 8000
 #define	_MAXURI 2000
+#define _LORIS_CHUNK 10
 #define PORT 8080 // default port
 
 // socket/IP stuff

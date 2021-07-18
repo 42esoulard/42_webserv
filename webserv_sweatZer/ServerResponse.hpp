@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:36:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 18:15:12 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class ServerResponse {
             return _methods[method];
         };
 
+        int const &get_error() const { return _error; };
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(std::string &line, size_t &index);
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
@@ -94,6 +95,7 @@ class ServerResponse {
         int build_response(t_content_map &cli_conf); // CALL IN CLIREQ AFTER PARSING FIELDS
         int file_to_body(void);
         int no_host_response();
+        int slow_loris_response();
        // int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
         int check_auth(std::string &tmp);

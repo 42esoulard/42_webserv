@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 16:02:22 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 19:13:41 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,9 @@ void Cluster::init_cluster(std::string &config) {
     }    
 
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
-    // _error_req_timeout = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nByeeee!");
-    _error_req_timeout = std::string("HTTP/1.1 200 OK\r\n\r\n");
+    _error_req_timeout = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nByeeee!");
+    // _error_req_timeout = std::string("HTTP/1.1 200 OK\r\n\r\n");
+    _error_req_timeout_sl = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 44\r\n\r\nSLOW LORIS DETECTED! DANGER AVERTED! Byeeee!");
 
 };
 
@@ -293,6 +294,7 @@ void Cluster::handle_connection(){
     //     if (
     _timeout.tv_sec  = _SELECT_TIMEOUT;
 	_timeout.tv_usec = 0;
+    usleep(200);
     ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, &_timeout);
         if (ret == -1)
             std::cout << "select fail but we're ok" << std::endl;
@@ -438,7 +440,19 @@ void Cluster::parse_request() {
 			return ;
 	}
 
+    if ((*_serv_response).get_error() == 803) {
+
+        _cli_request[_cur_socket].reinit_cli();
+        send_response(_error_req_timeout_sl);
+        close(this->_cur_socket);
+        FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+        FD_CLR (this->_cur_socket, &this->_active_fd_set);
+        --_nb_clients;
+        return;
+    }
+
     _cli_request[_cur_socket].parse_request(*_serv_response);
+    
     /*if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cout << "++++++++++++++++++++++++++++++++ COCO L'ASTICOT +++++++++++++++++++++++++++++++++++++++" << _cli_request[_cur_socket].get_sread() << std::endl;
     else
@@ -660,11 +674,24 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
 
     //save all chunks in a vector alternating size and content
     // std::vector<std::string> *_vecChunked_ptr = &(_cli_request[this->_cur_socket].get_vecChunked());
+    std::cout << "bef save_chunk" <<std::endl;
     save_chunk(_cli_request[this->_cur_socket].get_vecChunked(), chunk);
+    std::cout << "aft save_chunk" <<std::endl;
+    if (_cli_request[this->_cur_socket].get_vecChunked().size() < 2 || _cli_request[this->_cur_socket].get_vecChunked().size() % 2 != 0)
+        return 0;
     int chunk_len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 2]);
-
-    // std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
-
+    size_t len;
+    std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
+    if (_cli_request[this->_cur_socket].get_vecChunked().size() >= 50 && _cli_request[this->_cur_socket].get_vecChunked().size() <= 55) {
+        size_t i = 0;
+        while (i < _cli_request[this->_cur_socket].get_vecChunked().size() && (len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[i])) < _LORIS_CHUNK) {
+            i += 2;
+            if (i >= _cli_request[this->_cur_socket].get_vecChunked().size()) {
+                serv_response.error(803);
+                return 1;
+            }
+        }
+    }
     if (chunk_len == 0 && _cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 1].size() >= 2) {
         // std::cout << "ADDING ALL CHUNKS TO BODY" << std::endl;
         // getchar();
@@ -672,7 +699,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
         for (size_t i = 0; i < _cli_request[this->_cur_socket].get_vecChunked().size(); i++) {
             //std::cout << " adding chunk index " << i << std::endl;
 
-            size_t len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[i]);
+            len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[i]);
             if (len == 0) { // SHOULD WE CHECK THAT CHUNK 0 HAS THE PROPER \R\N CONTENT?
                 // std::cout << "chunk 0!" << std::endl;
                 if (_cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 1] != "\r\n") {

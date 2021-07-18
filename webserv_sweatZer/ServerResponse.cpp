@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 14:10:34 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 18:07:37 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,6 +401,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	_method = *(cli_conf["method"].begin());
 	if (_error == 666) //no host
 		return no_host_response();
+	if (_error == 803) //slow loris protection
+		return 803;
 	if ((i = identify_server(cli_conf)) != 200)
 		return error(i); //404, server not found
 	// 1) save file extension in a string + extract potential query from url
