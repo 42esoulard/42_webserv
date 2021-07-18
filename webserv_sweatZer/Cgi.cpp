@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 22:50:00 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 17:44:59 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,8 +147,10 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
-        close(_fd[0]);
-        close(_fd[1]);
+        // close(_fd[0]);
+        // close(_fd[1]);
+        close(_save[0]);
+        close(_save[1]);
 		return (serv_resp.build_error_response(500));
 	}
 	else if (_pid == 0)
@@ -248,8 +250,10 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
-        close(_fd[0]);
-        close(_fd[1]);
+        close(_save[0]);
+        close(_save[1]);
+        // close(_fd[0]);
+        // close(_fd[1]);
     }
 	// std::cout << "BEFORE RETURN IN PARENT" << std::endl;
     return 0;

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 15:47:17 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 16:02:22 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,7 +315,7 @@ void Cluster::handle_connection(){
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (_nb_clients >= _MAXCLIENTS) {
-                        std::cout << "socket " << this->_new_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
+                        std::cout << "socket " << this->_cur_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
                         //this->send_response(_error_serv_unavailable);
                         return;
         }
@@ -329,6 +329,7 @@ void Cluster::handle_connection(){
                     
                     if ((this->_new_socket = accept(_serv_it->get_server_fd(), (struct sockaddr *)&(_serv_it->get_address()), &_serv_it->get_address_sz())) < 0) {
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
+                        std::cout << "ACCEPT FAIL socket " << this->_cur_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS << std::endl;
                         return;
                         //throw Exception("accept error");
                     }
