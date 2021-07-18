@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:32:11 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/18 15:47:17 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ void Cluster::init_cluster(std::string &config) {
     }    
 
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
+    // _error_req_timeout = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nByeeee!");
+    _error_req_timeout = std::string("HTTP/1.1 200 OK\r\n\r\n");
+
 };
 
 void Cluster::set_mime() {
@@ -278,18 +281,6 @@ fd_set *g_active_fd_set = NULL;
 fd_set *g_clients_fd_set = NULL;
 bool g_sigpipe = false;
 
-void		sighandler(int num)
-{
-    std::cout << "in sighandler" << std::endl;
-    if (num == SIGPIPE) {
-        std::cout << "in sighandler sigpipe" << std::endl;
-        getchar();
-        close(g_socket);
-        FD_CLR (g_socket, g_active_fd_set);
-        FD_CLR (g_socket, g_clients_fd_set);
-        g_sigpipe = true;
-    }
-}
 
 void Cluster::handle_connection(){
 
@@ -312,15 +303,22 @@ void Cluster::handle_connection(){
                 std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
                 //getchar();
                 _cli_request[_cur_socket].reinit_cli();
+                send_response(_error_req_timeout);
                 close(this->_cur_socket);
                 FD_CLR (this->_cur_socket, &this->_clients_fd_set);
                 FD_CLR (this->_cur_socket, &this->_active_fd_set);
                 --_nb_clients;
+                //getchar();
             }
         }
     //}
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
+        if (_nb_clients >= _MAXCLIENTS) {
+                        std::cout << "socket " << this->_new_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
+                        //this->send_response(_error_serv_unavailable);
+                        return;
+        }
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
 
             _serv_it = server_list.begin();
@@ -328,11 +326,7 @@ void Cluster::handle_connection(){
                 if (this->_cur_socket == _serv_it->get_server_fd()) {
                     /* Connection request on original socket. */
 
-                    if (_nb_clients >= _MAXCLIENTS) {
-                        std::cout << "socket " << this->_new_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
-                        this->send_response(_error_serv_unavailable);
-                        return;
-                    }
+                    
                     if ((this->_new_socket = accept(_serv_it->get_server_fd(), (struct sockaddr *)&(_serv_it->get_address()), &_serv_it->get_address_sz())) < 0) {
                         std::cout << "accept fail ret " << this->_new_socket << " errno " << errno << std::endl;
                         return;
@@ -349,6 +343,9 @@ void Cluster::handle_connection(){
                     //     std::cout << "socket " << this->_new_socket << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
                     //     this->send_response(_error_serv_unavailable);
                     // }
+                    g_socket = _cur_socket;
+                    g_active_fd_set = &this->_active_fd_set;
+                    g_clients_fd_set = &this->_clients_fd_set;
                     return ;
                 }
                 ++_serv_it;
@@ -396,13 +393,16 @@ void Cluster::parse_request() {
     // if (ret <= 0) {
     if (ret <= 0) {
 
-        _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
+        // _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
 
         // std::cout << "closing connection [" << _cur_socket << "] ret " << ret << std::endl;
 		// if (ret == 0)
 		// 	std::cout << "\rConnection was closed by client.\n" << std::endl;
 		// else {
+        _cli_request[_cur_socket].reinit_cli(); //reinit client request for this socket
+
         if (ret < 0) {
+
             close(this->_cur_socket);
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
@@ -410,8 +410,12 @@ void Cluster::parse_request() {
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
         }
         else {
+            std::cout << "ret from recv == 0, client closed connection" << std::endl;
+            // getchar();
+            close(this->_cur_socket);
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            --_nb_clients;
         }
 		return ;
 	}
@@ -611,10 +615,8 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
         }
         else {
             if (one_CRLF != 0) {
-                std::cout << "bef crash" << std::endl;
                 _vecChunk.push_back(_tmp.substr(0, one_CRLF));
                 _vecChunk.push_back(std::string(""));
-                std::cout << "aft crash" << std::endl;
 
                 // std::cout << "Added complete size [" << (*_vecChunk)[(*_vecChunk).size() - 2] << "] with an empty content" << std::endl;
             }
@@ -698,6 +700,16 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
 }
 
 
+void		sighandler(int num)
+{
+    std::cout << "in sighandler" << std::endl;
+    if (num == SIGPIPE) {
+        std::cout << "in sighandler sigpipe" << std::endl;
+        getchar();
+        
+        g_sigpipe = true;
+    }
+}
 
 void Cluster::send_response(std::string &response) {
 
@@ -728,6 +740,9 @@ void Cluster::send_response(std::string &response) {
         std::cout << "send loop bottom" << std::endl;
 	}
     if (g_sigpipe) {
+        close(g_socket);
+        FD_CLR (g_socket, g_active_fd_set);
+        FD_CLR (g_socket, g_clients_fd_set);
         --_nb_clients;
         _cli_request[_cur_socket].reinit_cli();
         g_sigpipe = false;
