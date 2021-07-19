@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 19:13:41 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:17:29 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ void Cluster::init_cluster(std::string &config) {
         FD_SET (_serv_it->get_server_fd(), &this->_active_fd_set);
     }    
 
+    _maxed_out_fds = 0;
+    
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
     _error_req_timeout = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nByeeee!");
     // _error_req_timeout = std::string("HTTP/1.1 200 OK\r\n\r\n");
@@ -294,32 +296,49 @@ void Cluster::handle_connection(){
     //     if (
     _timeout.tv_sec  = _SELECT_TIMEOUT;
 	_timeout.tv_usec = 0;
-    usleep(200);
+    //usleep(200);
     ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, &_timeout);
-        if (ret == -1)
-            std::cout << "select fail but we're ok" << std::endl;
-            //throw Exception("select error");
-        for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
-            if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set)
-                && this->_cli_request[_cur_socket].check_timeout()) {
-                std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
-                //getchar();
-                _cli_request[_cur_socket].reinit_cli();
-                send_response(_error_req_timeout);
-                close(this->_cur_socket);
-                FD_CLR (this->_cur_socket, &this->_clients_fd_set);
-                FD_CLR (this->_cur_socket, &this->_active_fd_set);
-                --_nb_clients;
-                //getchar();
-            }
+    if (ret == -1)
+        std::cout << "select fail but we're ok" << std::endl;
+        //throw Exception("select error");
+    for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
+        if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set)
+            && this->_cli_request[_cur_socket].check_timeout()) {
+            std::cout << "-------------------------TIMEOUT in select loop sock ["<< _cur_socket <<"]---------------------------" << std::endl;
+            
+            _cli_request[_cur_socket].reinit_cli();
+            send_response(_error_req_timeout);
+            close(this->_cur_socket);
+            FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+            FD_CLR (this->_cur_socket, &this->_active_fd_set);
+            --_nb_clients;
+            // getchar();
         }
+    }
     //}
 
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (_nb_clients >= _MAXCLIENTS) {
-                        std::cout << "socket " << this->_cur_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS <<"; sending error 503" << std::endl;
-                        //this->send_response(_error_serv_unavailable);
-                        return;
+            std::cout << "socket " << this->_cur_socket << " | " << _nb_clients << "> MAXCLIENTS" << _MAXCLIENTS << std::endl;
+            //this->send_response(_error_serv_unavailable);
+            ++_maxed_out_fds;
+            if (_maxed_out_fds > 20) { //detecting ddos attempt 
+                for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
+                    if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set)) {
+                        std::cout << "-------------------------FORCE SHUTTING in select loop sock ["<< _cur_socket <<"] ; sending error 503---------------------------" << std::endl;
+                        
+                        _cli_request[_cur_socket].reinit_cli();
+                        send_response(_error_serv_unavailable);
+                        close(this->_cur_socket);
+                        FD_CLR (this->_cur_socket, &this->_clients_fd_set);
+                        FD_CLR (this->_cur_socket, &this->_active_fd_set);
+                        --_nb_clients;
+                        // getchar();
+                    }
+                }
+                _maxed_out_fds = 0;
+            }
+            return;
         }
         if (FD_ISSET (this->_cur_socket, &this->_read_fd_set)) {
 
@@ -335,10 +354,12 @@ void Cluster::handle_connection(){
                         return;
                         //throw Exception("accept error");
                     }
+
                     ++_nb_clients;
                     this->_cli_request[_cur_socket].set_timeout();
 
                     std::cerr << "Server: connect from host " << inet_ntoa (_serv_it->get_address().sin_addr) << ", port " <<  ntohs (_serv_it->get_address().sin_port) << "cur_socket [" << this->_cur_socket << "]" << std::endl;
+                    // getchar();
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     FD_SET (this->_new_socket, &this->_clients_fd_set);
@@ -411,6 +432,7 @@ void Cluster::parse_request() {
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
             --_nb_clients;
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
+            getchar();
         }
         else {
             std::cout << "ret from recv == 0, client closed connection" << std::endl;
@@ -448,6 +470,8 @@ void Cluster::parse_request() {
         FD_CLR (this->_cur_socket, &this->_clients_fd_set);
         FD_CLR (this->_cur_socket, &this->_active_fd_set);
         --_nb_clients;
+        std::cout << "closing because of slow loris" << std::endl;
+        // getchar();
         return;
     }
 
@@ -682,7 +706,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
     int chunk_len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 2]);
     size_t len;
     std::cout << " AFTER SAVE CHUNK LAST CHUNK LEN = " << chunk_len << std::endl;
-    if (_cli_request[this->_cur_socket].get_vecChunked().size() >= 50 && _cli_request[this->_cur_socket].get_vecChunked().size() <= 55) {
+    if (_cli_request[this->_cur_socket].get_vecChunked().size() >= 5 && _cli_request[this->_cur_socket].get_vecChunked().size() <= 10) {
         size_t i = 0;
         while (i < _cli_request[this->_cur_socket].get_vecChunked().size() && (len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[i])) < _LORIS_CHUNK) {
             i += 2;
@@ -733,7 +757,7 @@ void		sighandler(int num)
     std::cout << "in sighandler" << std::endl;
     if (num == SIGPIPE) {
         std::cout << "in sighandler sigpipe" << std::endl;
-        getchar();
+        // getchar();
         
         g_sigpipe = true;
     }

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 18:16:22 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:01:10 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ class Cluster {
         fd_set      _clients_fd_set;
 
         int         _nb_clients;
+        int         _maxed_out_fds;
 
         struct timeval	_timeout;
 

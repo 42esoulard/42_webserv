@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 18:07:37 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:32:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -342,6 +342,59 @@ int ServerResponse::check_auth(std::string &tmp) {
 	return -1;
 }
 
+int ServerResponse::serv_loc_not_found_response(int code) {
+	std::string	 path(ERROR_FOLDER);
+	int			 fd;
+
+	memset(_buf, 0, 4096);
+	// try to open error matching path
+	// if it doesnt work, try to open default path
+	// if it doesn't work, give default string to body
+
+	_error = code; //in case the call is for an error in the latest stages
+	path += ft_itos(code);
+	path += ".html";
+	 //if not found, try to see if theres a default page!! (see conf, "default_error")
+		//check if theres a default err for location or server
+		//if we fail at opening anything, we format a default error
+
+	if ((fd = open(path.c_str(), O_RDONLY)) == -1) {
+
+		_body = "<!DOCTYPE html><title>Error 404 (Not Found)</title><p><b>Error 404.</b></p><p>The requested URL was not found on this server.</p>";
+	}
+	else {
+		//should we change 4096 ?
+		if (read(fd, _buf, 4096) == -1)
+						_body = "<!DOCTYPE html><title>Error 404 (Not Found)</title><p><b>Error 404.</b></p><p>The requested URL was not found on this server.</p>";
+		else
+			_body = std::string(_buf);
+		close(fd);
+	}
+
+	std::string s_error = ft_itos(_error);
+	std::string *p_error_msg = _error_codes.get_value(s_error);
+	std::string s_error_msg = "";
+	std::string sp = " ";
+	if (p_error_msg)
+		s_error_msg = *p_error_msg;
+	_payload += "HTTP/1.1" + sp + s_error + sp + s_error_msg + "\r\n";
+	_payload += "Content-Type: " + get_mime_type(_extension) + "\r\n";
+	_payload += "Content-Length: " + ft_itos(_body.size()) + "\r\n";
+	if (_error == 401)
+		_payload += "WWW-Authenticate: Basic realm=\"login\"\r\n";
+	//  blank line, then content BODY
+	std::cout << "IN ERROR METHOD = " << _method << std::endl;
+	_payload += "\r\n";
+	if (_method != "HEAD")
+	{
+		std::cout << "HERE" << std::endl;
+		_payload += _body;
+	}
+
+	std::cout << "[ERROR PAYLOAD:][" << _payload << "]" << std::endl;
+	return (_error);
+}
+
 int ServerResponse::no_host_response()
 {
 
@@ -404,7 +457,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if (_error == 803) //slow loris protection
 		return 803;
 	if ((i = identify_server(cli_conf)) != 200)
-		return error(i); //404, server not found
+		return serv_loc_not_found_response(i); //404, server not found
 	// 1) save file extension in a string + extract potential query from url
 	std::string requested_path = *cli_conf["file"].begin();
 
@@ -426,7 +479,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	//  if theres no location["extensions"] -> just check pathrequested_path.substr(requested_path.find_last_of("."));
 	//  when a match is found, replace this with the location["root"], end of loop
 	if ((i = identify_location(requested_path, _extension)) < 0)
-		return error(404); // location not found
+		return serv_loc_not_found_response(i); // location not found
 
 	std::cout << "----------------- SERVER + LOCATION FOUND!" << std::endl;
 

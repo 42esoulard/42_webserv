@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 18:15:12 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:29:48 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ class ServerResponse {
         int file_to_body(void);
         int no_host_response();
         int slow_loris_response();
+        int serv_loc_not_found_response(int code);
        // int build_response_headers(t_content_map &cli_conf);
         int make_index(void);
         int check_auth(std::string &tmp);
@@ -111,6 +112,7 @@ class ServerResponse {
                         // there and return
                         // ie: if (blabla is ugly)
                         //          return build_error_response(error code);
+        
 
     private:
     //CHECK IF FIELDS MUST BE SENT BACK IN A SPECIFIC ORDER
