@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/19 17:17:29 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:47:29 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -312,8 +312,9 @@ void Cluster::handle_connection(){
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
             --_nb_clients;
-            // getchar();
+            
         }
+        usleep(10);
     }
     //}
 
@@ -471,7 +472,7 @@ void Cluster::parse_request() {
         FD_CLR (this->_cur_socket, &this->_active_fd_set);
         --_nb_clients;
         std::cout << "closing because of slow loris" << std::endl;
-        // getchar();
+        getchar();
         return;
     }
 
