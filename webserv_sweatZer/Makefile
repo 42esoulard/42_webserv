@@ -76,22 +76,25 @@ OBJS			= ${SRCS:.cpp=.o}
 CPP			= clang++
 CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address -fno-omit-frame-pointer -g
 NAME		= webserv
-PKGS 		= ./scripts/pkgs.sh
+INIT 		= ./scripts/init.sh
 CLEAR 		= ./scripts/clear.sh
 
 .cpp.o:		${SRCS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -c $^ -o ${<:.cpp=.o}
 
 all:		${NAME}
+			@echo "\033[1;36m		-----> ./webserv [file.conf] <-----\n\033[0m"
 
-get_pkg:
-	${PKGS}
+init:
+			${INIT}
 
-${NAME}:	get_pkg ${OBJS} ${INCLUDES}
+${NAME}:	init ${OBJS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -o ${NAME} ${OBJS}
+			@echo "\033[1;36m	-----> SweatZer webserv ready to rock your world! <-----\n\033[0m"
 
 clear_files:
-	${CLEAR}
+			${CLEAR}
+			@echo "\033[1;36m	-----> Test files cleared! <-----\n\033[0m"
 
 clean :		clear_files
 			rm -f ${OBJS}
