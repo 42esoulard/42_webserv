@@ -6,10 +6,10 @@ GREEN="\033[0;32m"
 NC="\033[0;0m"
 BOLD=$(tput bold)
 NB=$(tput sgr0)
-
+CYAN="\033[1;36m"
 options=("y" "n")
 
-echo -e "\n${BOLD}Initialising the infamous SweatZer Webserv...\n"
+echo -e "\n${CYAN}    -----> Initialising the infamous SweatZer Webserv... <-----\n${NC}"
 
 while true; do
     read -p $'\033[01;35mDo you wish to install php-cgi (only available on Ubuntu w/ sudo rights)?: y/n \033[0m' yn

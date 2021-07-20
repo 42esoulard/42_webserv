@@ -94,12 +94,14 @@ ${NAME}:	init ${OBJS} ${INCLUDES}
 
 clear_files:
 			${CLEAR}
-			@echo "\033[1;36m	-----> Test files cleared! <-----\n\033[0m"
+			@echo "\033[1;36m		-----> Test files cleared! <-----\n\033[0m"
 
 clean :		clear_files
 			rm -f ${OBJS}
+			@echo "\n\033[1;36m		  -----> Webserv cleared! <-----\n\033[0m"
 
 fclean :	clean
 			rm -f ${NAME}
+			@echo "\n\033[1;36m	-----> Webserv atomized! So long, Webserv! <-----\n\033[0m"
 
 re :		fclean all
