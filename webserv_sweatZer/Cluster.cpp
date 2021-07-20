@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/19 20:31:14 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/20 16:29:22 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,7 +314,7 @@ void Cluster::handle_connection(){
             --_nb_clients;
             
         }
-        usleep(10);
+        // usleep(3);
     }
     //}
 
@@ -433,7 +433,7 @@ void Cluster::parse_request() {
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
             --_nb_clients;
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
-            getchar();
+            // getchar();
         }
         else {
             std::cout << "ret from recv == 0, client closed connection" << std::endl;
@@ -445,7 +445,6 @@ void Cluster::parse_request() {
         }
 		return ;
 	}
-    // usleep(500);
 
     // ServerResponse serv_response(_mime_types, _error_codes, server_list);
     (*_serv_response).reinit_serv_response();
