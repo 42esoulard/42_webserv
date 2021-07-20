@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/20 16:29:22 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/20 18:19:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void Cluster::init_cluster(std::string &config) {
 
     //set all the tables we'll use for comparison here, we'll use them for the whole program
-
+    
     for( int i = 0; i < __FD_SETSIZE; ++i)
         _cli_request.push_back(ClientRequest());
 
@@ -32,7 +32,7 @@ void Cluster::init_cluster(std::string &config) {
     for (_serv_it = server_list.begin(); _serv_it != server_list.end(); _serv_it++) {
         _serv_it->init_server();
         FD_SET (_serv_it->get_server_fd(), &this->_active_fd_set);
-    }
+    }    
 
     _maxed_out_fds = 0;
     
@@ -123,7 +123,7 @@ void Cluster::parse_config(std::string &config) {
     _in_location = false;
     _in_server = false;
     _line_nb = 0;
-
+    
     while (get_next_line(_config_fd, &_line) > 0) {
 
         ++_line_nb;
@@ -314,7 +314,7 @@ void Cluster::handle_connection(){
             --_nb_clients;
             
         }
-        // usleep(3);
+        //usleep(10);
     }
     //}
 
@@ -433,7 +433,7 @@ void Cluster::parse_request() {
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
             --_nb_clients;
         	std::cout << "\rRead error, closing connection.\n" << std::endl;
-            // getchar();
+            getchar();
         }
         else {
             std::cout << "ret from recv == 0, client closed connection" << std::endl;
@@ -445,6 +445,7 @@ void Cluster::parse_request() {
         }
 		return ;
 	}
+    // usleep(500);
 
     // ServerResponse serv_response(_mime_types, _error_codes, server_list);
     (*_serv_response).reinit_serv_response();
