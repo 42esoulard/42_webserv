@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/17 10:40:36 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/21 12:18:37 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,22 @@ void		init_vec(std::vector<std::vector<std::string> > &requests)
 	requests[2].push_back("GET without length");
 	requests[2].push_back("Error 411");
 	requests[2].push_back("GET / HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\nhello=test\r\n\r\n");
+
+	requests[3].push_back("GET noperm");
+	requests[3].push_back("Error 413");
+	requests[3].push_back("GET /noperm HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
+
+	requests[4].push_back("GET bad version");
+	requests[4].push_back("Error 505");
+	requests[4].push_back("GET / HTTP/1.2\r\nHost: 127.0.0.1:8080\r\n\r\n");
+
+	requests[5].push_back("GET inexistent file");
+	requests[5].push_back("Error 404");
+	requests[5].push_back("GET /inexistent HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
+
+	requests[5].push_back("GET inexistent file");
+	requests[5].push_back("Error 404");
+	requests[5].push_back("GET /inexistent HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
 }
 
 int send_request(std::string &name, std::string &expected, std::string &request)
@@ -130,7 +146,7 @@ int		main(int argc, char **argv)
 		return (0);
 	}
 
-	std::vector<std::vector<std::string> >	requests(3);
+	std::vector<std::vector<std::string> >	requests(6);
 
 	init_vec(requests);
 	for (size_t i = 0 ; i < requests.size() ; ++i)
