@@ -1,8 +1,29 @@
+#############################################################
+################################################################
+#############################################################
+
 ##################### SERVER INCLUDES #######################
-SERV_INC		= webserv.h Server.hpp ClientRequest.hpp \
-				ServerResponse.hpp Cluster.hpp Cgi.hpp
-SERV_INC_DIR 	= ./
-SERV_INC 		:= $(addprefix ${INC_DIR}, ${INCLUDES})
+SERV_INC		= webserv.h Server.hpp Cluster.hpp
+SERV_INC_DIR 	= ./server/
+SERV_INC 		:= $(addprefix ${SERV_INC_DIR}, ${SERV_INC})
+#############################################################
+
+##################### CLIENT INCLUDES #######################
+CLI_INC			= ClientRequest.hpp 
+CLI_INC_DIR 	= ./client/
+CLI_INC 		:= $(addprefix ${CLI_INC_DIR}, ${CLI_INC})
+#############################################################
+
+####################### RESP INCLUDES #######################
+RESP_INC		= ServerResponse.hpp
+RESP_INC_DIR 	= ./response/
+RESP_INC 		:= $(addprefix ${RESP_INC_DIR}, ${RESP_INC})
+#############################################################
+
+####################### CGI INCLUDES ########################
+CGI_INC			= Cgi.hpp
+CGI_INC_DIR 	= ./cgi/
+CGI_INC 		:= $(addprefix ${CGI_INC_DIR}, ${CGI_INC})
 #############################################################
 
 ##################### UTILS INCLUDES ########################
@@ -11,46 +32,76 @@ UTIL_INC_DIR 	= ./utils/
 UTIL_INC 		:= $(addprefix ${UTIL_INC_DIR}, ${UTIL_INC})
 #############################################################
 
+#############################################################
+################################################################
+#############################################################
+
+######################### INC FILES #########################
+INCLUDES		= 	${SERV_INC} ${CLI_INC} ${RESP_INC} ${CGI_INC} \
+					${UTIL_INC}
+INC_DIRS 		= 	$(addprefix -I,${SERV_INC_DIR} ${CLI_INC_DIR} \
+					${RESP_INC_DIR} ${CGI_INC_DIR} ${UTIL_INC_DIR})
+#############################################################
+
 ######################### SRC FILES #########################
-SRCS			= main.cpp Server.cpp ClientRequest.cpp \
-				Cluster.cpp ServerResponse.cpp Cgi.cpp
-SRCS_DIR		= ./
-SRCS 			:= $(addprefix ${SRC_DIR}, ${SRCS})
-#############################################################
+SERV_SRC		= main.cpp Cluster.cpp Server.cpp
+SERV_SRC_DIR	= ./server/
 
-######################### SRC UTILS #########################
-SRCS_UTILS		= get_next_line.cpp get_next_line_utils.cpp ft_itoa.cpp split.cpp print_map.cpp conv_utils.cpp utils.cpp encode.cpp
-SRCS_UTILS_DIR	= ./utils/
-SRCS_UTILS 		:= $(addprefix ${SRCS_UTILS_DIR}, ${SRCS_UTILS})
-#############################################################
+CLI_SRC			= ClientRequest.cpp
+CLI_SRC_DIR		= ./client/
 
-################# GROUPING ALL SRCS/INCLUDES ################
-SRCS 			+= ${SRCS_UTILS}
+RESP_SRC		= ServerResponse.cpp
+RESP_SRC_DIR	= ./response/
+
+CGI_SRC			= Cgi.cpp
+CGI_SRC_DIR		= ./cgi/
+
+UTIL_SRC		= 	get_next_line.cpp get_next_line_utils.cpp \
+					ft_itoa.cpp split.cpp print_map.cpp conv_utils.cpp \
+					utils.cpp encode.cpp
+UTIL_SRC_DIR	= ./utils/
+
+SRCS 			= 	$(addprefix ${SERV_SRC_DIR}, ${SERV_SRC}) \
+					$(addprefix ${CLI_SRC_DIR}, ${CLI_SRC}) \
+					$(addprefix ${RESP_SRC_DIR}, ${RESP_SRC}) \
+					$(addprefix ${CGI_SRC_DIR}, ${CGI_SRC}) \
+					$(addprefix ${UTIL_SRC_DIR}, ${UTIL_SRC}) 
+
 OBJS			= ${SRCS:.cpp=.o}
-INCLUDES		= ${SERV_INC} ${UTIL_INC}
-INC_DIRS 		= $(addprefix -I,${SERV_INC_DIR} ${UTIL_INC_DIR})
+
+#############################################################
+################################################################
 #############################################################
 
 CPP			= clang++
 CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address -fno-omit-frame-pointer -g
 NAME		= webserv
-PKGS 		= ./pkgs.sh
+INIT 		= ./scripts/init.sh
+CLEAR 		= ./scripts/clear.sh
 
 .cpp.o:		${SRCS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -c $^ -o ${<:.cpp=.o}
 
 all:		${NAME}
+			@echo "\033[1;36m		-----> ./webserv [file.conf] <-----\n\033[0m"
 
-get_pkg:
-	${PKGS}
+init:
+			${INIT}
 
-${NAME}:	get_pkg ${OBJS} ${INCLUDES}
+${NAME}:	init ${OBJS} ${INCLUDES}
 			${CPP} ${CFLAGS} ${INC_DIRS} -o ${NAME} ${OBJS}
+			@echo "\033[1;36m	-----> SweatZer webserv ready to rock your world! <-----\n\033[0m"
 
-clean :
+clear_files:
+			${CLEAR}
+			@echo "\033[1;36m		-----> Test files cleared! <-----\n\033[0m"
+
+clean :		clear_files
 			rm -f ${OBJS}
+			@echo "\n\033[1;36m		  -----> Webserv cleared! <-----\n\033[0m"
 
 fclean :	clean
 			rm -f ${NAME}
+			@echo "\n\033[1;36m	-----> Webserv atomized! So long, Webserv! <-----\n\033[0m"
 
 re :		fclean all
