@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/16 10:34:38 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/17 10:50:32 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -543,11 +543,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 				return build_error_response(500);
 		}
 		else {
-			std::cout << "RESOUUUUUUUUUUUUUUUUUURCE = " << _resource_path << std::endl;
 			if (!S_ISREG(buf.st_mode)) {
-				if (_resource_path[_resource_path.size() - 1] != '/')
-					_resource_path += "/";
-				_resource_path += *(*_location)["if_dir"].begin();
+				_resource_path += "/" + *(*_location)["if_dir"].begin();
 				if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 					return build_error_response(404); // file not found
 				if (_resource_path.find_last_of(".") < _resource_path.size())
