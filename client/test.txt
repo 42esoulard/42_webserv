@@ -1,7 +1,0 @@
-GET with higher version
-error 505
-GET / HTTP/1.2#
-Host: 127.0.0.1:8080#
-Content-Length:50#
-#
-#
