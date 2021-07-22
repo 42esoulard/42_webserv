@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 17:40:23 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 14:57:07 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 17:13:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Cgi {
         void    reinit_cgi();
 
         void    build_env(ServerResponse &serv_resp, t_content_map &cli_conf);
+        void    str_to_env(t_content_map &cli_conf);
         int     launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf);
 	  	  
         void    parse_content_type(ServerResponse &serv_resp);

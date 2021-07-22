@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 15:17:19 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 17:14:25 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,39 @@ void Cgi::reinit_cgi() {
     _fd[0] = -1;
     _fd[1] = -1;
     _cgi_body.clear();
+}
+
+void Cgi::str_to_env(t_content_map &cli_conf) {
+	
+	//formatting str env
+	std::string		topush;
+	int				lev;
+	for(t_content_map::iterator it = cli_conf.begin() ; it != cli_conf.end() ; ++it)
+	{
+		lev = 0;
+		for (size_t j = 0 ; j < _headers.size() ; ++j)
+		{
+			if (_headers[j] == (*it).first)
+				lev = 1;
+		}
+		if (lev == 0)
+		{
+			topush = format_env((*it).first);
+			topush += "=";
+			topush += *(*it).second.begin();
+			s_env.push_back(topush);
+		}
+	}
+
+    // str env to const char* env
+	size_t	count = 0;
+    for (; count < s_env.size(); ++count)
+	{
+        _env[count] = const_cast<char*>(s_env[count].c_str());
+		if (count + 1 == 99)
+			break ;
+	}
+    _env[count] = NULL;
 }
 
 void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
@@ -85,41 +118,13 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     //"SERVER_PROTOCOL=HTTP/1.1",
     s_env.push_back(std::string("SERVER_PROTOCOL=HTTP/1.1"));
     
-    //formatting str env
-	std::string		topush;
-	int				lev;
-	for(t_content_map::iterator it = cli_conf.begin() ; it != cli_conf.end() ; ++it)
-	{
-		lev = 0;
-		for (size_t j = 0 ; j < _headers.size() ; ++j)
-		{
-			if (_headers[j] == (*it).first)
-				lev = 1;
-		}
-		if (lev == 0)
-		{
-			topush = format_env((*it).first);
-			topush += "=";
-			topush += *(*it).second.begin();
-			s_env.push_back(topush);
-		}
-	}
-
-    // str env to const char* env
-	size_t	count = 0;
-    for (; count < s_env.size(); ++count)
-	{
-        _env[count] = const_cast<char*>(s_env[count].c_str());
-		if (count + 1 == 99)
-			break ;
-	}
-    _env[count] = NULL;
 };
 
 int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
     
     std::cerr << "----------------- LAUNCH CGI..." << std::endl;
     build_env(serv_resp, cli_conf);
+	str_to_env(cli_conf);
 
 	_save[0] = dup(STDIN_FILENO);
 	_save[1] = dup(STDOUT_FILENO);
