@@ -98,7 +98,7 @@ clear_files:
 
 clean :		clear_files
 			rm -f ${OBJS}
-			@echo "\n\033[1;36m		  -----> Webserv cleared! <-----\n\033[0m"
+			@echo "\n\033[1;36m	       -----> Object files cleared! <-----\n\033[0m"
 
 fclean :	clean
 			rm -f ${NAME}

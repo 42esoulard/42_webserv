@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/18 17:44:59 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 15:17:19 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,6 @@ void Cgi::reinit_cgi() {
 void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"AUTH_TYPE=Basic",
-    // std::cout << s_env[0] << std::endl;
-
     s_env.push_back("AUTH_TYPE=Basic");
 
     //"CONTENT_LENGTH=",
@@ -72,16 +70,12 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
     //"QUERY_STRING=",
     s_env.push_back(std::string("QUERY_STRING=") + serv_resp._query);
 
-    //I don't believe we get these: (these are info about the client)
-    //"REMOTE_ADDR=",
-    //"REMOTE_IDENT=",
-    //"REMOTE_USER=",
-
     //"REQUEST_METHOD=",
     s_env.push_back(std::string("REQUEST_METHOD=") + (*cli_conf["method"].begin()));
 
-    //"SCRIPT_NAME=",
+    //"SERVER_SOFTWARE=webserv/1.0";
     s_env.push_back(std::string("SERVER_SOFTWARE=webserv/1.0"));
+    
     //"SERVER_NAME=",
     s_env.push_back(std::string("SERVER_NAME=") + (*serv_resp.get_serv_info()["server_name"].begin()));
 
@@ -90,7 +84,8 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
     //"SERVER_PROTOCOL=HTTP/1.1",
     s_env.push_back(std::string("SERVER_PROTOCOL=HTTP/1.1"));
-    //"SERVER_SOFTWARE=webserv/1.0";
+    
+    //formatting str env
 	std::string		topush;
 	int				lev;
 	for(t_content_map::iterator it = cli_conf.begin() ; it != cli_conf.end() ; ++it)
@@ -104,15 +99,13 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 		if (lev == 0)
 		{
 			topush = format_env((*it).first);
-			// std::cout << "FIRST = " << (*it).first << std::endl;
 			topush += "=";
 			topush += *(*it).second.begin();
-			// std::cout << "SCD = " << *(*it).second.begin() << std::endl;
 			s_env.push_back(topush);
 		}
 	}
 
-    // _env[100] est une methode bourrin il faudrait allouer dynamiquement
+    // str env to const char* env
 	size_t	count = 0;
     for (; count < s_env.size(); ++count)
 	{
@@ -124,11 +117,9 @@ void Cgi::build_env(ServerResponse &serv_resp, t_content_map &cli_conf) {
 };
 
 int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
-    std::cout << "IN CGI" << std::endl;
+    
+    std::cerr << "----------------- LAUNCH CGI..." << std::endl;
     build_env(serv_resp, cli_conf);
-    // std::cout << "  ENV   " << std::endl;
-    // for (int i = 0; i < 13; i++)
-    //     std::cout << _env[i] << std::endl;
 
 	_save[0] = dup(STDIN_FILENO);
 	_save[1] = dup(STDOUT_FILENO);
@@ -141,121 +132,64 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 
 	write(_fd[0], serv_resp._cli_body.c_str(), serv_resp._cli_body.size());
 	lseek(_fd[0], 0, SEEK_SET);
-    if ((_pid = fork()) < 0)
-	{
+
+    if ((_pid = fork()) < 0) {
 		dup2(_save[0], STDIN_FILENO);
 		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
-        // close(_fd[0]);
-        // close(_fd[1]);
         close(_save[0]);
         close(_save[1]);
 		return (serv_resp.build_error_response(500));
 	}
-	else if (_pid == 0)
-	{
-        // std::cout << "IN CHILD" << std::endl;
-		// if (sh->obj->prev && sh->obj->prev->pip == IS_PIPE)
-        // {
-        //     if (dup2(sh->obj->prev->tube[0], 0) == -1)
-        //         return (-1);
-        //     if (sh->obj->prev->tube[1] != -1)
-        //         close(sh->obj->prev->tube[1]);
-        // }
-        // if (sh->obj->pip == IS_PIPE)
-        // {
-        // std::cout << "CHILD BEF DUP2" << std::endl;
-        if (dup2(_fd[0], 0) == -1 || dup2(_fd[1], 1) == -1) {
-            std::cerr << "CHILD DUP2 FAIL" << std::endl;
-            std::cerr << strerror(errno) << std::endl;
-            // serv_resp.build_error_response(500);
+	else if (_pid == 0) {
 
-            // std::cout << serv_resp._payload << std::endl;
+        if (dup2(_fd[0], 0) == -1 || dup2(_fd[1], 1) == -1) {
+            std::cerr << "ERROR: CGI CHILD: dup2 fail - " << strerror(errno) << std::endl;
             exit(500);
         }
-        // std::cerr << "CHILD AFT DUP2" << std::endl;
-        //close(_pipe[0]);
         
         if (getcwd(serv_resp._abs_resource_path, PATH_MAX)) {
 
-            // std::cerr << "CHILD BEFORE EXECVE: [" << serv_resp._abs_resource_path << "][" << serv_resp._resource_path << "]" << std::endl;
             std::string _cgi_abs_path(serv_resp._abs_resource_path);
             _cgi_abs_path += "/" + serv_resp._resource_path;
 
-            // if (!(args[0] = (char *)malloc(sizeof(char) * _cgi_abs_path.size() + 1)))
-            //     return -1;
             _args[0] = ft_strdup((*(*serv_resp._location)["cgi_bin"].begin()).c_str());
             _args[1] = ft_strdup(_cgi_abs_path.c_str());
             _args[2] = NULL;
-            std::cerr << "Gonna exec [" << _args[0] << "with file " << _args[1] << "]" << std::endl;
+            std::cerr << "----------------- CGI GONNA EXEC [" << _args[0] << "] with file [" << _args[1] << "]..." << std::endl;
             execve(_args[0], _args, _env);
             free(_args[0]);
             free(_args[1]);
         }
-        std::cerr << "CHILD AFTER EXECVE errno[" << strerror(errno) << "]" << std::endl;
-		// serv_resp.build_error_response(500);
-        // std::cout << serv_resp._payload << std::endl;
+        std::cerr << "ERROR: CGI CHILD: execve fail - " << strerror(errno) << std::endl;
         exit(500);
 	}
 	else {
-        //std::cout << "PARENT BEFORE WAIT" << std::endl;
 		waitpid(_pid, &_status, 0);
-        // if (WIFEXITED(status))
-		// 	serv_resp._error = WEXITSTATUS(status);
-        //if error, return serv_resp._error
-        //std::cout << "PARENT AFTER WAIT" << std::endl;
-        memset(_buf, 0, _MAXLINE);
-		
+        
+        memset(_buf, 0, _MAXLINE);		
         lseek(_fd[1], 0, SEEK_SET);
-        //std::cout << "PARENT BEF READ" << std::endl;
 
         int i = 1;
-		//int	lev = 1;
 		serv_resp._body.clear();
 		while (i > 0) {
-            //std::cout << "PARENT IN READ" << std::endl;
+
 			memset(_buf, 0, _MAXLINE);
             i = read(_fd[1], _buf, _MAXLINE - 1);
-            //std::cout << "[" << buf << "]" << std::endl;
-			/*if (lev-- == 1 && i > 0)
-			{
-				if ((str = parse_content_type(serv_resp, buf)) != "\r\n\r\n")
-				{
-					memset(buf, 0, _MAXLINE);
-					for (size_t c = 0 ; c < str.size() ; ++c)
-					{
-						buf[c] = str[c];
-					}
-					i = (int)str.size();
-				}
-				std::cout << "[" << buf << "]" << std::endl;
-			}*/
             for (int j = 0 ; j < i ; ++j)
-			{
                 serv_resp._body.push_back(_buf[j]);
-			}
-            //std::cout << "serv_resp in cgi [" << serv_resp._body << "]" << std::endl;
-            //PUT PRINTS HERE TO UNDRSTAND WHATS READ
         }
 		parse_content_type(serv_resp);
-		/*if (serv_resp._body.size() && serv_resp._body.substr(0, 11) != "Status: 200") {
-            fclose(_file[0]);
-            fclose(_file[1]);
-            close(_fd[0]);
-            close(_fd[1]);
-            return (serv_resp.build_error_response(ft_stoi(serv_resp._body.substr(8, 3))));
-        }*/
+
 		dup2(_save[0], STDIN_FILENO);
 		dup2(_save[1], STDOUT_FILENO);
 		fclose(_file[0]);
         fclose(_file[1]);
         close(_save[0]);
         close(_save[1]);
-        // close(_fd[0]);
-        // close(_fd[1]);
+  
     }
-	// std::cout << "BEFORE RETURN IN PARENT" << std::endl;
     return 0;
 };
 
@@ -274,16 +208,15 @@ void	Cgi::parse_content_type(ServerResponse &serv_resp)
 	lev[1] = 1;
 	if (cpy_body.find("\r\n") == std::string::npos)
 		return ;
+        
     _vec.clear();
 	_vec = split_crlf(serv_resp._body, &body, &err);
 	if (err)
 		return ;
 
 	if ((body_start = serv_resp._body.find("\r\n\r\n")) != std::string::npos)
-	{
-		std::cout << "BODY START [" << serv_resp._body.substr(0, body_start) << "]" << std::endl;
 		serv_resp._body = serv_resp._body.substr(body_start + 4);
-	}
+	
 	for (size_t i = start ; i < 2 ; i++)
 	{
 		if (i != body - 1 && (found = _vec[i].find(':')) != std::string::npos && is_alpha(_vec[i][found - 1]))

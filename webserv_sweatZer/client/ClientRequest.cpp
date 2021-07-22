@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/15 23:14:20 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 14:52:36 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,11 @@
 
 ClientRequest::ClientRequest(): _sread(""), _vecRead(), _vecChunked(), _conf()
 {
-	// memset(_read, 0, _MAXLINE);
 	set_timeout();
 }
 
 void ClientRequest::reinit_cli() {
-	// memset(_read, 0, _MAXLINE);
+
 	set_timeout();
 	_sread.clear();
 	_vecRead.clear();
@@ -28,25 +27,6 @@ void ClientRequest::reinit_cli() {
 }
 
 ClientRequest::~ClientRequest() {};
-
-// char	*ClientRequest::get_read()
-// {
-// 	return _read;
-// }
-
-// int ClientRequest::allocate_read(size_t max_body) {
-
-// 	if (!(_read = (char *)malloc(sizeof(char) * (_MAXHEADERSIZE + max_body + 1))))
-// 		return -1;
-// 	return 0;
-// }
-
-// void ClientRequest::set_read() {
-// 	//memset(_read, 0, sizeof(read));
-// 	for (size_t i = 0; i < _sread.size(); i++) {
-// 		_read[i] = _sread[i];
-// 	}
-// }
 
 std::string &ClientRequest::get_sread()
 {
@@ -65,6 +45,7 @@ bool	   ClientRequest::is_method(std::string &str)
 	methods[6] = "OPTIONS";
 	methods[7] = "TRACE";
 	methods[8] = "PATCH";
+
 	for (int i = 0 ; i < 9 ; i++)
 	{
 		if (!str.compare(methods[i]))
@@ -139,7 +120,7 @@ int		ClientRequest::parse_method()
 }
 
 // each header is parsed until we encounter an error
-// we allow bullshit only if it's RFC compliant
+// we allow bad input only if it's RFC compliant
 // for example, spaces before colons are not allowed
 int		ClientRequest::parse_headers(size_t body)
 {
@@ -189,11 +170,10 @@ int	ClientRequest::save_header(std::string &str)
 
 // we check if content-type is defined. If not, default value
 // if chunked, parse_body_chunked()
-// else, we checkf if there is a contnt-length (if not, error 411)
+// else, we check if there is a content-length (if not, error 411)
 // then if the size of the body is correct, we save it
 int		ClientRequest::parse_body(size_t i)
 {
-
 	if (_conf.find("content-type") == _conf.end())
 		_conf["content-type"].push_back("application/octet-stream");
 	if ((_map_it = _conf.find("transfer-encoding")) != _conf.end())
@@ -214,7 +194,6 @@ int		ClientRequest::parse_body(size_t i)
 // we read until body.size() > LIMIT or until chunk_size == 0
 int		ClientRequest::parse_body_chunked(std::string str)
 {
-
 	_conf["body"].push_back(str);
 	return (0);
 }
@@ -249,14 +228,13 @@ bool	ClientRequest::parse_host()
 	return (0);
 }
 
-// parsing language according to RFC, even if it seems pretty useless
+// parsing language according to RFC
 bool	ClientRequest::parse_language()
 {
 	_map_it = _conf.find("accept-language");
 
-	size_t										i = 0;
-	size_t										j = 0;
-	
+	size_t	i = 0;
+	size_t	j = 0;
 
 	_language.clear();
 	if (_map_it == _conf.end())
@@ -303,7 +281,7 @@ bool	ClientRequest::parse_language()
 	return (0);
 }
 
-// parsing charset according to RFC, even if it seems pretty useless
+// parsing charset according to RFC
 bool	ClientRequest::parse_charset()
 {
 	_map_it = _conf.find("accept-charset");
@@ -362,16 +340,9 @@ bool ClientRequest::check_timeout() {
 	_cur_time = _tv.tv_sec;
 	_diff = _cur_time - _last_request;
 	
-	// std::cout << "wat sock [" << sock_nb << "]" << std::endl;
-	// std::cout << "cur time [" << cur_time << "]" << std::endl;
-	// std::cout << "last req [" << _last_request << "]" << std::endl;
-	// std::cout << "TO diff [" << diff << "/" << _TIMEOUT << "]" << std::endl;
-	//getchar();
 	if (_diff >= _TIMEOUT) {
-		std::cout << "true" << std::endl;
 		return true;
 	}
-	std::cout << "false" << std::endl;
 	return false;
 }
 

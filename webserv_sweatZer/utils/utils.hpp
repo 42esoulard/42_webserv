@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/06/28 11:58:41 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/22 16:29:45 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 # define UTILS_HPP
+
 # include <unistd.h>
 # include <stdlib.h>
 # include <limits.h>
@@ -62,6 +63,5 @@ int							ft_atoi_hex(std::string &str);
 std::string					ft_itos(int n);
 std::string					encode(std::string str);
 std::string					decode(std::string str);
-
 
 #endif

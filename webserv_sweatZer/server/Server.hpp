@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 14:44:40 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/19 09:49:44 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/22 16:14:15 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ class Server {
         Server::t_content_map       &get_serv_info() { return _conf.serv_info; }
         std::list < t_content_map > &get_locations() {return _conf.locations;}
 
-        void        print_server_info(); //DEV UTIL
-        void        print_server_locations(); // DEV UTIL
+        void        print_server_info();
+        void        print_server_locations(); 
 
         int         &get_server_fd()    { return _server_fd; }
         sockaddr_in &get_address()      { return _address; }

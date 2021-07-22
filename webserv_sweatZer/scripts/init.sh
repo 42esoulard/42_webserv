@@ -53,4 +53,6 @@ echo -e "#####################################\n"
 read -p $'\033[01;35m[...Please press enter once you\'re done...]\033[0m'
 echo -e "I hope you rocked that copy pasting to the moon\n"
 
+chmod 000 www/sweatzer/noperm
+chmod 000 tests/acoudert_tester/pythonTest/noperm.html
 
