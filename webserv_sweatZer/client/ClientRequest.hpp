@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:20:03 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 14:59:28 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 17:24:26 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class	ClientRequest {
 
 	public:
 		ClientRequest();
-		~ClientRequest();
+		~ClientRequest() {};
 		
 		typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
@@ -43,10 +43,10 @@ class	ClientRequest {
 		bool 		check_timeout();
 		void 		set_timeout();
 
-		std::string					&get_sread();
-		std::vector<std::string>	&get_vecChunked() { return _vecChunked; };
+		std::string					&get_sread() 		{ return _sread; };
+		std::vector<std::string>	&get_vecChunked() 	{ return _vecChunked; };
 	
-		t_content_map 				&get_conf() { return _conf; };
+		t_content_map 				&get_conf() 		{ return _conf; };
 
 	private:
 		//timeout

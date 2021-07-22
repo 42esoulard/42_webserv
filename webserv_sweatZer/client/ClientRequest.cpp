@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 14:52:36 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 17:24:41 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,6 @@ void ClientRequest::reinit_cli() {
 	_vecRead.clear();
 	_vecChunked.clear();
 	_conf.clear();
-}
-
-ClientRequest::~ClientRequest() {};
-
-std::string &ClientRequest::get_sread()
-{
-	return _sread;
 }
 
 bool	   ClientRequest::is_method(std::string &str)

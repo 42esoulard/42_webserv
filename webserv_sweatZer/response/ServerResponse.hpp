@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 15:37:47 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/22 17:29:34 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,17 +41,15 @@ class ServerResponse {
         };
 
         typedef void (ServerResponse::*method_func)();
-        method_func get_method(std::string &method) {
-            return _methods[method];
-        };
+        method_func get_method(std::string &method)     { return _methods[method]; };
 
-        std::string &get_payload() { return _payload; }
-        int const   &get_error() const { return _error; };
+        std::string &get_payload()                      { return _payload; }
+        int const   &get_error() const                  { return _error; };
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(std::string &line, size_t &index);
         
-        std::list < t_content_map > &get_locations() {return _server_conf->locations;}
-        Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
+        std::list < t_content_map > &get_locations()    { return _server_conf->locations;}
+        Server::t_content_map       &get_serv_info()    { return _server_conf->serv_info; }
         Server::t_conf              *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf              *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int                         identify_server(t_content_map &cli_conf);
@@ -60,6 +58,7 @@ class ServerResponse {
         void    set_conf(std::string &key, std::string &val) { _conf[key] = val; };
         
         int     build_response(t_content_map &cli_conf);
+        int     check_body_size(t_content_map &cli_conf);
         bool    check_path_lvl(std::string &path);
         int     file_to_body(void);
         int     make_index(void);
