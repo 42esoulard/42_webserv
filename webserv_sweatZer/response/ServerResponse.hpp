@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 15:37:47 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/23 12:19:04 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,11 @@ class ServerResponse {
         typedef std::map<std::string, std::list<std::string> >  t_content_map;
 
         void        reinit_serv_response();
-        
+
         //put all our method functions in a map, this way we can just parse
         // the request and call e.g. (ServerResponse.get_method("GET"))()
         void init_methods_list() {
-            
+
             _methods["GET"] = &ServerResponse::method_get;
             _methods["HEAD"] = &ServerResponse::method_head;
             _methods["POST"] = &ServerResponse::method_post;
@@ -49,7 +49,7 @@ class ServerResponse {
         int const   &get_error() const { return _error; };
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(std::string &line, size_t &index);
-        
+
         std::list < t_content_map > &get_locations() {return _server_conf->locations;}
         Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
         Server::t_conf              *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
@@ -58,7 +58,7 @@ class ServerResponse {
         unsigned long               identify_location(std::string &file, std::string &extension);
 
         void    set_conf(std::string &key, std::string &val) { _conf[key] = val; };
-        
+
         int     build_response(t_content_map &cli_conf);
         bool    check_path_lvl(std::string &path);
         int     file_to_body(void);
@@ -67,12 +67,19 @@ class ServerResponse {
 
 		int		error(int code);
         int     build_error_response(int code);
+		int		check_server_location(std::string &requested_path);
+		int		check_body_size(t_content_map &cli_conf);
+		int		check_stats_file(t_content_map &cli_conf);
+		int		check_allowed_method(t_content_map &cli_conf);
+		int		check_authorization(t_content_map &cli_conf);
+		int		check_cgi(t_content_map &cli_conf, std::string &requested_path);
+		void	format_error_response();
         int     no_host_response();
         int     slow_loris_response();
         int     serv_loc_not_found_response(int code);
-                       
+
     private:
-        
+
         //references
         SimpleHashTable     _mime_types;
         SimpleHashTable     _error_codes;

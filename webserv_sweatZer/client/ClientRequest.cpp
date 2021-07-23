@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 15:46:45 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 14:52:36 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/23 10:54:15 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,14 +81,13 @@ int		ClientRequest::parse_request(ServerResponse &serv_response)
 	}
 	if ((error = parse_headers(body)))
 	{
-		if (parse_host()) 
+		if (parse_host())
 			return (serv_response.error(666));
-		
 		return (serv_response.error(error));
 	}
-	if (parse_host()) 
+	if (parse_host())
 		return (serv_response.error(666));
-	
+
 	parse_charset();
 	parse_language();
 	print_map(_conf);
@@ -339,7 +338,7 @@ bool ClientRequest::check_timeout() {
 	gettimeofday(&_tv, NULL);
 	_cur_time = _tv.tv_sec;
 	_diff = _cur_time - _last_request;
-	
+
 	if (_diff >= _TIMEOUT) {
 		return true;
 	}

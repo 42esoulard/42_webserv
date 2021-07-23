@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 16:36:20 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/23 13:47:33 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 
 ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _body(""), _payload(""), _error(200), _cgi_on(false) {
-	
+
 	_cgi = new Cgi();
 	init_methods_list();
 };
@@ -88,8 +88,12 @@ int ServerResponse::build_error_response(int code) {
 			_body = std::string(_buf);
 		close(fd);
 	}
+	format_error_response();
+	return (_error);
+}
 
-	//format response
+void	ServerResponse::format_error_response()
+{
 	std::string s_error = ft_itos(_error);
 	std::string *p_error_msg = _error_codes.get_value(s_error);
 	std::string s_error_msg = "";
@@ -106,8 +110,6 @@ int ServerResponse::build_error_response(int code) {
 	_payload += "\r\n";
 	if (_method != "HEAD")
 		_payload += _body;
-
-	return (_error);
 }
 
 std::string ServerResponse::get_mime_type(std::string &extension) {
@@ -205,7 +207,7 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 			if (*(*it)["path"].begin() == path) {
 				if (ext_location) {
 					if ((*ext_location).find("accept_methods") != (*ext_location).end()) {
-						
+
 						std::list<std::string>::iterator st = (*ext_location)["accept_methods"].begin();
 						while (st != (*ext_location)["accept_methods"].end()) {
 							(*_location)["accept_methods"].push_back(*st);
@@ -213,7 +215,7 @@ unsigned long ServerResponse::identify_location(std::string &file, std::string &
 						}
 					}
 					if ((*ext_location).find("cgi_bin") != (*ext_location).end()) {
-						
+
 						if ((*_location).find("cgi_bin") == (*_location).end())
 							(*_location)["cgi_bin"].push_back(*(*ext_location)["cgi_bin"].begin());
 						else
@@ -316,7 +318,7 @@ int ServerResponse::check_auth(std::string &tmp) {
 	while (get_next_line(fd, &line) > 0) {
 		cred = std::string(line);
 		if ((i = cred.find_first_of(':')) != cred.npos && i < cred.size()) {// ':' can be in pwd, but not in login. Also format has to be login=password, if there's no '=' we disregard the entry
-			
+
 			pass = decode(cred.substr(i + 1, cred.size()));
 			cred = cred.substr(0, i + 1);
 			cred += pass;
@@ -375,7 +377,7 @@ int ServerResponse::serv_loc_not_found_response(int code) {
 	_payload += "\r\n";
 	if (_method != "HEAD")
 		_payload += _body;
-	
+
 	return (_error);
 }
 
@@ -434,21 +436,55 @@ bool	ServerResponse::check_path_lvl(std::string &path)
 
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
+	size_t		size;
+
 	_method = *(cli_conf["method"].begin());
 
-	//check if no host or slow loris have been detected
 	if (_error == 666) //no host
 		return no_host_response();
 	if (_error == 803) //slow loris protection
 		return 803;
 
-	
 	if ((i = identify_server(cli_conf)) != 200)
-		return serv_loc_not_found_response(i); //server not found
+		return (serv_loc_not_found_response(i)); //server not found
 
-	
 	std::string requested_path = *cli_conf["file"].begin();
+	if ((size = check_server_location(requested_path)) < 0)
+		return (serv_loc_not_found_response(size));
+	std::cerr << "----------------- SERVER + LOCATION FOUND!" << std::endl;
+	if (_error != 200 && _error != 201)
+		return build_error_response(_error);
+	std::cerr << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
+	if ((i = check_body_size(cli_conf)))
+		return (build_error_response(i));
+
+	//substitute requested path location alias with root path
+	if ((*_location).find("root") != (*_location).end()){
+		_resource_path = *(*_location)["root"].begin();
+	}
+	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end() && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
+		_resource_path += *(*_location)["up_dir"].begin();
+	if (size < requested_path.size())
+		_resource_path +=  requested_path.substr(size);
+
+	if (check_path_lvl(requested_path))
+		return build_error_response(403); // forbidden, security
+	if ((i = check_stats_file(cli_conf)) || (i = check_allowed_method(cli_conf)) ||
+		(i = check_authorization(cli_conf)) || (i = check_cgi(cli_conf, requested_path)))
+		return (build_error_response(i));
+
+	// go to the proper header function
+	(this->*_methods[_method])();
+
+	if (_error != 200 && _error != 201)
+		return (build_error_response(_error));
+
+	return (0);
+}
+
+int	ServerResponse::check_server_location(std::string &requested_path)
+{
 	//save file extension in a string + extract potential query from url
 	i = requested_path.find_first_of("?");
 	if ((size_t)i < requested_path.size()) {
@@ -461,19 +497,12 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	//find to which location is the request addressed
 	if ((i = identify_location(requested_path, _extension)) < 0)
-		return serv_loc_not_found_response(i); // location not found
+		return (i); // location not found
+	return (i);
+}
 
-	std::cerr << "----------------- SERVER + LOCATION FOUND!" << std::endl;
-
-
-	//after we got our Server and Location info, we can check if we have a previous error
-	if (_error != 200 && _error != 201)
-		return build_error_response(_error);
-
-	std::cerr << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
-
-
-	//check body size
+int	ServerResponse::check_body_size(t_content_map &cli_conf)
+{
 	if ((*_location).find("client_max_body_size") != (*_location).end())
 		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
 	else if ((get_serv_info().find("client_max_body_size")) != get_serv_info().end())
@@ -482,35 +511,26 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		_max_body = DEFAULT_MAX_BODY;
 	if (cli_conf.find("body") != cli_conf.end() && cli_conf["body"].begin() != cli_conf["body"].end()) {
 		if ((*cli_conf["body"].begin()).size() > _max_body && (_method == "POST" || _method == "PUT") && _max_body != DEFAULT_MAX_BODY)
-			return (build_error_response(413));
+			return (413);
 		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
 			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
 	}
+	return (0);
+}
 
-	//substitute requested path location alias with root path
-	if ((*_location).find("root") != (*_location).end()){
-		_resource_path = *(*_location)["root"].begin();
-	}
-	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end() && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
-		_resource_path += *(*_location)["up_dir"].begin();
-	if (i < requested_path.size())
-		_resource_path +=  requested_path.substr(i);
-
-	if (check_path_lvl(requested_path))
-		return build_error_response(403); // forbidden, security
-
-	//check file existence and status (or uploads dir existence for PUT/POST)
+int		ServerResponse::check_stats_file(t_content_map &cli_conf)
+{
 	struct stat buf;
 	int ir;
 
 	if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
 		_error = 201; //not an error, means file doesn't exist and will be created
 	if (_method == "PUT" || _method == "POST" || _method == "DELETE") {
-		
+
 		if (_method == "DELETE" && ir < 0)
-			return build_error_response(404); // file not found
+			return (404); // file not found
 		else if (_method == "DELETE" && S_ISDIR(buf.st_mode))
-			return build_error_response(405);//trying to delete a folder is forbidden
+			return (405);//trying to delete a folder is forbidden
 		else if (ir != -1 && S_ISDIR(buf.st_mode)) {
 			_error = 201; //not an error, means no file name was provided, will be created
 			_resource_path += "/" + std::string(DEFAULT_UPLOAD_NAME);
@@ -521,16 +541,17 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	else {
 
 		if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
-			return build_error_response(404); // file not found
+			return (404); // file not found
 	}
 	if (!(_method == "PUT" || _method == "POST") && (buf.st_mode & S_IROTH) == 0){
-		return build_error_response(403);
+		return (403);
 	}
-
 	std::cerr << "----------------- FILE OK!" << std::endl;
+	return (0);
+}
 
-
-	// check that method is allowed (in conf location)
+int	ServerResponse::check_allowed_method(t_content_map &cli_conf)
+{
 	std::list<std::string>::iterator it = (*_location)["accept_methods"].begin();
 	while (it != (*_location)["accept_methods"].end()) {
 		if (*it == *cli_conf["method"].begin())
@@ -538,81 +559,80 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 		++it;
 	}
 	if (it == (*_location)["accept_methods"].end())
-		return build_error_response(405); // method not allowed
-
+		return (405); // method not allowed
 	std::cerr << "----------------- METHOD [" << _method << "] OK!" << std::endl;
+	return (0);
+}
 
-
+int	ServerResponse::check_authorization(t_content_map &cli_conf)
+{
 	// if protected  (in conf location auth: on), check authorization (first Basic,
 	//  else Unknown auth method error. Second, decode base64 and check against against
 	//  location root's .auth file)
 	if ((*_location).find("auth") != (*_location).end() && *(*_location)["auth"].begin() == "on") {
 		size_t j = 0;
 		if (cli_conf.find("authorization") == cli_conf.end())
-			return build_error_response(401); // unauthorized (missing credentials)
+			return (401); // unauthorized (missing credentials)
 		std::string tmp = get_next_token(*cli_conf["authorization"].begin(), j);
 		if (tmp != "Basic")
-			return build_error_response(401); // unauthorized (authorization method unknown)
+			return (401); // unauthorized (authorization method unknown)
 		if ((tmp = get_next_token(*cli_conf["authorization"].begin(), j)) == "")
-			return build_error_response(401); // unauthorized (missing credentials)
+			return (401); // unauthorized (missing credentials)
 		if (check_auth(tmp) < 0)
-			return build_error_response(401); //unauthorized(bad credentials)
+			return (401); //unauthorized(bad credentials)
 	}
-
 	std::cerr << "----------------- AUTH OK!" << std::endl;
-	
-	
+	return (0);
+}
+
+int	ServerResponse::check_cgi(t_content_map &cli_conf, std::string &requested_path)
+{
 	// 7) if IS_DIR and we didn't define an index in conf and autoindex = "on"
 	//  return an autoindexing of website tree.
 	//  if IS_DIR && we have an index, use index as requested file
+
+	struct stat buf;
+	int ir;
+
+	stat(_resource_path.c_str(), &buf);
 	if (_method == "GET" || _method == "HEAD" || (_error != 200 && _error != 201)) {
 		if (!S_ISREG(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && (*_location).find("autoindex") != (*_location).end() && *(*_location)["autoindex"].begin() == "on") {
-			
+
 			if ((i = make_index()) != 0)
-				return build_error_response(500);
+				return (500);
 		}
 		else {
 			if (!S_ISREG(buf.st_mode)) {
-				
+
 				_resource_path += "/" + *(*_location)["if_dir"].begin();
 				if ((ir = stat(_resource_path.c_str(), &buf)) < 0)
-					return build_error_response(404); // file not found
+					return (404); // file not found
 				if (_resource_path.find_last_of(".") < _resource_path.size())
 					_extension = _resource_path.substr(_resource_path.find_last_of("."));
 			}
-
 			if ((*_location).find("cgi_bin") != (*_location).end()) {
-				
+
 				if ((i = requested_path.find_last_of("/")) == std::string::npos)
 					i = -1;
 				if (requested_path.substr(i + 1) == "webserv")
-					return build_error_response(418);
+					return (418);
 				if (_cgi->launch_cgi(*this, cli_conf) != 0)
-					return build_error_response(_error);
+					return (_error);
 				_cgi_on = true;
 			}
 			else if (file_to_body() != 0) {
 				std::cerr << "----------------- FILE TO BODY FAIL: [" << _resource_path << "]!" << std::endl;
-				return build_error_response(500);
+				return (500);
 			}
 		}
 	}
 	else if ((*_location).find("cgi_bin") != (*_location).end() && (_method == "PUT" || _method == "POST" || _method == "DELETE")) {
-		
+
 		if (_cgi->launch_cgi(*this, cli_conf) != 0)
-			return build_error_response(_error);
+			return (_error);
 		_cgi_on = true;
 	}
-
 	std::cerr << "----------------- CGI OK!" << std::endl;
-	
-	
-	// go to the proper header function
-	(this->*_methods[_method])();
-
-	if (_error != 200 && _error != 201)
-		return (build_error_response(_error));
-
 	return (0);
 }
 
@@ -663,7 +683,7 @@ void ServerResponse::method_put() {
 		}
 		close(fd);
 	}
-	
+
 	_s_error = ft_itos(_error);
 	_p_error_msg = _error_codes.get_value(_s_error);
 	_s_error_msg = "";
@@ -739,7 +759,7 @@ int ServerResponse::file_to_body(void) {
 	memset(buf, 0, _max_body);
 	if ((size = read(fd, buf, _max_body)) < 0)
 		return build_error_response(500);
-		
+
 	for (int i = 0 ; i < size ; ++i)
 		_body.push_back(buf[i]);
 

@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/21 12:18:37 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/23 11:01:12 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void		init_vec(std::vector<std::vector<std::string> > &requests)
 	requests[2].push_back("GET / HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\nhello=test\r\n\r\n");
 
 	requests[3].push_back("GET noperm");
-	requests[3].push_back("Error 413");
+	requests[3].push_back("Error 403");
 	requests[3].push_back("GET /noperm HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
 
 	requests[4].push_back("GET bad version");
