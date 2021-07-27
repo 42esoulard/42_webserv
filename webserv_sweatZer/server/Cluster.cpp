@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 16:56:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/27 20:51:52 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,7 +250,7 @@ bool g_sigpipe = false;
 
 void Cluster::handle_connection(){
 
-    std::cerr << std::endl << "*--------------- [--- WAITING FOR NEW CONNECTION ---] ---------------*" << std::endl;
+    //std::cerr << std::endl << "*--------------- [--- WAITING FOR NEW CONNECTION ---] ---------------*" << std::endl;
 
     this->_read_fd_set = this->_active_fd_set;
     int ret = 0;
@@ -656,5 +656,5 @@ void Cluster::send_response(std::string &response) {
         std::cerr << std::endl << "++++++++++++ RESPONSE (too long, truncated) ++++++++++++" << std::endl << response.substr(0, 10000) << std::endl;
     std::cerr << "+++++++++++++++++ END OF RESPONSE +++++++++++++++++" << std::endl;
     
-    std::cerr << "----------------- SENT RESPONSE SIZE (" << ret << "/" << response.size() << ")" << std::endl;
+    std::cerr << "----------------- SENT RESPONSE SIZE (" << ret << "/" << response.size() << ")" << std::endl << std::endl;
 };
