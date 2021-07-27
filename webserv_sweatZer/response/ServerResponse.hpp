@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2021/07/22 17:29:34 by esoulard         ###   ########.fr       */
-=======
-/*   Updated: 2021/07/23 12:19:04 by rturcey          ###   ########.fr       */
->>>>>>> main
+/*   Updated: 2021/07/27 20:36:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,15 +47,9 @@ class ServerResponse {
         int const   &get_error() const                  { return _error; };
         std::string get_mime_type(std::string &extension);
         std::string get_next_token(std::string &line, size_t &index);
-<<<<<<< HEAD
         
         std::list < t_content_map > &get_locations()    { return _server_conf->locations;}
         Server::t_content_map       &get_serv_info()    { return _server_conf->serv_info; }
-=======
-
-        std::list < t_content_map > &get_locations() {return _server_conf->locations;}
-        Server::t_content_map       &get_serv_info() { return _server_conf->serv_info; }
->>>>>>> main
         Server::t_conf              *get_server_conf_by_name(std::string &searched_name, std::string &searched_port);
         Server::t_conf              *get_server_conf_by_address(std::string &searched_host, std::string &searched_port);
         int                         identify_server(t_content_map &cli_conf);
@@ -70,18 +60,17 @@ class ServerResponse {
         int     build_response(t_content_map &cli_conf);
         int     check_body_size(t_content_map &cli_conf);
         bool    check_path_lvl(std::string &path);
-        int     file_to_body(void);
-        int     make_index(void);
         int     check_auth(std::string &tmp);
-
-		int		error(int code);
-        int     build_error_response(int code);
 		int		check_server_location(std::string &requested_path);
-		int		check_body_size(t_content_map &cli_conf);
 		int		check_stats_file(t_content_map &cli_conf);
 		int		check_allowed_method(t_content_map &cli_conf);
 		int		check_authorization(t_content_map &cli_conf);
 		int		check_cgi(t_content_map &cli_conf, std::string &requested_path);
+        int     file_to_body(void);
+        int     make_index(void);
+
+        int		error(int code);
+        int     build_error_response(int code);
 		void	format_error_response();
         int     no_host_response();
         int     slow_loris_response();

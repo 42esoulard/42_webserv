@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2021/07/22 17:35:02 by esoulard         ###   ########.fr       */
-=======
-/*   Updated: 2021/07/23 13:47:33 by rturcey          ###   ########.fr       */
->>>>>>> main
+/*   Updated: 2021/07/27 20:37:22 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -460,8 +456,6 @@ int ServerResponse::check_body_size(t_content_map &cli_conf) {
 	return 0;
 }
 
-
-
 int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	size_t		size;
@@ -528,29 +522,6 @@ int	ServerResponse::check_server_location(std::string &requested_path)
 		return (i); // location not found
 	return (i);
 }
-
-<<<<<<< HEAD
-	//check body size
-	if (check_body_size(cli_conf) != 0)
-		return _error;
-=======
-int	ServerResponse::check_body_size(t_content_map &cli_conf)
-{
-	if ((*_location).find("client_max_body_size") != (*_location).end())
-		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
-	else if ((get_serv_info().find("client_max_body_size")) != get_serv_info().end())
-		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
-	else
-		_max_body = DEFAULT_MAX_BODY;
-	if (cli_conf.find("body") != cli_conf.end() && cli_conf["body"].begin() != cli_conf["body"].end()) {
-		if ((*cli_conf["body"].begin()).size() > _max_body && (_method == "POST" || _method == "PUT") && _max_body != DEFAULT_MAX_BODY)
-			return (413);
-		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
-			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
-	}
-	return (0);
-}
->>>>>>> main
 
 int		ServerResponse::check_stats_file(t_content_map &cli_conf)
 {
