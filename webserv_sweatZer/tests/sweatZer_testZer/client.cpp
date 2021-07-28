@@ -6,7 +6,7 @@
 /*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/02 14:05:12 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/23 11:01:12 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/07/28 11:57:27 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,6 +30,7 @@
 
 #define _MAXLINE 655360
 #define PORT 8080
+#define NB_REQUESTS 9
 
 void		init_vec(std::vector<std::vector<std::string> > &requests)
 {
@@ -56,9 +58,18 @@ void		init_vec(std::vector<std::vector<std::string> > &requests)
 	requests[5].push_back("Error 404");
 	requests[5].push_back("GET /inexistent HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
 
-	requests[5].push_back("GET inexistent file");
-	requests[5].push_back("Error 404");
-	requests[5].push_back("GET /inexistent HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
+	requests[6].push_back("POST 1000");
+	requests[6].push_back("post1000 in www/sweatzer/uploads, size 1000");
+	requests[6].push_back("POST /post1000 HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nContent-Length: 1000\r\n\r\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dictum porta laoreet. Pellentesque porta tempus eros tristique vehicula. Mauris eget ex turpis. Mauris ultrices auctor ultricies. Donec congue enim nec ex consectetur finibus. Sed ac rhoncus est. Etiam lectus leo, varius at magna venenatis, sollicitudin porttitor urna. Donec porttitor id orci et pellentesque. Phasellus ex purus, dapibus eu velit et, faucibus venenatis sapien. Ut eget turpis quis neque dignissim pellentesque. Suspendisse sollicitudin est ut arcu facilisis feugiat sed non ex. \nProin nulla eros, bibendum et erat et, pellentesque tincidunt quam. Nullam eleifend nulla sollicitudin urna volutpat, eu tincidunt dui suscipit. Curabitur a fringilla leo. Ut sit amet sapien scelerisque, efficitur libero posuere, molestie ipsum. Etiam ut tortor tristique, pretium lacus ac, convallis quam. Pellentesque molestie sapien id libero sagittis volutpat. Maecenas interdum ligula augue, lobortis ullamcorper ni consectetur eros.\r\n\r\n");
+
+	requests[7].push_back("DELETE post1000 forbidden");
+	requests[7].push_back("Error 403");
+	requests[7].push_back("DELETE /uploads/post1000 HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
+
+	requests[8].push_back("DELETE post1000 after chmod");
+	requests[8].push_back("204 & file deleted");
+	requests[8].push_back("DELETE /uploads/post1000 HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n");
+
 }
 
 int send_request(std::string &name, std::string &expected, std::string &request)
@@ -146,7 +157,7 @@ int		main(int argc, char **argv)
 		return (0);
 	}
 
-	std::vector<std::vector<std::string> >	requests(6);
+	std::vector<std::vector<std::string> >	requests(NB_REQUESTS);
 
 	init_vec(requests);
 	for (size_t i = 0 ; i < requests.size() ; ++i)
@@ -155,6 +166,18 @@ int		main(int argc, char **argv)
 		{
 			std::cerr << "TEST ERROR" << std::endl;
 			return (1);
+		}
+		if (i == 6)
+		{
+			std::cout << "\033[34mPlease check /uploads/post1000, then press enter\033[0m" << std::endl;
+			getchar();
+		}
+		if (i == 7)
+			chmod("../../www/sweatzer/uploads/post1000", 0666);
+		if (i == 8)
+		{
+			std::cout << "\033[34mPlease check that /uploads/post1000 has been deleted, then press enter\033[0m" << std::endl;
+			getchar();
 		}
 	}
 	return (0);

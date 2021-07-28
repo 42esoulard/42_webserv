@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/27 20:46:03 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/28 11:29:15 by rturcey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -452,7 +452,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if ((size = check_server_location(requested_path)) < 0)
 		return (serv_loc_not_found_response(size));
 	std::cerr << "----------------- SERVER + LOCATION FOUND!" << std::endl;
-	if (_error != 200 && _error != 201)
+	if (_error != 200 && _error != 201 && !(_error == 204 && _method == "DELETE"))
 		return build_error_response(_error);
 	std::cerr << "----------------- NO PREVIOUS ERROR FOUND!" << std::endl;
 
@@ -477,7 +477,7 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	// go to the proper header function
 	(this->*_methods[_method])();
 
-	if (_error != 200 && _error != 201)
+	if (_error != 200 && _error != 201 && !(_error == 204 && _method == "DELETE"))
 		return (build_error_response(_error));
 
 	return (0);
