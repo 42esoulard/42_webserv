@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/27 20:51:52 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/29 19:45:04 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -312,7 +312,7 @@ void Cluster::handle_connection(){
                     }
 
                     ++_nb_clients;
-                    this->_cli_request[_cur_socket].set_timeout();
+                    this->_cli_request[_new_socket].set_timeout();
 
                     std::cerr << "----------------- Server: connect from host " << inet_ntoa (_serv_it->get_address().sin_addr) << ", port " <<  ntohs (_serv_it->get_address().sin_port) << " to socket [" << this->_cur_socket << "]" << std::endl;
 
