@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/08 16:27:00 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/27 20:47:21 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 18:44:54 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,8 @@ class ServerResponse {
     private:
 
         //references
-        SimpleHashTable     _mime_types;
-        SimpleHashTable     _error_codes;
+        SimpleHashTable     *_mime_types;
+        SimpleHashTable     *_error_codes;
         void                method_get();
         void                method_head();
         void                method_post();

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 16:26:54 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 18:06:52 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,8 @@ class Cluster {
 
         void send_response(std::string &response);
 
+        bool get_sigint() { return _sigint; };
+        
     private:
 
         std::vector<ClientRequest>  _cli_request;
@@ -96,6 +98,8 @@ class Cluster {
         // reference hashtables
         SimpleHashTable _mime_types;
         SimpleHashTable _error_codes;
+
+        bool            _sigint;
 
 };
 

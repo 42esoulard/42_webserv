@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 17:36:53 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 18:27:46 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 //setting definitive tables for the whole program
 void Cluster::init_cluster(std::string &config) {
 
+    _sigint = false;
+    
     for( int i = 0; i < __FD_SETSIZE; ++i)
         _cli_request.push_back(ClientRequest());
 
@@ -253,12 +255,16 @@ int g_socket = -1;
 fd_set *g_active_fd_set = NULL;
 fd_set *g_clients_fd_set = NULL;
 bool g_sigpipe = false;
+bool g_sigint = false;
 
 
 void Cluster::handle_connection(){
 
     //std::cerr << std::endl << "*--------------- [--- WAITING FOR NEW CONNECTION ---] ---------------*" << std::endl;
-
+    if (g_sigint) {
+        _sigint = true;
+        return;
+    }
     this->_read_fd_set = this->_active_fd_set;
     this->_write_fd_set = this->_active_fd_set;
     int ret = 0;
@@ -631,6 +637,10 @@ void		sighandler(int num)
     if (num == SIGPIPE) {
         std::cerr << "----------------- SIGHANDLER: SIGPIPE\n" << std::endl;
         g_sigpipe = true;
+    }
+    else if (num == SIGINT) {
+        std::cerr << "----------------- SIGHANDLER: SIGINT\n" << std::endl;
+        g_sigint = true;
     }
 }
 

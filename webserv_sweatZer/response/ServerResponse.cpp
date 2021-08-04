@@ -6,14 +6,16 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 17:50:02 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 20:35:57 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 
-ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _mime_types(mime_table), _error_codes(error_codes), _server_list(server_list), _body(""), _payload(""), _error(200), _cgi_on(false) {
+ServerResponse::ServerResponse(SimpleHashTable &mime_table, SimpleHashTable &error_codes, std::list<Server> &server_list): _server_list(server_list), _method(""), _body(""), _payload(""), _error(200), _cgi_on(false) {
 
+	_mime_types = &mime_table;
+	_error_codes = &error_codes;
 	_cgi = new Cgi();
 	init_methods_list();
 };
@@ -29,7 +31,7 @@ void ServerResponse::reinit_serv_response() {
     _error = 200;
     _method.clear();
     _cli_body.clear();
-    _max_body = -1;
+    _max_body = DEFAULT_MAX_BODY;
     _body.clear();
     _payload.clear();
 	i = -1;
@@ -95,7 +97,7 @@ int ServerResponse::build_error_response(int code) {
 void	ServerResponse::format_error_response()
 {
 	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
+	std::string *p_error_msg = (*_error_codes).get_value(s_error);
 	std::string s_error_msg = "";
 	std::string sp = " ";
 
@@ -120,7 +122,7 @@ std::string ServerResponse::get_mime_type(std::string &extension) {
 		return (ret);
 	if (extension.size() > 1 && extension[0] == '.')
 		extension = extension.substr(1);
-	std::string *value =_mime_types.get_value(extension);
+	std::string *value = (*_mime_types).get_value(extension);
 	//unknown extension defaults to application/octet-stream type
 
 	if (value)
@@ -361,7 +363,7 @@ int ServerResponse::serv_loc_not_found_response(int code) {
 	}
 
 	std::string s_error = ft_itos(_error);
-	std::string *p_error_msg = _error_codes.get_value(s_error);
+	std::string *p_error_msg = (*_error_codes).get_value(s_error);
 	std::string s_error_msg = "";
 	std::string sp = " ";
 
@@ -438,7 +440,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	size_t		size;
 
-	_method = *(cli_conf["method"].begin());
+	if (cli_conf.find("method") != cli_conf.end())
+		_method = *(cli_conf["method"].begin());
 
 	if (_error == 666) //no host
 		return no_host_response();
@@ -448,7 +451,9 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if ((i = identify_server(cli_conf)) != 200)
 		return (serv_loc_not_found_response(i)); //server not found
 
-	std::string requested_path = *cli_conf["file"].begin();
+	std::string requested_path("");
+	if (cli_conf.find("file") != cli_conf.end())
+		requested_path = *cli_conf["file"].begin();
 	if ((size = check_server_location(requested_path)) < 0)
 		return (serv_loc_not_found_response(size));
 	std::cerr << "----------------- SERVER + LOCATION FOUND!" << std::endl;
@@ -463,7 +468,6 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if ((*_location).find("root") != (*_location).end()){
 		_resource_path = *(*_location)["root"].begin();
 	}
-	
 	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end())
 		_resource_path += *(*_location)["up_dir"].begin();
 	if (size < requested_path.size())
@@ -477,8 +481,10 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// go to the proper header function
 	(this->*_methods[_method])();
+
 	if (_error != 200 && _error != 201 && !(_error == 204 && _method == "DELETE"))
 		return (build_error_response(_error));
+
 	return (0);
 }
 
@@ -639,7 +645,7 @@ int	ServerResponse::check_cgi(t_content_map &cli_conf, std::string &requested_pa
 void ServerResponse::method_get() {
 
 	_s_error = ft_itos(_error);
-	_p_error_msg = _error_codes.get_value(_s_error);
+	_p_error_msg = (*_error_codes).get_value(_s_error);
 	_s_error_msg = "";
 	_sp = " ";
 	if (_p_error_msg)
@@ -654,7 +660,7 @@ void ServerResponse::method_get() {
 void ServerResponse::method_head() {
 
 	_s_error = ft_itos(_error);
-	_p_error_msg = _error_codes.get_value(_s_error);
+	_p_error_msg = (*_error_codes).get_value(_s_error);
 	_s_error_msg = "";
 	_sp = " ";
 	if (_p_error_msg)
@@ -685,7 +691,7 @@ void ServerResponse::method_put() {
 	}
 
 	_s_error = ft_itos(_error);
-	_p_error_msg = _error_codes.get_value(_s_error);
+	_p_error_msg = (*_error_codes).get_value(_s_error);
 	_s_error_msg = "";
 	_sp = " ";
 	if (_p_error_msg)
@@ -714,7 +720,7 @@ void ServerResponse::method_post() {
 	}
 
 	_s_error = ft_itos(_error);
-	_p_error_msg = _error_codes.get_value(_s_error);
+	_p_error_msg = (*_error_codes).get_value(_s_error);
 	_s_error_msg = "";
 	_sp = " ";
 	if (_p_error_msg)
@@ -735,7 +741,7 @@ void ServerResponse::method_delete() {
 	_error = 204;
 
 	_s_error = ft_itos(_error);
-	_p_error_msg = _error_codes.get_value(_s_error);
+	_p_error_msg = (*_error_codes).get_value(_s_error);
 	_s_error_msg = "";
 	_sp = " ";
 	if (_p_error_msg)
@@ -755,9 +761,10 @@ int ServerResponse::file_to_body(void) {
 	if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
 		return build_error_response(500);
 
-	char buf[_max_body + 1];
+	std::cout << "++++++++++++++++++++++++++max body (" << _max_body << std::endl;
+	char buf[_max_body];
 	memset(buf, 0, _max_body);
-	if ((size = read(fd, buf, _max_body)) < 0)
+	if ((size = read(fd, buf, _max_body - 1)) < 0)
 		return build_error_response(500);
 
 	for (int i = 0 ; i < size ; ++i)
