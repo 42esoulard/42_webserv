@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/28 11:29:15 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/08/04 17:27:38 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,14 +323,14 @@ int ServerResponse::check_auth(std::string &tmp) {
 			cred = cred.substr(0, i + 1);
 			cred += pass;
 			if (sub == cred) {
-				free(line);
+				ft_memdel((void **)&line);
 				close (fd);
 				return 0;
 			}
 		}
-		free (line);
+		ft_memdel((void **)&line);
 	}
-	free(line);
+	ft_memdel((void **)&line);
 	close (fd);
 
 	return -1;
@@ -594,6 +594,7 @@ int	ServerResponse::check_cgi(t_content_map &cli_conf, std::string &requested_pa
 	struct stat buf;
 	int ir;
 
+	buf.st_mode = 0;
 	stat(_resource_path.c_str(), &buf);
 	if (_method == "GET" || _method == "HEAD" || (_error != 200 && _error != 201)) {
 		if (!S_ISREG(buf.st_mode) && (*_location).find("if_dir") == (*_location).end() && (*_location).find("autoindex") != (*_location).end() && *(*_location)["autoindex"].begin() == "on") {

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 16:15:32 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 17:25:59 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,9 @@ void Cluster::set_mime() {
     while (get_next_line(mime_fd, &_line) > 0) {
         _sline = std::string(_line);
         _mime_types.add_entry(_sline);
-        free (_line);
+        ft_memdel((void**)&_line);
     }
-    free(_line);
+    ft_memdel((void**)&_line);
     close (mime_fd);
 };
 
@@ -72,25 +72,27 @@ void Cluster::set_error() {
     while (get_next_line(err_fd, &_line) > 0) {
         _sline = std::string(_line);
         _error_codes.add_entry_w_spaces(_sline);
-        free (_line);
+        ft_memdel((void**)&_line);
     }
-    free(_line);
+    ft_memdel((void**)&_line);
     close (err_fd);
 };
 
 void Cluster::parse_config(std::string &config) {
 
-    if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
-        throw Exception("Couldn't open configuration file " + config);
-    
     struct stat buf;
+    buf.st_mode = 0;
 	stat(config.c_str(), &buf);
     if (!S_ISREG(buf.st_mode))
-        throw Exception("Couldn't open configuration file " + config);
+        throw Exception("Bad configuration file: " + config);
+
+    if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
+        throw Exception("Couldn't open configuration file: " + config);
     
     _in_location = false;
     _in_server = false;
     _line_nb = 0;
+    _line = NULL;
 
     while (get_next_line(_config_fd, &_line) > 0) {
 
@@ -100,9 +102,9 @@ void Cluster::parse_config(std::string &config) {
         parse_field((field = get_conf_token(_line, _index)), config);
         parse_values(field, config);
 
-        free (_line);
+        ft_memdel((void**)&_line);
     }
-    free(_line);
+    ft_memdel((void**)&_line);
     close (_config_fd);
     print_config(); //prints all the contents of _conf
     check_conf(config);
@@ -131,11 +133,11 @@ void Cluster::parse_field(std::string &field, std::string &config) {
     if (field == "server") {
 
             if (get_conf_token(_line, _index) != "{" || get_conf_token(_line, _index) != "") {
-                free(_line);
+                ft_memdel((void**)&_line);
                 throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
             }
             if (_in_server) {
-                free(_line);
+                ft_memdel((void**)&_line);
                 throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a server context!");
             }
             Server new_server;
@@ -145,7 +147,7 @@ void Cluster::parse_field(std::string &field, std::string &config) {
     else if (field == "location") {
 
         if (_in_location) {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a location context!");
         }
 
@@ -155,7 +157,7 @@ void Cluster::parse_field(std::string &field, std::string &config) {
 
         // std::string tmp;
         if ((_tmp = get_conf_token(_line, _index)) == "" || _tmp == "{") {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + "location needs a path");
         }
         if (_tmp.size() > 1 && (_tmp[_tmp.size() - 1] == '*' || _tmp[_tmp.size() - 1] == '/'))
@@ -164,7 +166,7 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         while ((_tmp = get_conf_token(_line, _index)) != "{" && _tmp != "")
             server_list.back().get_locations().back()["extensions"].push_back(_tmp);
         if (_tmp != "{" || get_conf_token(_line, _index) != "") {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
         }
     }
@@ -175,7 +177,7 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         else if (_in_server)
             _in_server = false;
         if (get_conf_token(_line, _index) != "") {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
         }
     }
@@ -204,11 +206,11 @@ void Cluster::parse_values(std::string &field, std::string &config) {
         else if (_in_server)
             server_list.back().get_serv_info()[field].push_back(get_conf_token(_line, _index));
         else {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": fields must be in a context");
         }
         if (_line[_index] == ';' && get_conf_token(_line, _index) != "") {
-            free(_line);
+            ft_memdel((void**)&_line);
             throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
         }
     }
@@ -258,14 +260,15 @@ void Cluster::handle_connection(){
     //std::cerr << std::endl << "*--------------- [--- WAITING FOR NEW CONNECTION ---] ---------------*" << std::endl;
 
     this->_read_fd_set = this->_active_fd_set;
+    this->_write_fd_set = this->_active_fd_set;
     int ret = 0;
 
     _timeout.tv_sec  = _SELECT_TIMEOUT;
 	_timeout.tv_usec = 0;
 
-    ret = select(FD_SETSIZE, &this->_read_fd_set, NULL, NULL, &_timeout);
+    ret = select(FD_SETSIZE, &this->_read_fd_set, &this->_write_fd_set, NULL, &_timeout);
     if (ret == -1)
-        std::cerr << "----------------- SELECT FAILED" << std::endl;
+        return;
     for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
         if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set)
             && this->_cli_request[_cur_socket].check_timeout()) {
@@ -415,7 +418,8 @@ void Cluster::parse_request() {
     std::cerr << "+++++++++++++++++ END OF REQUEST +++++++++++++++++" << std::endl << std::endl;
 
     (*_serv_response).build_response(_cli_request[_cur_socket].get_conf());
-	this->send_response((*_serv_response).get_payload());
+    if (FD_ISSET (this->_cur_socket, &this->_write_fd_set))
+	    this->send_response((*_serv_response).get_payload());
 
     _cli_request[_cur_socket].reinit_cli();
 };

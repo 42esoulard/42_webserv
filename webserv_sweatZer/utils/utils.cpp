@@ -3,14 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/22 16:04:01 by rturcey           #+#    #+#             */
-/*   Updated: 2021/06/28 12:00:01 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/08/04 16:59:21 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
+
+void ft_memdel(void **ptr) {
+	if (ptr != NULL) {
+		free(*ptr);
+		*ptr = NULL;
+	}
+}
 
 bool                         comp_float(std::pair<float, std::string> &p1, std::pair<float, std::string> &p2)
 {

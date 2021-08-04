@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 17:14:25 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 17:27:02 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,8 +164,8 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             _args[2] = NULL;
             std::cerr << "----------------- CGI GONNA EXEC [" << _args[0] << "] with file [" << _args[1] << "]..." << std::endl;
             execve(_args[0], _args, _env);
-            free(_args[0]);
-            free(_args[1]);
+            ft_memdel((void**)&(_args[0]));
+            ft_memdel((void**)&(_args[1]));
         }
         std::cerr << "ERROR: CGI CHILD: execve fail - " << strerror(errno) << std::endl;
         exit(500);

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/10 17:28:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 16:29:45 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 16:59:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ char	            	    *ft_strjoin(char *s1, const char *s2);
 char	                 	*ft_strchr(const char *s, int c);
 char	                	*ft_strdup(const char *s1);
 char	                	*ft_strndup(const char *s1, int len);
+void						ft_memdel(void **ptr);
 int                         pass_spaces(char *line, int &index);
 int                         pass_spaces(std::string &line, size_t &index);
 bool                        is_space(char a);
