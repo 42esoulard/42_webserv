@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/04 14:10:49 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/22 16:25:33 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/07/29 19:49:03 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 // utils
 #include <errno.h>
 #include <string>
-#include <string.h> 
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>

@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/07/29 19:45:04 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 16:15:32 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void Cluster::init_cluster(std::string &config) {
 
     //in case of ddos suspicion
     _maxed_out_fds = 0;
-    
+
     _error_serv_unavailable = std::string("HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/html\r\nContent-Length: 47\r\n\r\nSorry, we're a bit busy but we'll be back ASAP!");
     _error_req_timeout = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nByeeee!");
     _error_req_timeout_sl = std::string("HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nContent-Length: 44\r\n\r\nSLOW LORIS DETECTED! DANGER AVERTED! Byeeee!");
@@ -82,7 +82,12 @@ void Cluster::parse_config(std::string &config) {
 
     if ((_config_fd = open(config.c_str(), O_RDONLY)) < 0)
         throw Exception("Couldn't open configuration file " + config);
-
+    
+    struct stat buf;
+	stat(config.c_str(), &buf);
+    if (!S_ISREG(buf.st_mode))
+        throw Exception("Couldn't open configuration file " + config);
+    
     _in_location = false;
     _in_server = false;
     _line_nb = 0;
@@ -265,14 +270,14 @@ void Cluster::handle_connection(){
         if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set) && !FD_ISSET(this->_cur_socket, &this->_read_fd_set)
             && this->_cli_request[_cur_socket].check_timeout()) {
             std::cerr << "-----------------TIMEOUT SOCK ["<< _cur_socket <<"]---------------------------" << std::endl;
-            
+
             _cli_request[_cur_socket].reinit_cli();
             send_response(_error_req_timeout);
             close(this->_cur_socket);
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
             --_nb_clients;
-            
+
         }
     }
 
@@ -281,11 +286,11 @@ void Cluster::handle_connection(){
 
             std::cerr << "----------------- CLIENTS " << _nb_clients << " > MAXCLIENTS(" << _MAXCLIENTS << ")---------------------------" << std::endl;
             ++_maxed_out_fds;
-            if (_maxed_out_fds > 20) { //detecting ddos attempt 
+            if (_maxed_out_fds > 20) { //detecting ddos attempt
                 for (this->_cur_socket = 0; this->_cur_socket < FD_SETSIZE; ++this->_cur_socket) {
                     if (FD_ISSET(this->_cur_socket, &this->_clients_fd_set)) {
                         std::cerr << "----------------- SUSPECTING A DDOS ATTACK, SHILEDING SERVER (error 503)---------------------------" << std::endl;
-                        
+
                         _cli_request[_cur_socket].reinit_cli();
                         send_response(_error_serv_unavailable);
                         close(this->_cur_socket);
@@ -305,7 +310,7 @@ void Cluster::handle_connection(){
             while (_serv_it != server_list.end()) {
                 if (this->_cur_socket == _serv_it->get_server_fd()) {
                     /* Connection request on original socket. */
-                    
+
                     if ((this->_new_socket = accept(_serv_it->get_server_fd(), (struct sockaddr *)&(_serv_it->get_address()), &_serv_it->get_address_sz())) < 0) {
                         std::cerr << "----------------- ACCEPT FAILED on socket " << this->_new_socket << " errno " << errno << std::endl;
                         return;
@@ -319,8 +324,8 @@ void Cluster::handle_connection(){
                     fcntl(this->_new_socket, F_SETFL, O_NONBLOCK);
                     FD_SET (this->_new_socket, &this->_active_fd_set);
                     FD_SET (this->_new_socket, &this->_clients_fd_set);
-               
-                    g_socket = _cur_socket;
+
+                    g_socket = _new_socket;
                     g_active_fd_set = &this->_active_fd_set;
                     g_clients_fd_set = &this->_clients_fd_set;
                     return ;
@@ -354,7 +359,7 @@ void Cluster::parse_request() {
 
     if (ret <= 0) {
 
-        _cli_request[_cur_socket].reinit_cli(); 
+        _cli_request[_cur_socket].reinit_cli();
 
         if (ret < 0) {
 
@@ -365,7 +370,7 @@ void Cluster::parse_request() {
             std::cerr << "----------------- READ ERROR: closing connection.\n" << std::endl;
         }
         else {
-           
+
             close(this->_cur_socket);
             FD_CLR (this->_cur_socket, &this->_clients_fd_set);
             FD_CLR (this->_cur_socket, &this->_active_fd_set);
@@ -402,13 +407,13 @@ void Cluster::parse_request() {
     }
 
     _cli_request[_cur_socket].parse_request(*_serv_response);
-    
+
     if (_cli_request[_cur_socket].get_sread().size() < 10000)
         std::cerr << std::endl << "+++++++++++++++++++++ REQUEST ++++++++++++++++++++" << std::endl << _cli_request[_cur_socket].get_sread() << std::endl;
     else
         std::cerr << std::endl << "+++++++++++++++++++++ REQUEST (too long, truncated) +++++++++++++++++++++" << std::endl << _cli_request[_cur_socket].get_sread().substr(0, 10000) << std::endl;
     std::cerr << "+++++++++++++++++ END OF REQUEST +++++++++++++++++" << std::endl << std::endl;
-    
+
     (*_serv_response).build_response(_cli_request[_cur_socket].get_conf());
 	this->send_response((*_serv_response).get_payload());
 
@@ -503,7 +508,7 @@ void Cluster::save_chunk(std::vector<std::string> &_vecChunk, std::string &chunk
         }
 
         if (_vecChunk.size() > 1 && (uint)ft_stoi_hex(_vecChunk[_vecChunk.size() - 2]) < 0)
-            return; 
+            return;
 
         if (_vecChunk.size() > 1 && (uint)ft_stoi_hex(_vecChunk[_vecChunk.size() - 2]) == 0) {
 
@@ -574,7 +579,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
 
     //save all chunks in a vector alternating size and content
     save_chunk(_cli_request[this->_cur_socket].get_vecChunked(), chunk);
-    
+
     if (_cli_request[this->_cur_socket].get_vecChunked().size() < 2 || _cli_request[this->_cur_socket].get_vecChunked().size() % 2 != 0)
         return 0;
     int chunk_len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 2]);
@@ -594,7 +599,7 @@ bool Cluster::handle_chunk(std::string &s_tmp, ServerResponse &serv_response) {
         for (size_t i = 0; i < _cli_request[this->_cur_socket].get_vecChunked().size(); i++) {
 
             len = ft_stoi_hex(_cli_request[this->_cur_socket].get_vecChunked()[i]);
-            if (len == 0) { 
+            if (len == 0) {
                 if (_cli_request[this->_cur_socket].get_vecChunked()[_cli_request[this->_cur_socket].get_vecChunked().size() - 1] != "\r\n") {
                     serv_response.error(400);
                 }
@@ -655,6 +660,6 @@ void Cluster::send_response(std::string &response) {
     else
         std::cerr << std::endl << "++++++++++++ RESPONSE (too long, truncated) ++++++++++++" << std::endl << response.substr(0, 10000) << std::endl;
     std::cerr << "+++++++++++++++++ END OF RESPONSE +++++++++++++++++" << std::endl;
-    
+
     std::cerr << "----------------- SENT RESPONSE SIZE (" << ret << "/" << response.size() << ")" << std::endl << std::endl;
 };

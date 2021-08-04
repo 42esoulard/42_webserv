@@ -96,11 +96,11 @@ clear_files:
 			${CLEAR}
 			@echo "\033[1;36m		-----> Test files cleared! <-----\n\033[0m"
 
-clean :		clear_files
+clean :		
 			rm -f ${OBJS}
 			@echo "\n\033[1;36m	       -----> Object files cleared! <-----\n\033[0m"
 
-fclean :	clean
+fclean :	clean clear_files
 			rm -f ${NAME}
 			@echo "\n\033[1;36m	-----> Webserv atomized! So long, Webserv! <-----\n\033[0m"
 
