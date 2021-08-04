@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 17:27:38 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 17:50:02 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -463,7 +463,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 	if ((*_location).find("root") != (*_location).end()){
 		_resource_path = *(*_location)["root"].begin();
 	}
-	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end() && *(*_location)["up_dir"].begin() != *(*_location)["up_dir"].end())
+	
+	if ((_method == "PUT" || _method == "POST") && (*_location).find("up_dir") != (*_location).end())
 		_resource_path += *(*_location)["up_dir"].begin();
 	if (size < requested_path.size())
 		_resource_path +=  requested_path.substr(size);
@@ -476,10 +477,8 @@ int ServerResponse::build_response(t_content_map &cli_conf) {
 
 	// go to the proper header function
 	(this->*_methods[_method])();
-
 	if (_error != 200 && _error != 201 && !(_error == 204 && _method == "DELETE"))
 		return (build_error_response(_error));
-
 	return (0);
 }
 

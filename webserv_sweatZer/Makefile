@@ -74,7 +74,7 @@ OBJS			= ${SRCS:.cpp=.o}
 #############################################################
 
 CPP			= clang++
-CFLAGS		= -Wall -Wextra -Werror -std=c++98
+CFLAGS		= -Wall -Wextra -Werror -std=c++98 -g
 NAME		= webserv
 INIT 		= ./scripts/init.sh
 CLEAR 		= ./scripts/clear.sh

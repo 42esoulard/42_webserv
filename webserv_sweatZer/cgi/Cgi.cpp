@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 12:25:15 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 17:27:02 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 17:36:43 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
 	else if (_pid == 0) {
 
         if (dup2(_fd[0], 0) == -1 || dup2(_fd[1], 1) == -1) {
-            std::cerr << "ERROR: CGI CHILD: dup2 fail - " << strerror(errno) << std::endl;
+            std::cerr << "ERROR: CGI CHILD: dup2 fail" << std::endl;
             exit(500);
         }
         
@@ -167,7 +167,7 @@ int Cgi::launch_cgi(ServerResponse &serv_resp, t_content_map &cli_conf) {
             ft_memdel((void**)&(_args[0]));
             ft_memdel((void**)&(_args[1]));
         }
-        std::cerr << "ERROR: CGI CHILD: execve fail - " << strerror(errno) << std::endl;
+        std::cerr << "ERROR: CGI CHILD: execve fail" << std::endl;
         exit(500);
 	}
 	else {

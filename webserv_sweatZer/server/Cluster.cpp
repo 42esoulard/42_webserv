@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 17:25:59 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/04 17:36:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,7 +315,7 @@ void Cluster::handle_connection(){
                     /* Connection request on original socket. */
 
                     if ((this->_new_socket = accept(_serv_it->get_server_fd(), (struct sockaddr *)&(_serv_it->get_address()), &_serv_it->get_address_sz())) < 0) {
-                        std::cerr << "----------------- ACCEPT FAILED on socket " << this->_new_socket << " errno " << errno << std::endl;
+                        std::cerr << "----------------- ACCEPT FAILED on socket " << this->_new_socket << std::endl;
                         return;
                     }
 
