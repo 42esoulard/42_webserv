@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:04 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 18:27:46 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/08 18:02:24 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,8 @@ void Cluster::set_error() {
 
 void Cluster::parse_config(std::string &config) {
 
+    bool        err = false;
+
     struct stat buf;
     buf.st_mode = 0;
 	stat(config.c_str(), &buf);
@@ -101,13 +103,16 @@ void Cluster::parse_config(std::string &config) {
         ++_line_nb;
         _index = 0;
 
-        parse_field((field = get_conf_token(_line, _index)), config);
-        parse_values(field, config);
+        if (!err && (parse_field((field = get_conf_token(_line, _index)), config) < 0 ||
+            parse_values(field, config) < 0))
+                err = true;
 
         ft_memdel((void**)&_line);
     }
     ft_memdel((void**)&_line);
     close (_config_fd);
+    if (err)
+        throw Exception(_tmp);
     print_config(); //prints all the contents of _conf
     check_conf(config);
 };
@@ -131,16 +136,18 @@ void Cluster::print_config() {
     std::cerr << "-----------------------" << std::endl;
 }
 
-void Cluster::parse_field(std::string &field, std::string &config) {
+int Cluster::parse_field(std::string &field, std::string &config) {
     if (field == "server") {
 
             if (get_conf_token(_line, _index) != "{" || get_conf_token(_line, _index) != "") {
                 ft_memdel((void**)&_line);
-                throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+                _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb);
+                return -1;
             }
             if (_in_server) {
                 ft_memdel((void**)&_line);
-                throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a server context!");
+                _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a server context!";
+                return -1;
             }
             Server new_server;
             server_list.push_back(new_server);
@@ -150,7 +157,8 @@ void Cluster::parse_field(std::string &field, std::string &config) {
 
         if (_in_location) {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a location context!");
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": already in a location context!";
+            return -1;
         }
 
         Server::t_content_map new_loc;
@@ -160,7 +168,8 @@ void Cluster::parse_field(std::string &field, std::string &config) {
         // std::string tmp;
         if ((_tmp = get_conf_token(_line, _index)) == "" || _tmp == "{") {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + "location needs a path");
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb) + "location needs a path";
+            return -1;
         }
         if (_tmp.size() > 1 && (_tmp[_tmp.size() - 1] == '*' || _tmp[_tmp.size() - 1] == '/'))
             _tmp = _tmp.substr(0, _tmp.find_last_of('/'));
@@ -169,7 +178,8 @@ void Cluster::parse_field(std::string &field, std::string &config) {
             server_list.back().get_locations().back()["extensions"].push_back(_tmp);
         if (_tmp != "{" || get_conf_token(_line, _index) != "") {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb);
+            return -1;
         }
     }
     else if (field == "}") {
@@ -180,9 +190,11 @@ void Cluster::parse_field(std::string &field, std::string &config) {
             _in_server = false;
         if (get_conf_token(_line, _index) != "") {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb);
+            return -1;
         }
     }
+    return 0;
 }
 
 // simply parses spaces and returns the next non space character sequence
@@ -199,7 +211,7 @@ std::string Cluster::get_conf_token(char *line, int &index) {
     return std::string(&line[start], index - start);
 }
 
-void Cluster::parse_values(std::string &field, std::string &config) {
+int Cluster::parse_values(std::string &field, std::string &config) {
 
     while (_line && _line[_index] && _line[_index] != ';') {
 
@@ -209,13 +221,16 @@ void Cluster::parse_values(std::string &field, std::string &config) {
             server_list.back().get_serv_info()[field].push_back(get_conf_token(_line, _index));
         else {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": fields must be in a context");
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb) + ": fields must be in a context";
+            return -1;
         }
         if (_line[_index] == ';' && get_conf_token(_line, _index) != "") {
             ft_memdel((void**)&_line);
-            throw Exception("Config file " + config + " parsing error near line " + ft_itos(_line_nb));
+            _tmp = "Config file " + config + " parsing error near line " + ft_itos(_line_nb);
+            return -1;
         }
     }
+    return 0;
 }
 
 void    Cluster::check_conf(std::string &config) {
@@ -234,6 +249,9 @@ void    Cluster::check_conf(std::string &config) {
             // MAYBE SEVERAL PORTS ARE OK, NOT SURE. IN THIS CASE, ADD ANOTHER EXCEPTION FOR server_port
             if (serv_info_it->second.size() != 1 && serv_info_it->first != "server_name")
                 throw Exception("Config file " + config + ": " + serv_info_it->first + "wrong number of parameters");
+            if (serv_info_it->first == "client_max_body_size" && serv_info_it->second.size() == 1 && 
+                ((*serv_info_it->second.begin()).size() > 7 || ft_stosize_t((*serv_info_it->second.begin())) > 3000000))
+                throw Exception("Config file " + config + ": " + serv_info_it->first + " unsupported");
             ++serv_info_it;
         }
 
@@ -243,6 +261,9 @@ void    Cluster::check_conf(std::string &config) {
             while (loc_info_it != (*locations_it).end()) {
                 if (loc_info_it->second.size() != 1 && loc_info_it->first != "accept_methods")
                     throw Exception("Config file " + config + ": " + loc_info_it->first + ": wrong number of parameters");
+                if (loc_info_it->first == "client_max_body_size" && loc_info_it->second.size() == 1 && 
+                    ((*loc_info_it->second.begin()).size() > 7 || ft_stosize_t((*loc_info_it->second.begin())) > 3000000))
+                    throw Exception("Config file " + config + ": " + loc_info_it->first + " unsupported");
                 ++loc_info_it;
             }
             ++locations_it;

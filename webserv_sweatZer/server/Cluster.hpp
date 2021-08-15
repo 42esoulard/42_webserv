@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 10:16:47 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 18:06:52 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/07 18:05:28 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ class Cluster {
         void        set_error();
         void        parse_config(std::string &config_file);
         std::string get_conf_token(char *line, int &index);
-        void        parse_field(std::string &field, std::string &config);
-        void        parse_values(std::string &field, std::string &config);
+        int         parse_field(std::string &field, std::string &config);
+        int         parse_values(std::string &field, std::string &config);
         void        check_conf(std::string &config);
         void        print_config(); 
 

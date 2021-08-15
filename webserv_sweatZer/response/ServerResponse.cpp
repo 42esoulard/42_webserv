@@ -6,7 +6,7 @@
 /*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/25 16:23:08 by esoulard          #+#    #+#             */
-/*   Updated: 2021/08/04 20:35:57 by esoulard         ###   ########.fr       */
+/*   Updated: 2021/08/07 19:56:53 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -509,9 +509,9 @@ int	ServerResponse::check_server_location(std::string &requested_path)
 int	ServerResponse::check_body_size(t_content_map &cli_conf)
 {
 	if ((*_location).find("client_max_body_size") != (*_location).end())
-		_max_body = ft_stoi(*(*_location)["client_max_body_size"].begin());
+		_max_body = ft_stosize_t(*(*_location)["client_max_body_size"].begin());
 	else if ((get_serv_info().find("client_max_body_size")) != get_serv_info().end())
-		_max_body = ft_stoi(*get_serv_info()["client_max_body_size"].begin());
+		_max_body = ft_stosize_t(*get_serv_info()["client_max_body_size"].begin());
 	else
 		_max_body = DEFAULT_MAX_BODY;
 	if (cli_conf.find("body") != cli_conf.end() && cli_conf["body"].begin() != cli_conf["body"].end()) {
@@ -520,6 +520,7 @@ int	ServerResponse::check_body_size(t_content_map &cli_conf)
 		else if ((*cli_conf["body"].begin()).size() > _max_body && _method != "POST")
 			(*cli_conf["body"].begin()) = (*cli_conf["body"].begin()).substr(0, _max_body);
 	}
+
 	return (0);
 }
 
@@ -761,7 +762,6 @@ int ServerResponse::file_to_body(void) {
 	if ((fd = open(_resource_path.c_str(), O_NONBLOCK)) < 0)
 		return build_error_response(500);
 
-	std::cout << "++++++++++++++++++++++++++max body (" << _max_body << std::endl;
 	char buf[_max_body];
 	memset(buf, 0, _max_body);
 	if ((size = read(fd, buf, _max_body - 1)) < 0)

@@ -3,15 +3,38 @@
 /*                                                        :::      ::::::::   */
 /*   conv_utils.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rturcey <rturcey@student.42.fr>            +#+  +:+       +#+        */
+/*   By: esoulard <esoulard@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/15 11:15:29 by esoulard          #+#    #+#             */
-/*   Updated: 2021/05/22 16:04:46 by rturcey          ###   ########.fr       */
+/*   Updated: 2021/08/07 19:21:01 by esoulard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include "utils.hpp"
+
+
+size_t		ft_stosize_t(std::string stri)
+{
+	size_t result;
+	int i;
+	const char *str = stri.c_str();
+
+	i = 0;
+	result = 0;
+	while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n'
+		|| str[i] == '\v' || str[i] == '\f' || str[i] == '\r')
+		i++;
+	if (str[i] == '+')
+		i++;
+	
+	while (str[i] >= '0' && str[i] <= '9')
+	{
+		result = result * 10 + (str[i] - 48);
+		i++;
+	}
+	return (result);
+}
 
 int		ft_atoi(const char *str)
 {
