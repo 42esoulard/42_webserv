@@ -1,5 +1,5 @@
 # 42_webserv
-42's webserv, team rturcey-esoulard! [04/2021] [Ubuntu18]
+42's webserv, team rturcey-esoulard! [05/2021-08/2021] [Ubuntu18]
 
 **[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
   - git checkout -b my_branch
