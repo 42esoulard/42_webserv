@@ -1,6 +1,13 @@
 # 42_webserv
 42's webserv, team rturcey-esoulard! [05/2021-08/2021] [Ubuntu18]
 
+**GOAL**: write a HTTP server in C++ 98 (http 1.1)
+When in doubt, compare program behaviour with nginx.
+
+**LINKS**:
+- [Git](https://github.com/42esoulard/42_webserv)
+- [Subject](https://cdn.intra.42.fr/pdf/pdf/19749/en.subject.pdf)
+
 **[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
   - git checkout -b my_branch
   - do your commits
@@ -8,13 +15,6 @@
   - git pull               # to update the state to the latest remote master state
   - git merge my_branch      # to bring changes to local master from your develop branch
   - git push origin main
-
-**GOAL**: write a HTTP server in C++ 98 (http 1.1)
-When in doubt, compare program behaviour with nginx.
-
-**LINKS**:
-- [Git](https://github.com/42esoulard/42_webserv)
-- [Subject](https://cdn.intra.42.fr/pdf/pdf/19749/en.subject.pdf)
 
 **RESOURCES**: *difficulty rated 1 to 3, 1 being pretty understandable, 3 is as obscure as the deepest darkest pits of hell. 2 means you're not gonna have the best time but it needs to be done, kinda like a very awkward family dinner*
 - **HTTP: BASICS**
