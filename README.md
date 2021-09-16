@@ -8,14 +8,6 @@ When in doubt, compare program behaviour with nginx.
 - [Git](https://github.com/42esoulard/42_webserv)
 - [Subject](https://cdn.intra.42.fr/pdf/pdf/19749/en.subject.pdf)
 
-**[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
-  - git checkout -b my_branch
-  - do your commits
-  - git checkout main
-  - git pull               # to update the state to the latest remote master state
-  - git merge my_branch      # to bring changes to local master from your develop branch
-  - git push origin main
-
 **RESOURCES**: *difficulty rated 1 to 3, 1 being pretty understandable, 3 is as obscure as the deepest darkest pits of hell. 2 means you're not gonna have the best time but it needs to be done, kinda like a very awkward family dinner*
 - **HTTP: BASICS**
   - [HTTP wiki {1}](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol): details HTTP's evolution, and main technical characteristics.
@@ -94,3 +86,7 @@ content of that resource or an error message if unable to do so. The resource is
 - [Do a stress test](https://github.com/tsenart/vegeta)
 - Test with several programs (different languages are allowed)
 - [acoudert tester](https://github.com/acoudert/webserv_tester)
+
+
+**[GIT BRANCHING](https://alexgirard.com/git-book/basic/branches-et-merges/)**
+
